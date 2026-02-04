@@ -1,53 +1,235 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { SSEProvider } from './context/SSEContext';
+import { SoundProvider } from './context/SoundContext';
+import { Toaster } from 'sonner';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import Layout from './components/Layout';
+import LoginPage from './pages/LoginPage';
+import FiveMAuthPage from './pages/FiveMAuthPage';
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+import LSPDDashboard from './pages/lspd/LSPDDashboard';
+import CasesListPage from './pages/lspd/CasesListPage';
+import CaseDetailPage from './pages/lspd/CaseDetailPage';
+import NewCasePage from './pages/lspd/NewCasePage';
+
+import EMSDashboard from './pages/ems/EMSDashboard';
+import PatientsListPage from './pages/ems/PatientsListPage';
+import NewPatientPage from './pages/ems/NewPatientPage';
+
+import DispatchPage from './pages/DispatchPage';
+import TimelinePage from './pages/TimelinePage';
+import SettingsPage from './pages/SettingsPage';
+
+import './App.css';
+
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { isAuthenticated, user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen tactical-bg flex items-center justify-center">
+        <div className="text-plos-primary animate-pulse font-heading text-xl tracking-wider">
+          CARICAMENTO SISTEMA...
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user?.role) && user?.role !== 'admin') {
+    // Redirect to appropriate dashboard based on role
+    switch (user?.role) {
+      case 'police':
+        return <Navigate to="/lspd" replace />;
+      case 'ems':
+        return <Navigate to="/ems" replace />;
+      case 'dispatch':
+        return <Navigate to="/dispatch" replace />;
+      default:
+        return <Navigate to="/lspd" replace />;
+    }
+  }
+
+  return <Layout>{children}</Layout>;
+};
+
+const AppRoutes = () => {
+  const { isAuthenticated, user } = useAuth();
+
+  const getDefaultRoute = () => {
+    if (!isAuthenticated) return '/login';
+    switch (user?.role) {
+      case 'police':
+        return '/lspd';
+      case 'ems':
+        return '/ems';
+      case 'dispatch':
+        return '/dispatch';
+      default:
+        return '/lspd';
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/fivem" element={<FiveMAuthPage />} />
+
+      {/* LSPD Routes */}
+      <Route
+        path="/lspd"
+        element={
+          <ProtectedRoute allowedRoles={['police', 'dispatch']}>
+            <LSPDDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lspd/cases"
+        element={
+          <ProtectedRoute allowedRoles={['police', 'dispatch']}>
+            <CasesListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lspd/cases/new"
+        element={
+          <ProtectedRoute allowedRoles={['police']}>
+            <NewCasePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lspd/cases/:id"
+        element={
+          <ProtectedRoute allowedRoles={['police', 'dispatch']}>
+            <CaseDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lspd/warrants"
+        element={
+          <ProtectedRoute allowedRoles={['police', 'dispatch']}>
+            <CasesListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/lspd/fines"
+        element={
+          <ProtectedRoute allowedRoles={['police', 'dispatch']}>
+            <CasesListPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* EMS Routes */}
+      <Route
+        path="/ems"
+        element={
+          <ProtectedRoute allowedRoles={['ems', 'dispatch']}>
+            <EMSDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ems/patients"
+        element={
+          <ProtectedRoute allowedRoles={['ems', 'dispatch']}>
+            <PatientsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ems/patients/new"
+        element={
+          <ProtectedRoute allowedRoles={['ems']}>
+            <NewPatientPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ems/patients/:id"
+        element={
+          <ProtectedRoute allowedRoles={['ems', 'dispatch']}>
+            <PatientsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ems/reports"
+        element={
+          <ProtectedRoute allowedRoles={['ems']}>
+            <PatientsListPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Dispatch Routes */}
+      <Route
+        path="/dispatch"
+        element={
+          <ProtectedRoute allowedRoles={['dispatch', 'police', 'ems']}>
+            <DispatchPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Common Routes */}
+      <Route
+        path="/timeline"
+        element={
+          <ProtectedRoute>
+            <TimelinePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Default Redirect */}
+      <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
+      <Route path="*" element={<Navigate to={getDefaultRoute()} replace />} />
+    </Routes>
   );
 };
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <SoundProvider>
+          <SSEProvider>
+            <AppRoutes />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  background: '#121212',
+                  border: '1px solid #333333',
+                  color: '#FFFFFF',
+                  fontFamily: 'Inter, sans-serif',
+                },
+              }}
+            />
+          </SSEProvider>
+        </SoundProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
