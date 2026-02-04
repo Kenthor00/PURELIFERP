@@ -1,0 +1,447 @@
+"""
+PURE LIFE OS - Governo & Giustizia Router
+Tribunale, Avvocati, Udienze
+"""
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, desc
+from typing import Optional, List
+from datetime import datetime, timezone
+import random
+import string
+
+from database import get_db
+from models import User, UserRole, LegalCase, LegalCaseStatus, CourtHearing, HearingStatus, LegalDocument, TimelineEvent
+from schemas import (
+    LegalCaseCreate, LegalCaseUpdate, LegalCaseResponse,
+    CourtHearingCreate, CourtHearingUpdate, CourtHearingResponse,
+    LegalDocumentCreate, LegalDocumentResponse,
+    MessageResponse
+)
+from auth import get_current_user, require_roles
+from sse_manager import sse_manager
+
+router = APIRouter(prefix="/justice", tags=["Governo & Giustizia"])
+
+
+def generate_legal_case_number():
+    date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
+    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    return f"LEG-{date_str}-{random_str}"
+
+
+def generate_hearing_number():
+    date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
+    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    return f"UDI-{date_str}-{random_str}"
+
+
+# ==========================================
+# LEGAL CASES
+# ==========================================
+
+@router.get("/cases", response_model=List[LegalCaseResponse])
+async def get_legal_cases(
+    status: Optional[LegalCaseStatus] = None,
+    my_cases: bool = False,
+    limit: int = Query(50, le=100),
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Lista pratiche legali"""
+    query = select(LegalCase).order_by(desc(LegalCase.updated_at))
+    
+    if status:
+        query = query.where(LegalCase.status == status)
+    
+    if my_cases:
+        if current_user.role == UserRole.LAWYER:
+            query = query.where(LegalCase.lawyer_id == current_user.id)
+        elif current_user.role == UserRole.PROSECUTOR:
+            query = query.where(LegalCase.prosecutor_id == current_user.id)
+    
+    result = await db.execute(query.limit(limit))
+    return result.scalars().all()
+
+
+@router.get("/cases/{case_id}", response_model=LegalCaseResponse)
+async def get_legal_case(
+    case_id: int,
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Dettaglio pratica legale"""
+    result = await db.execute(select(LegalCase).where(LegalCase.id == case_id))
+    case = result.scalar_one_or_none()
+    
+    if not case:
+        raise HTTPException(status_code=404, detail="Pratica non trovata")
+    
+    return case
+
+
+@router.post("/cases", response_model=LegalCaseResponse)
+async def create_legal_case(
+    request: LegalCaseCreate,
+    current_user: User = Depends(require_roles(UserRole.LAWYER, UserRole.PROSECUTOR)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Crea pratica legale"""
+    case = LegalCase(
+        case_number=generate_legal_case_number(),
+        **request.model_dump(),
+        status=LegalCaseStatus.DRAFT
+    )
+    
+    if current_user.role == UserRole.LAWYER:
+        case.lawyer_id = current_user.id
+    elif current_user.role == UserRole.PROSECUTOR:
+        case.prosecutor_id = current_user.id
+    
+    db.add(case)
+    await db.commit()
+    await db.refresh(case)
+    
+    timeline_event = TimelineEvent(
+        event_type="legal_case_created",
+        category="justice",
+        title=f"Pratica aperta: {case.case_number}",
+        description=f"Cliente: {case.client_name}",
+        reference_id=case.id,
+        reference_type="legal_case",
+        user_id=current_user.id
+    )
+    db.add(timeline_event)
+    await db.commit()
+    
+    return case
+
+
+@router.put("/cases/{case_id}", response_model=LegalCaseResponse)
+async def update_legal_case(
+    case_id: int,
+    request: LegalCaseUpdate,
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Aggiorna pratica legale"""
+    result = await db.execute(select(LegalCase).where(LegalCase.id == case_id))
+    case = result.scalar_one_or_none()
+    
+    if not case:
+        raise HTTPException(status_code=404, detail="Pratica non trovata")
+    
+    update_data = request.model_dump(exclude_unset=True)
+    old_status = case.status
+    
+    for field, value in update_data.items():
+        setattr(case, field, value)
+    
+    await db.commit()
+    await db.refresh(case)
+    
+    if "status" in update_data and case.status != old_status:
+        timeline_event = TimelineEvent(
+            event_type="legal_case_status_changed",
+            category="justice",
+            title=f"Stato pratica: {case.status.value}",
+            reference_id=case.id,
+            reference_type="legal_case",
+            user_id=current_user.id,
+            metadata_json={"old_status": old_status.value, "new_status": case.status.value}
+        )
+        db.add(timeline_event)
+        await db.commit()
+    
+    return case
+
+
+@router.post("/cases/{case_id}/submit", response_model=LegalCaseResponse)
+async def submit_legal_case(
+    case_id: int,
+    current_user: User = Depends(require_roles(UserRole.LAWYER, UserRole.PROSECUTOR)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Sottometti pratica per revisione"""
+    result = await db.execute(select(LegalCase).where(LegalCase.id == case_id))
+    case = result.scalar_one_or_none()
+    
+    if not case:
+        raise HTTPException(status_code=404, detail="Pratica non trovata")
+    
+    if case.status != LegalCaseStatus.DRAFT:
+        raise HTTPException(status_code=400, detail="La pratica non è in stato bozza")
+    
+    case.status = LegalCaseStatus.SUBMITTED
+    
+    timeline_event = TimelineEvent(
+        event_type="legal_case_submitted",
+        category="justice",
+        title=f"Pratica sottomessa: {case.case_number}",
+        reference_id=case.id,
+        reference_type="legal_case",
+        user_id=current_user.id
+    )
+    db.add(timeline_event)
+    await db.commit()
+    await db.refresh(case)
+    
+    await sse_manager.broadcast("legal_case_submitted", {
+        "case_id": case.id,
+        "case_number": case.case_number
+    }, roles={"judge", "government", "admin"})
+    
+    return case
+
+
+# ==========================================
+# COURT HEARINGS
+# ==========================================
+
+@router.get("/hearings", response_model=List[CourtHearingResponse])
+async def get_hearings(
+    status: Optional[HearingStatus] = None,
+    upcoming_only: bool = True,
+    limit: int = Query(50, le=100),
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Lista udienze"""
+    query = select(CourtHearing).order_by(CourtHearing.scheduled_date)
+    
+    if status:
+        query = query.where(CourtHearing.status == status)
+    
+    if upcoming_only:
+        now = datetime.now(timezone.utc)
+        query = query.where(CourtHearing.scheduled_date >= now)
+    
+    result = await db.execute(query.limit(limit))
+    return result.scalars().all()
+
+
+@router.get("/hearings/calendar")
+async def get_hearings_calendar(
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2024),
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Calendario udienze per mese"""
+    start_date = datetime(year, month, 1, tzinfo=timezone.utc)
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+    else:
+        end_date = datetime(year, month + 1, 1, tzinfo=timezone.utc)
+    
+    result = await db.execute(
+        select(CourtHearing)
+        .where(
+            CourtHearing.scheduled_date >= start_date,
+            CourtHearing.scheduled_date < end_date
+        )
+        .order_by(CourtHearing.scheduled_date)
+    )
+    
+    hearings = result.scalars().all()
+    
+    calendar_data = {}
+    for h in hearings:
+        day = h.scheduled_date.day
+        if day not in calendar_data:
+            calendar_data[day] = []
+        calendar_data[day].append({
+            "id": h.id,
+            "hearing_number": h.hearing_number,
+            "title": h.title,
+            "time": h.scheduled_date.strftime("%H:%M"),
+            "courtroom": h.courtroom,
+            "status": h.status.value
+        })
+    
+    return {"month": month, "year": year, "calendar": calendar_data}
+
+
+@router.get("/hearings/{hearing_id}", response_model=CourtHearingResponse)
+async def get_hearing(
+    hearing_id: int,
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Dettaglio udienza"""
+    result = await db.execute(select(CourtHearing).where(CourtHearing.id == hearing_id))
+    hearing = result.scalar_one_or_none()
+    
+    if not hearing:
+        raise HTTPException(status_code=404, detail="Udienza non trovata")
+    
+    return hearing
+
+
+@router.post("/hearings", response_model=CourtHearingResponse)
+async def create_hearing(
+    request: CourtHearingCreate,
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Crea udienza (giudice/governo)"""
+    hearing = CourtHearing(
+        hearing_number=generate_hearing_number(),
+        **request.model_dump(),
+        status=HearingStatus.SCHEDULED
+    )
+    
+    if current_user.role == UserRole.JUDGE:
+        hearing.judge_id = current_user.id
+    
+    db.add(hearing)
+    await db.commit()
+    await db.refresh(hearing)
+    
+    timeline_event = TimelineEvent(
+        event_type="hearing_scheduled",
+        category="justice",
+        title=f"Udienza programmata: {hearing.title}",
+        description=f"Data: {hearing.scheduled_date.strftime('%d/%m/%Y %H:%M')}",
+        reference_id=hearing.id,
+        reference_type="hearing",
+        user_id=current_user.id
+    )
+    db.add(timeline_event)
+    await db.commit()
+    
+    await sse_manager.broadcast("hearing_scheduled", {
+        "hearing_id": hearing.id,
+        "hearing_number": hearing.hearing_number,
+        "title": hearing.title,
+        "scheduled_date": hearing.scheduled_date.isoformat()
+    }, roles={"judge", "lawyer", "prosecutor", "government", "admin"})
+    
+    return hearing
+
+
+@router.put("/hearings/{hearing_id}", response_model=CourtHearingResponse)
+async def update_hearing(
+    hearing_id: int,
+    request: CourtHearingUpdate,
+    current_user: User = Depends(require_roles(UserRole.JUDGE)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Aggiorna udienza (giudice)"""
+    result = await db.execute(select(CourtHearing).where(CourtHearing.id == hearing_id))
+    hearing = result.scalar_one_or_none()
+    
+    if not hearing:
+        raise HTTPException(status_code=404, detail="Udienza non trovata")
+    
+    update_data = request.model_dump(exclude_unset=True)
+    
+    for field, value in update_data.items():
+        setattr(hearing, field, value)
+    
+    if "verdict" in update_data and update_data["verdict"]:
+        hearing.verdict_date = datetime.now(timezone.utc)
+        hearing.status = HearingStatus.COMPLETED
+        
+        timeline_event = TimelineEvent(
+            event_type="verdict_issued",
+            category="justice",
+            title=f"Verdetto emesso: {hearing.hearing_number}",
+            reference_id=hearing.id,
+            reference_type="hearing",
+            user_id=current_user.id
+        )
+        db.add(timeline_event)
+    
+    await db.commit()
+    await db.refresh(hearing)
+    
+    return hearing
+
+
+# ==========================================
+# LEGAL DOCUMENTS
+# ==========================================
+
+@router.get("/cases/{case_id}/documents", response_model=List[LegalDocumentResponse])
+async def get_case_documents(
+    case_id: int,
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Lista documenti pratica"""
+    result = await db.execute(
+        select(LegalDocument)
+        .where(LegalDocument.legal_case_id == case_id)
+        .order_by(LegalDocument.created_at)
+    )
+    return result.scalars().all()
+
+
+@router.post("/documents", response_model=LegalDocumentResponse)
+async def submit_document(
+    request: LegalDocumentCreate,
+    current_user: User = Depends(require_roles(UserRole.LAWYER, UserRole.PROSECUTOR)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Deposita documento"""
+    result = await db.execute(select(LegalCase).where(LegalCase.id == request.legal_case_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Pratica non trovata")
+    
+    document = LegalDocument(
+        **request.model_dump(),
+        submitted_by=current_user.id
+    )
+    
+    db.add(document)
+    await db.commit()
+    await db.refresh(document)
+    
+    timeline_event = TimelineEvent(
+        event_type="document_submitted",
+        category="justice",
+        title=f"Documento depositato: {document.title}",
+        reference_id=document.legal_case_id,
+        reference_type="legal_case",
+        user_id=current_user.id
+    )
+    db.add(timeline_event)
+    await db.commit()
+    
+    return document
+
+
+# ==========================================
+# STATS
+# ==========================================
+
+@router.get("/stats")
+async def get_justice_stats(
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Statistiche giustizia"""
+    pending_cases = await db.execute(
+        select(func.count(LegalCase.id))
+        .where(LegalCase.status.in_([LegalCaseStatus.SUBMITTED, LegalCaseStatus.REVIEW]))
+    )
+    
+    scheduled_hearings = await db.execute(
+        select(func.count(CourtHearing.id))
+        .where(CourtHearing.status == HearingStatus.SCHEDULED)
+    )
+    
+    completed_today = await db.execute(
+        select(func.count(CourtHearing.id))
+        .where(
+            CourtHearing.status == HearingStatus.COMPLETED,
+            func.date(CourtHearing.verdict_date) == func.current_date()
+        )
+    )
+    
+    return {
+        "pratiche_in_attesa": pending_cases.scalar() or 0,
+        "udienze_programmate": scheduled_hearings.scalar() or 0,
+        "verdetti_oggi": completed_today.scalar() or 0
+    }
