@@ -420,6 +420,32 @@ async def run_migrations(
     }
 
 
+@router.get("/seed/status")
+async def get_seed_status(db: AsyncSession = Depends(get_db)):
+    """
+    Controlla lo stato del seed (pubblico).
+    Utile per la UI per mostrare se è necessario il bootstrap.
+    """
+    try:
+        result = await db.execute(select(func.count(User.id)))
+        users_count = result.scalar() or 0
+        
+        return {
+            "db_connected": True,
+            "users_count": users_count,
+            "needs_seed": users_count == 0,
+            "seed_key_accepted": users_count == 0
+        }
+    except Exception as e:
+        return {
+            "db_connected": False,
+            "users_count": 0,
+            "needs_seed": True,
+            "seed_key_accepted": False,
+            "error": str(e)[:100]
+        }
+
+
 @router.get("/stats")
 async def get_system_stats(
     current_user: User = Depends(require_roles(UserRole.ADMIN)),
