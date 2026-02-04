@@ -3,9 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useNavigate } 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SSEProvider } from './context/SSEContext';
 import { SoundProvider } from './context/SoundContext';
+import { HealthProvider } from './context/HealthContext';
 import { Toaster } from 'sonner';
 
 import Layout from './components/Layout';
+import HealthBanner from './components/HealthBanner';
 import LoginPage from './pages/LoginPage';
 import FiveMAuthPage from './pages/FiveMAuthPage';
 
