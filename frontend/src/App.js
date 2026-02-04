@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, createContext, useContext, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SSEProvider } from './context/SSEContext';
 import { SoundProvider } from './context/SoundContext';
 import { HealthProvider } from './context/HealthContext';
 import { Toaster } from 'sonner';
+import axios from 'axios';
 
 import Layout from './components/Layout';
 import HealthBanner from './components/HealthBanner';
@@ -35,7 +36,111 @@ import NewsPage from './pages/public/NewsPage';
 
 import './App.css';
 
+const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+// ==========================================
+// Phone WebView Context
+// ==========================================
+const PhoneContext = createContext({ isPhoneMode: false, reducedMotion: false });
+
+export const usePhone = () => useContext(PhoneContext);
+
+const PhoneProvider = ({ children }) => {
+  const [isPhoneMode, setIsPhoneMode] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    // Detect phone mode via URL param or user agent
+    const params = new URLSearchParams(window.location.search);
+    const phoneParam = params.get('phone') === '1';
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isInIframe = window.self !== window.top;
+    
+    const phoneMode = phoneParam || (isMobileUA && isInIframe);
+    setIsPhoneMode(phoneMode);
+    setReducedMotion(phoneMode);
+
+    // Add class to body for CSS targeting
+    if (phoneMode) {
+      document.body.classList.add('phone-webview');
+      document.body.classList.add('reduced-motion');
+    }
+
+    // Also check prefers-reduced-motion
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.matches) {
+      setReducedMotion(true);
+      document.body.classList.add('reduced-motion');
+    }
+
+    return () => {
+      document.body.classList.remove('phone-webview', 'reduced-motion');
+    };
+  }, []);
+
+  return (
+    <PhoneContext.Provider value={{ isPhoneMode, reducedMotion }}>
+      {children}
+    </PhoneContext.Provider>
+  );
+};
+
+// ==========================================
+// SSO Handler Component
+// ==========================================
+const SSOHandler = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    const ssoToken = searchParams.get('sso');
+    
+    if (ssoToken && !processing) {
+      setProcessing(true);
+      
+      // Exchange SSO token for JWT
+      axios.post(`${API_URL}/api/fivem/sso/exchange`, null, {
+        params: { sso_token: ssoToken }
+      })
+        .then(response => {
+          const { access_token, refresh_token, role, user_id, name } = response.data;
+          
+          // Store tokens
+          localStorage.setItem('plos_token', access_token);
+          localStorage.setItem('plos_refresh_token', refresh_token);
+          localStorage.setItem('plos_user', JSON.stringify({
+            id: user_id,
+            name,
+            role
+          }));
+          
+          // Remove sso param from URL
+          searchParams.delete('sso');
+          setSearchParams(searchParams);
+          
+          // Reload to apply auth state
+          window.location.reload();
+        })
+        .catch(error => {
+          console.error('SSO exchange failed:', error);
+          // Remove invalid sso param
+          searchParams.delete('sso');
+          setSearchParams(searchParams);
+        })
+        .finally(() => {
+          setProcessing(false);
+        });
+    }
+  }, [searchParams, setSearchParams, login, processing, navigate]);
+
+  return null;
+};
+
+// ==========================================
 // Deep Link Handler Component
+// ==========================================
 const DeepLinkHandler = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
