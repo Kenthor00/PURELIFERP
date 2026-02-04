@@ -17,28 +17,52 @@ import {
   WifiOff,
   Volume2,
   VolumeX,
+  MessageSquare,
+  Scale,
+  Building2,
+  Newspaper,
 } from 'lucide-react';
 
-const navItems = {
-  police: [
-    { path: '/lspd', icon: Shield, label: 'Dashboard' },
-    { path: '/lspd/cases', icon: Shield, label: 'Casi' },
-    { path: '/lspd/warrants', icon: Shield, label: 'Mandati' },
-    { path: '/lspd/fines', icon: Shield, label: 'Multe' },
-  ],
-  ems: [
-    { path: '/ems', icon: Heart, label: 'Dashboard' },
-    { path: '/ems/patients', icon: Heart, label: 'Pazienti' },
-    { path: '/ems/reports', icon: Heart, label: 'Referti' },
-  ],
-  dispatch: [
-    { path: '/dispatch', icon: Radio, label: 'Centro Comando' },
-  ],
-  admin: [
-    { path: '/lspd', icon: Shield, label: 'LSPD' },
-    { path: '/ems', icon: Heart, label: 'EMS' },
-    { path: '/dispatch', icon: Radio, label: 'Dispatch' },
-  ],
+const getNavItems = (role) => {
+  const items = [];
+  
+  // Role-specific items
+  if (['police', 'dispatch', 'admin'].includes(role)) {
+    items.push(
+      { path: '/lspd', icon: Shield, label: 'LSPD', color: 'text-blue-500' },
+    );
+  }
+  
+  if (['ems', 'dispatch', 'admin'].includes(role)) {
+    items.push(
+      { path: '/ems', icon: Heart, label: 'EMS', color: 'text-red-500' },
+    );
+  }
+  
+  if (['police', 'ems', 'dispatch', 'admin'].includes(role)) {
+    items.push(
+      { path: '/dispatch', icon: Radio, label: 'Dispatch', color: 'text-plos-primary' },
+    );
+  }
+  
+  if (['government', 'judge', 'lawyer', 'prosecutor', 'admin'].includes(role)) {
+    items.push(
+      { path: '/justice', icon: Scale, label: 'Giustizia', color: 'text-purple-500' },
+    );
+  }
+  
+  if (['weazel', 'admin'].includes(role)) {
+    items.push(
+      { path: '/city/news', icon: Newspaper, label: 'Weazel News', color: 'text-yellow-500' },
+    );
+  }
+  
+  // Common items
+  items.push(
+    { path: '/chat', icon: MessageSquare, label: 'Chat', color: 'text-plos-primary' },
+  );
+  
+  return items;
 };
 
 export const Layout = ({ children }) => {
@@ -49,8 +73,8 @@ export const Layout = ({ children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const role = user?.role || 'police';
-  const items = navItems[role] || navItems.police;
+  const role = user?.role || 'citizen';
+  const items = getNavItems(role);
 
   const handleNavClick = (path) => {
     play('click');
@@ -69,6 +93,11 @@ export const Layout = ({ children }) => {
       case 'police': return 'text-blue-500';
       case 'ems': return 'text-red-500';
       case 'dispatch': return 'text-plos-primary';
+      case 'government': return 'text-yellow-500';
+      case 'judge': return 'text-purple-500';
+      case 'lawyer': return 'text-purple-400';
+      case 'prosecutor': return 'text-purple-400';
+      case 'weazel': return 'text-yellow-500';
       default: return 'text-plos-primary';
     }
   };
@@ -100,6 +129,18 @@ export const Layout = ({ children }) => {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* City Hub Link */}
+          <button
+            onClick={() => {
+              play('click');
+              navigate('/city');
+            }}
+            className="text-plos-text-secondary hover:text-plos-primary transition-colors hidden sm:flex items-center gap-1 text-sm"
+          >
+            <Building2 size={16} />
+            <span>City</span>
+          </button>
+
           {/* Connection Status */}
           <div className="flex items-center gap-2 text-sm">
             {connected ? (
@@ -153,11 +194,11 @@ export const Layout = ({ children }) => {
                 to={item.path}
                 onClick={() => handleNavClick(item.path)}
                 className={({ isActive }) =>
-                  `sidebar-item ${isActive && location.pathname === item.path ? 'active' : ''}`
+                  `sidebar-item ${isActive ? 'active' : ''}`
                 }
-                data-testid={`nav-${item.label.toLowerCase()}`}
+                data-testid={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
               >
-                <item.icon size={20} />
+                <item.icon size={20} className={item.color} />
                 <span className="font-heading tracking-wide">{item.label}</span>
                 <ChevronRight size={16} className="ml-auto opacity-50" />
               </NavLink>
