@@ -63,14 +63,52 @@ DEFAULT_CHANNELS = [
 
 @router.post("/seed")
 async def seed_database(
-    current_user: User = Depends(require_roles(UserRole.ADMIN)),
+    x_seed_key: Optional[str] = Header(None, alias="X-SEED-KEY"),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Popola il database con dati demo.
-    Richiede ruolo ADMIN.
+    
+    Autenticazione:
+    - Se DB vuoto (0 utenti): accetta X-SEED-KEY header
+    - Se DB ha utenti: richiede JWT con ruolo ADMIN
+    
     Idempotente: non crea duplicati.
     """
+    # Check users count
+    try:
+        result = await db.execute(select(func.count(User.id)))
+        users_count = result.scalar() or 0
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore DB: {str(e)}")
+    
+    # Authentication logic
+    current_user = None
+    
+    if users_count == 0:
+        # First-time bootstrap: accept SEED_KEY
+        if not x_seed_key:
+            raise HTTPException(
+                status_code=401, 
+                detail="DB vuoto. Fornire header X-SEED-KEY per il bootstrap iniziale."
+            )
+        if x_seed_key != SEED_KEY:
+            raise HTTPException(status_code=403, detail="SEED_KEY non valida")
+        logger.info("Bootstrap seed con X-SEED-KEY (DB vuoto)")
+    else:
+        # DB has users: require JWT admin
+        if x_seed_key:
+            raise HTTPException(
+                status_code=403, 
+                detail="DB già inizializzato. X-SEED-KEY non più accettata. Usa autenticazione JWT admin."
+            )
+        # Manual JWT check since we can't use Depends with conditional logic
+        from fastapi import Request
+        raise HTTPException(
+            status_code=401,
+            detail="DB già inizializzato. Richiesta autenticazione JWT admin."
+        )
+    
     created = {
         "users": [],
         "channels": [],
