@@ -5,8 +5,10 @@ Pubblico: Pubblicità, Eventi, Aziende
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, update
+from sqlalchemy.exc import OperationalError
 from typing import Optional, List
 from datetime import datetime, timezone
+import logging
 
 from database import get_db
 from models import User, UserRole, Business, Advertisement, CityEvent, AdSlotType, AdStatus, EventStatus, EventCategory, TimelineEvent, Outbox, OutboxStatus
@@ -20,6 +22,7 @@ from auth import get_current_user, require_roles
 from sse_manager import sse_manager
 
 router = APIRouter(prefix="/city", tags=["City Hub"])
+logger = logging.getLogger(__name__)
 
 
 # ==========================================
@@ -33,18 +36,25 @@ async def get_active_ads(
     db: AsyncSession = Depends(get_db)
 ):
     """Lista pubblicità attive (pubblico)"""
-    now = datetime.now(timezone.utc)
-    query = select(Advertisement).where(
-        Advertisement.status == AdStatus.ACTIVE,
-        Advertisement.start_date <= now,
-        Advertisement.end_date >= now
-    ).order_by(func.random())
-    
-    if slot_type:
-        query = query.where(Advertisement.slot_type == slot_type)
-    
-    result = await db.execute(query.limit(limit))
-    return result.scalars().all()
+    try:
+        now = datetime.now(timezone.utc)
+        query = select(Advertisement).where(
+            Advertisement.status == AdStatus.ACTIVE,
+            Advertisement.start_date <= now,
+            Advertisement.end_date >= now
+        ).order_by(func.random())
+        
+        if slot_type:
+            query = query.where(Advertisement.slot_type == slot_type)
+        
+        result = await db.execute(query.limit(limit))
+        return result.scalars().all()
+    except OperationalError as e:
+        logger.warning(f"DB non disponibile per ads/active: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Errore ads/active: {e}")
+        return []
 
 
 @router.post("/ads/{ad_id}/view")
