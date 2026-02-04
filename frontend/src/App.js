@@ -39,13 +39,19 @@ import './App.css';
 const DeepLinkHandler = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const open = searchParams.get('open');
     const id = searchParams.get('id');
 
-    if (open && isAuthenticated) {
+    if (!open) return;
+
+    // Public routes (no auth required)
+    const publicRoutes = ['city', 'news', 'event'];
+    
+    // If it's a public route, navigate regardless of auth
+    if (publicRoutes.includes(open)) {
       let path = '/';
       switch (open) {
         case 'city':
@@ -57,6 +63,19 @@ const DeepLinkHandler = () => {
         case 'event':
           path = id ? `/city/events/${id}` : '/city/events';
           break;
+        default:
+          break;
+      }
+      if (path !== '/') {
+        navigate(path, { replace: true });
+      }
+      return;
+    }
+
+    // Protected routes (auth required)
+    if (isAuthenticated) {
+      let path = '/';
+      switch (open) {
         case 'lspd':
           path = '/lspd';
           break;
