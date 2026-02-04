@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
-import { Shield, AlertCircle, Loader2 } from 'lucide-react';
+import { useHealth } from '../context/HealthContext';
+import { Shield, AlertCircle, Loader2, Database, Server } from 'lucide-react';
 
 export const LoginPage = () => {
   const { login } = useAuth();
   const { play } = useSound();
+  const { isDbAvailable, isBackendAvailable, health } = useHealth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -16,6 +18,9 @@ export const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname || '/';
+  
+  // Check if login is allowed
+  const loginDisabled = !isBackendAvailable || !isDbAvailable;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
