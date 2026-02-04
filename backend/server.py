@@ -194,6 +194,7 @@ api_router.include_router(city.router)
 api_router.include_router(news.router)
 api_router.include_router(justice.router)
 api_router.include_router(chat.router)
+api_router.include_router(admin.router)
 
 app.include_router(api_router)
 
