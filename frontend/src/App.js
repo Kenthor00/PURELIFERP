@@ -447,27 +447,30 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
-      <HealthProvider>
-        <AuthProvider>
-          <SoundProvider>
-            <SSEProvider>
-              <HealthBanner />
-              <AppRoutes />
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  style: {
-                    background: '#121212',
-                    border: '1px solid #333333',
-                    color: '#FFFFFF',
-                    fontFamily: 'Inter, sans-serif',
-                  },
-                }}
-              />
-            </SSEProvider>
-          </SoundProvider>
-        </AuthProvider>
-      </HealthProvider>
+      <PhoneProvider>
+        <HealthProvider>
+          <AuthProvider>
+            <SoundProvider>
+              <SSEProvider>
+                <SSOHandler />
+                <HealthBanner />
+                <AppRoutes />
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    style: {
+                      background: '#121212',
+                      border: '1px solid #333333',
+                      color: '#FFFFFF',
+                      fontFamily: 'Inter, sans-serif',
+                    },
+                  }}
+                />
+              </SSEProvider>
+            </SoundProvider>
+          </AuthProvider>
+        </HealthProvider>
+      </PhoneProvider>
     </BrowserRouter>
   );
 }
