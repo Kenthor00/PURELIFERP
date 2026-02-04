@@ -93,6 +93,32 @@ export const LoginPage = () => {
             </div>
           )}
 
+          {/* System Status Alert */}
+          {loginDisabled && (
+            <div className="p-4 mb-4 bg-orange-500/10 border border-orange-500">
+              <div className="flex items-start gap-3">
+                {!isBackendAvailable ? (
+                  <Server className="text-orange-500 mt-0.5" size={20} />
+                ) : (
+                  <Database className="text-orange-500 mt-0.5" size={20} />
+                )}
+                <div>
+                  <p className="text-orange-500 font-heading text-sm">SISTEMA NON DISPONIBILE</p>
+                  <p className="text-plos-text-secondary text-xs mt-1">
+                    {!isBackendAvailable 
+                      ? 'Il server backend non è raggiungibile. Riprova tra qualche minuto.'
+                      : 'Il database non è raggiungibile. Il login è temporaneamente disabilitato.'}
+                  </p>
+                  {health.db?.error && (
+                    <p className="text-orange-400/70 text-xs mt-1 mono">
+                      {health.db.error}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-plos-text-secondary text-xs tracking-wider mb-2 font-heading">
