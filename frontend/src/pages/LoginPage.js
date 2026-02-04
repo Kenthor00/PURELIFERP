@@ -152,8 +152,8 @@ export const LoginPage = () => {
 
             <button
               type="submit"
-              disabled={loading}
-              className="btn-tactical w-full flex items-center justify-center gap-2"
+              disabled={loading || loginDisabled}
+              className="btn-tactical w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="login-submit"
             >
               {loading ? (
@@ -161,6 +161,8 @@ export const LoginPage = () => {
                   <Loader2 className="animate-spin" size={18} />
                   AUTENTICAZIONE...
                 </>
+              ) : loginDisabled ? (
+                'LOGIN DISABILITATO'
               ) : (
                 'ACCEDI'
               )}
