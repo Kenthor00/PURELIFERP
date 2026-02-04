@@ -82,7 +82,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="PURE LIFE OS",
     description="Sistema Operativo Digitale - LSPD / EMS / Dispatch / City Hub / Giustizia",
-    version="2.0.0",
+    version="1.0.0",
     lifespan=lifespan
 )
 
@@ -93,7 +93,7 @@ api_router = APIRouter(prefix="/api")
 async def root():
     return {
         "system": "PURE LIFE OS",
-        "version": "2.0.0",
+        "version": "1.0.0",
         "status": "operativo",
         "moduli": [
             "auth", "lspd", "ems", "dispatch", "timeline",
