@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { useSSE } from '../context/SSEContext';
-import { useNavigate } from 'react-router-dom';
 import {
   Radio,
   Phone,
@@ -19,7 +18,6 @@ export const DispatchPage = () => {
   const { api, user } = useAuth();
   const { play } = useSound();
   const { subscribe } = useSSE();
-  const navigate = useNavigate();
   
   const [stats, setStats] = useState({
     chiamate_in_attesa: 0,
@@ -42,12 +40,12 @@ export const DispatchPage = () => {
   useEffect(() => {
     fetchData();
     
-    const unsubCall = subscribe('call_created', (event) => {
+    const unsubCall = subscribe('call_created', () => {
       play('dispatch');
       fetchData();
     });
     
-    const unsubUpdate = subscribe('call_updated', (event) => {
+    const unsubUpdate = subscribe('call_updated', () => {
       play('notification');
       fetchData();
     });
@@ -56,7 +54,7 @@ export const DispatchPage = () => {
       unsubCall();
       unsubUpdate();
     };
-  }, [subscribe, play]);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -115,31 +113,10 @@ export const DispatchPage = () => {
   };
 
   const getPriorityStyle = (priority) => {
-    switch (priority) {
-      case 'P1':
-        return 'border-l-4 border-l-red-500 bg-red-500/5';
-      case 'P2':
-        return 'border-l-4 border-l-orange-500 bg-orange-500/5';
-      case 'P3':
-        return 'border-l-4 border-l-green-500 bg-green-500/5';
-      default:
-        return '';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'pending':
-        return <Clock className="text-orange-500" size={16} />;
-      case 'assigned':
-        return <Users className="text-blue-500" size={16} />;
-      case 'in_progress':
-        return <Loader className="text-purple-500 animate-spin" size={16} />;
-      case 'completed':
-        return <CheckCircle className="text-green-500" size={16} />;
-      default:
-        return null;
-    }
+    if (priority === 'P1') return 'border-l-4 border-l-red-500 bg-red-500/5';
+    if (priority === 'P2') return 'border-l-4 border-l-orange-500 bg-orange-500/5';
+    if (priority === 'P3') return 'border-l-4 border-l-green-500 bg-green-500/5';
+    return '';
   };
 
   const isDispatcher = user?.role === 'dispatch' || user?.role === 'admin';
@@ -154,11 +131,10 @@ export const DispatchPage = () => {
 
   return (
     <div className="space-y-6" data-testid="dispatch-page">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl tracking-wider flex items-center gap-2">
-            <Radio className="text-plos-primary animate-pulse-glow" />
+            <Radio className="text-plos-primary" />
             DISPATCH <span className="text-plos-primary">CENTER</span>
           </h1>
           <p className="text-plos-text-secondary text-sm mt-1">
@@ -181,7 +157,6 @@ export const DispatchPage = () => {
         )}
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="card-tactical p-4">
           <p className="text-plos-text-secondary text-xs tracking-wider font-heading">IN ATTESA</p>
@@ -201,7 +176,6 @@ export const DispatchPage = () => {
         </div>
       </div>
 
-      {/* Active Calls */}
       <div className="card-tactical p-4">
         <h2 className="font-heading text-lg tracking-wider mb-4 flex items-center gap-2">
           <AlertTriangle size={18} className="text-orange-500" />
@@ -227,10 +201,7 @@ export const DispatchPage = () => {
                         {call.priority}
                       </span>
                       <span className="mono text-xs text-plos-text-secondary">{call.call_number}</span>
-                      <span className="flex items-center gap-1 text-xs">
-                        {getStatusIcon(call.status)}
-                        <span className="uppercase">{call.status.replace('_', ' ')}</span>
-                      </span>
+                      <span className="text-xs uppercase">{call.status.replace('_', ' ')}</span>
                     </div>
                     
                     <h3 className="font-medium text-lg">{call.call_type}</h3>
@@ -251,17 +222,6 @@ export const DispatchPage = () => {
                     {call.description && (
                       <p className="text-sm text-plos-text-muted mt-2">{call.description}</p>
                     )}
-                    
-                    {call.assigned_units?.length > 0 && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-xs text-plos-text-muted">Unità:</span>
-                        {call.assigned_units.map((unit, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-blue-500/20 border border-blue-500/50 text-xs">
-                            {unit}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                   
                   <div className="flex flex-col gap-2">
@@ -271,7 +231,7 @@ export const DispatchPage = () => {
                     {call.status !== 'completed' && (
                       <button
                         onClick={() => handleCompleteCall(call.id)}
-                        className="text-xs px-2 py-1 border border-green-500 text-green-500 hover:bg-green-500 hover:text-black transition-colors"
+                        className="text-xs px-2 py-1 border border-green-500 text-green-500 hover:bg-green-500 hover:text-black"
                       >
                         COMPLETA
                       </button>
@@ -284,7 +244,6 @@ export const DispatchPage = () => {
         )}
       </div>
 
-      {/* New Call Modal */}
       {showNewCall && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="glass-panel corner-brackets w-full max-w-lg p-6" data-testid="new-call-modal">
@@ -294,13 +253,12 @@ export const DispatchPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                    PRIORITÀ *
+                    PRIORITÀ
                   </label>
                   <select
                     value={newCallForm.priority}
                     onChange={(e) => setNewCallForm({ ...newCallForm, priority: e.target.value })}
                     className="input-tactical w-full"
-                    data-testid="call-priority-select"
                   >
                     <option value="P1">P1 - Critica</option>
                     <option value="P2">P2 - Alta</option>
@@ -310,7 +268,7 @@ export const DispatchPage = () => {
                 
                 <div>
                   <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                    TIPO *
+                    TIPO
                   </label>
                   <input
                     type="text"
@@ -319,14 +277,13 @@ export const DispatchPage = () => {
                     className="input-tactical w-full"
                     placeholder="Es: Rapina, Incidente..."
                     required
-                    data-testid="call-type-input"
                   />
                 </div>
               </div>
               
               <div>
                 <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                  POSIZIONE *
+                  POSIZIONE
                 </label>
                 <input
                   type="text"
@@ -335,7 +292,6 @@ export const DispatchPage = () => {
                   className="input-tactical w-full"
                   placeholder="Indirizzo o zona"
                   required
-                  data-testid="call-location-input"
                 />
               </div>
               
@@ -351,43 +307,15 @@ export const DispatchPage = () => {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                    CHIAMANTE
-                  </label>
-                  <input
-                    type="text"
-                    value={newCallForm.caller_name}
-                    onChange={(e) => setNewCallForm({ ...newCallForm, caller_name: e.target.value })}
-                    className="input-tactical w-full"
-                    placeholder="Nome"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                    TELEFONO
-                  </label>
-                  <input
-                    type="tel"
-                    value={newCallForm.caller_phone}
-                    onChange={(e) => setNewCallForm({ ...newCallForm, caller_phone: e.target.value })}
-                    className="input-tactical w-full"
-                    placeholder="Numero"
-                  />
-                </div>
-              </div>
-              
               <div className="flex justify-end gap-4 pt-4 border-t border-plos-border">
                 <button
                   type="button"
                   onClick={() => setShowNewCall(false)}
-                  className="px-4 py-2 border border-plos-border text-plos-text-secondary hover:border-plos-text-secondary"
+                  className="px-4 py-2 border border-plos-border text-plos-text-secondary"
                 >
                   ANNULLA
                 </button>
-                <button type="submit" className="btn-tactical" data-testid="submit-call-btn">
+                <button type="submit" className="btn-tactical">
                   CREA CHIAMATA
                 </button>
               </div>
