@@ -2,12 +2,14 @@
 PURE LIFE OS - Admin Router
 Seed data, configurazione sistema
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, text
+from sqlalchemy import select, text, func
 from datetime import datetime, timezone, timedelta
 import logging
+import os
 from passlib.context import CryptContext
+from typing import Optional
 
 from database import get_db, run_auto_migrations
 from models import (
@@ -27,6 +29,9 @@ from auth import get_current_user, require_roles
 router = APIRouter(prefix="/admin", tags=["Admin"])
 logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Seed key from environment
+SEED_KEY = os.environ.get('SEED_KEY', 'purelife-seed-key-change-me')
 
 
 # ==========================================
