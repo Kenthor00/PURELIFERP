@@ -22,6 +22,12 @@ export const HealthProvider = ({ children }) => {
     sse: { status: 'unknown', connected_clients: 0 },
     timestamp: null
   });
+  const [seedStatus, setSeedStatus] = useState({
+    db_connected: false,
+    users_count: 0,
+    needs_seed: false,
+    seed_key_accepted: false
+  });
   const [loading, setLoading] = useState(true);
   const [lastCheck, setLastCheck] = useState(null);
 
@@ -30,6 +36,16 @@ export const HealthProvider = ({ children }) => {
       const res = await axios.get(`${API_URL}/api/health`, { timeout: 5000 });
       setHealth(res.data);
       setLastCheck(new Date());
+      
+      // If DB is connected, check seed status
+      if (res.data.db?.status === 'ok') {
+        try {
+          const seedRes = await axios.get(`${API_URL}/api/admin/seed/status`, { timeout: 5000 });
+          setSeedStatus(seedRes.data);
+        } catch (e) {
+          // Ignore seed status errors
+        }
+      }
     } catch (error) {
       setHealth({
         status: 'error',
@@ -58,18 +74,21 @@ export const HealthProvider = ({ children }) => {
   const isMigrationsOk = health.migrations?.status === 'ok';
   const isBackendAvailable = health.backend === 'ok';
   const isSystemHealthy = health.status === 'ok';
+  const needsSeed = seedStatus.needs_seed && isDbAvailable;
 
   return (
     <HealthContext.Provider
       value={{
         health,
+        seedStatus,
         loading,
         lastCheck,
         checkHealth,
         isDbAvailable,
         isMigrationsOk,
         isBackendAvailable,
-        isSystemHealthy
+        isSystemHealthy,
+        needsSeed
       }}
     >
       {children}
