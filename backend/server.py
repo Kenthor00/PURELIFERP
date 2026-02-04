@@ -221,6 +221,10 @@ api_router.include_router(news.router)
 api_router.include_router(justice.router)
 api_router.include_router(chat.router)
 api_router.include_router(admin.router)
+api_router.include_router(fivem_sso.router)
+
+# Add embedding middleware (per lb-phone WebView)
+app.add_middleware(EmbeddingMiddleware)
 
 app.include_router(api_router)
 
