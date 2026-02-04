@@ -95,20 +95,27 @@ async def get_public_events(
     db: AsyncSession = Depends(get_db)
 ):
     """Lista eventi pubblici"""
-    now = datetime.now(timezone.utc)
-    query = select(CityEvent).where(
-        CityEvent.status.in_([EventStatus.APPROVED, EventStatus.ACTIVE])
-    )
-    
-    if upcoming_only:
-        query = query.where(CityEvent.event_date >= now)
-    
-    if category:
-        query = query.where(CityEvent.category == category)
-    
-    query = query.order_by(CityEvent.event_date)
-    result = await db.execute(query.limit(limit))
-    return result.scalars().all()
+    try:
+        now = datetime.now(timezone.utc)
+        query = select(CityEvent).where(
+            CityEvent.status.in_([EventStatus.APPROVED, EventStatus.ACTIVE])
+        )
+        
+        if upcoming_only:
+            query = query.where(CityEvent.event_date >= now)
+        
+        if category:
+            query = query.where(CityEvent.category == category)
+        
+        query = query.order_by(CityEvent.event_date)
+        result = await db.execute(query.limit(limit))
+        return result.scalars().all()
+    except OperationalError as e:
+        logger.warning(f"DB non disponibile per events: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Errore events: {e}")
+        return []
 
 
 @router.get("/events/{event_id}", response_model=CityEventResponse)
