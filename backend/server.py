@@ -105,11 +105,11 @@ async def root():
 @api_router.get("/health")
 async def health_check():
     """Health check endpoint con stato dettagliato di tutti i servizi"""
-    global db_connected
+    global db_connected, migrations_status
     
     # Test database connection
     db_status = {"status": "ok", "error": None}
-    migrations_status = {"status": "ok", "error": None}
+    mig_status = migrations_status.copy()
     
     try:
         from sqlalchemy import text
@@ -118,15 +118,17 @@ async def health_check():
             await session.execute(text("SELECT 1"))
             
             # Check if tables exist (migrations status)
-            try:
-                await session.execute(text("SELECT COUNT(*) FROM users"))
-            except Exception as mig_err:
-                migrations_status = {"status": "missing", "error": str(mig_err)[:100]}
+            if migrations_status["status"] == "ok":
+                try:
+                    await session.execute(text("SELECT COUNT(*) FROM users"))
+                    mig_status = {"status": "ok", "error": None}
+                except Exception as mig_err:
+                    mig_status = {"status": "missing", "error": str(mig_err)[:100]}
                 
         db_connected = True
     except Exception as e:
         db_status = {"status": "down", "error": str(e)[:100]}
-        migrations_status = {"status": "unknown", "error": "Cannot check - DB down"}
+        mig_status = {"status": "unknown", "error": "Cannot check - DB down"}
         db_connected = False
     
     # SSE status
@@ -136,13 +138,13 @@ async def health_check():
     }
     
     # Overall status
-    overall_status = "ok" if db_connected and migrations_status["status"] == "ok" else "degraded"
+    overall_status = "ok" if db_connected and mig_status["status"] == "ok" else "degraded"
     
     return {
         "status": overall_status,
         "backend": "ok",
         "db": db_status,
-        "migrations": migrations_status,
+        "migrations": mig_status,
         "sse": sse_status,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
