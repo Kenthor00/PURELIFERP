@@ -1,8 +1,8 @@
 """
 PURE LIFE OS - Main Server
-FastAPI Application con MySQL
+FastAPI Application con MySQL - Extended
 """
-from fastapi import FastAPI, APIRouter, Depends, Request, Response
+from fastapi import FastAPI, APIRouter, Depends, Request, Response, HTTPException
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -13,12 +13,13 @@ import uuid
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from database import init_db, get_db, engine
+from database import init_db, get_db, engine, async_session
 from auth import get_current_user
 from sse_manager import sse_manager
 from outbox_worker import outbox_worker
 
 from routers import auth, lspd, ems, dispatch, timeline
+from routers import city, news, justice, chat
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -30,17 +31,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 outbox_task = None
+db_connected = False
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global outbox_task
+    global outbox_task, db_connected
     logger.info("PURE LIFE OS - Avvio sistema...")
     
     try:
         await init_db()
-        logger.info("Database MySQL inizializzato")
+        db_connected = True
+        logger.info("Database MySQL connesso")
     except Exception as e:
-        logger.warning(f"Errore inizializzazione DB (potrebbe richiedere MySQL attivo): {e}")
+        db_connected = False
+        logger.warning(f"Database MySQL non disponibile: {e}")
     
     outbox_task = asyncio.create_task(outbox_worker.start(interval=30))
     logger.info("Outbox Worker avviato")
@@ -60,8 +64,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="PURE LIFE OS",
-    description="Sistema Operativo Digitale - LSPD / EMS / Dispatch",
-    version="1.0.0",
+    description="Sistema Operativo Digitale - LSPD / EMS / Dispatch / City Hub / Giustizia",
+    version="2.0.0",
     lifespan=lifespan
 )
 
@@ -72,17 +76,34 @@ api_router = APIRouter(prefix="/api")
 async def root():
     return {
         "system": "PURE LIFE OS",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "status": "operativo",
-        "moduli": ["auth", "lspd", "ems", "dispatch", "timeline"]
+        "moduli": [
+            "auth", "lspd", "ems", "dispatch", "timeline",
+            "city", "news", "justice", "chat"
+        ]
     }
 
 
 @api_router.get("/health")
 async def health_check():
+    global db_connected
+    
+    # Test database connection
+    db_status = "connected"
+    try:
+        async with async_session() as session:
+            await session.execute("SELECT 1")
+        db_connected = True
+    except Exception as e:
+        db_status = f"disconnected: {str(e)[:50]}"
+        db_connected = False
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if db_connected else "degraded",
         "database": "mysql",
+        "db_connected": db_connected,
+        "db_status": db_status,
         "sse_clients": len(sse_manager.clients)
     }
 
@@ -121,11 +142,16 @@ async def sse_events(
     )
 
 
+# Include all routers
 api_router.include_router(auth.router)
 api_router.include_router(lspd.router)
 api_router.include_router(ems.router)
 api_router.include_router(dispatch.router)
 api_router.include_router(timeline.router)
+api_router.include_router(city.router)
+api_router.include_router(news.router)
+api_router.include_router(justice.router)
+api_router.include_router(chat.router)
 
 app.include_router(api_router)
 
