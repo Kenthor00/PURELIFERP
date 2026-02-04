@@ -87,24 +87,47 @@ async def root():
 
 @api_router.get("/health")
 async def health_check():
+    """Health check endpoint con stato dettagliato di tutti i servizi"""
     global db_connected
     
     # Test database connection
-    db_status = "connected"
+    db_status = {"status": "ok", "error": None}
+    migrations_status = {"status": "ok", "error": None}
+    
     try:
+        from sqlalchemy import text
         async with async_session() as session:
-            await session.execute("SELECT 1")
+            # Test basic connection
+            await session.execute(text("SELECT 1"))
+            
+            # Check if tables exist (migrations status)
+            try:
+                await session.execute(text("SELECT COUNT(*) FROM users"))
+            except Exception as mig_err:
+                migrations_status = {"status": "missing", "error": str(mig_err)[:100]}
+                
         db_connected = True
     except Exception as e:
-        db_status = f"disconnected: {str(e)[:50]}"
+        db_status = {"status": "down", "error": str(e)[:100]}
+        migrations_status = {"status": "unknown", "error": "Cannot check - DB down"}
         db_connected = False
     
+    # SSE status
+    sse_status = {
+        "status": "ok",
+        "connected_clients": len(sse_manager.clients)
+    }
+    
+    # Overall status
+    overall_status = "ok" if db_connected and migrations_status["status"] == "ok" else "degraded"
+    
     return {
-        "status": "healthy" if db_connected else "degraded",
-        "database": "mysql",
-        "db_connected": db_connected,
-        "db_status": db_status,
-        "sse_clients": len(sse_manager.clients)
+        "status": overall_status,
+        "backend": "ok",
+        "db": db_status,
+        "migrations": migrations_status,
+        "sse": sse_status,
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 
