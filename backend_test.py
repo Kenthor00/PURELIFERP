@@ -8,7 +8,7 @@ import sys
 from datetime import datetime
 
 class PLOSAPITester:
-    def __init__(self, base_url="https://command-os.preview.emergentagent.com"):
+    def __init__(self, base_url="https://plos-roleplay.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
