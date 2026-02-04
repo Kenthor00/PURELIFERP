@@ -5,8 +5,10 @@ Articoli, Breaking News, Video
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, update
+from sqlalchemy.exc import OperationalError
 from typing import Optional, List
 from datetime import datetime, timezone
+import logging
 
 from database import get_db
 from models import User, UserRole, NewsArticle, TimelineEvent
@@ -18,6 +20,7 @@ from auth import get_current_user, require_roles
 from sse_manager import sse_manager
 
 router = APIRouter(prefix="/news", tags=["Weazel News"])
+logger = logging.getLogger(__name__)
 
 
 # ==========================================
@@ -33,18 +36,25 @@ async def get_news(
     db: AsyncSession = Depends(get_db)
 ):
     """Lista articoli pubblicati (pubblico)"""
-    query = select(NewsArticle).where(
-        NewsArticle.is_published == True
-    ).order_by(desc(NewsArticle.published_at))
-    
-    if category:
-        query = query.where(NewsArticle.category == category)
-    
-    if breaking_only:
-        query = query.where(NewsArticle.is_breaking_news == True)
-    
-    result = await db.execute(query.limit(limit).offset(offset))
-    return result.scalars().all()
+    try:
+        query = select(NewsArticle).where(
+            NewsArticle.is_published == True
+        ).order_by(desc(NewsArticle.published_at))
+        
+        if category:
+            query = query.where(NewsArticle.category == category)
+        
+        if breaking_only:
+            query = query.where(NewsArticle.is_breaking_news == True)
+        
+        result = await db.execute(query.limit(limit).offset(offset))
+        return result.scalars().all()
+    except OperationalError as e:
+        logger.warning(f"DB non disponibile per news: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Errore news: {e}")
+        return []
 
 
 @router.get("/breaking", response_model=List[NewsArticleResponse])
@@ -53,13 +63,20 @@ async def get_breaking_news(
     db: AsyncSession = Depends(get_db)
 ):
     """Breaking news attive (pubblico)"""
-    result = await db.execute(
-        select(NewsArticle).where(
-            NewsArticle.is_published == True,
-            NewsArticle.is_breaking_news == True
-        ).order_by(desc(NewsArticle.published_at)).limit(limit)
-    )
-    return result.scalars().all()
+    try:
+        result = await db.execute(
+            select(NewsArticle).where(
+                NewsArticle.is_published == True,
+                NewsArticle.is_breaking_news == True
+            ).order_by(desc(NewsArticle.published_at)).limit(limit)
+        )
+        return result.scalars().all()
+    except OperationalError as e:
+        logger.warning(f"DB non disponibile per breaking news: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Errore breaking news: {e}")
+        return []
 
 
 @router.get("/{article_id}", response_model=NewsArticleResponse)
@@ -68,39 +85,55 @@ async def get_article(
     db: AsyncSession = Depends(get_db)
 ):
     """Dettaglio articolo (pubblico)"""
-    result = await db.execute(
-        select(NewsArticle).where(NewsArticle.id == article_id)
-    )
-    article = result.scalar_one_or_none()
-    
-    if not article:
-        raise HTTPException(status_code=404, detail="Articolo non trovato")
-    
-    if not article.is_published:
-        raise HTTPException(status_code=404, detail="Articolo non pubblicato")
-    
-    # Incrementa views
-    await db.execute(
-        update(NewsArticle)
-        .where(NewsArticle.id == article_id)
-        .values(views=NewsArticle.views + 1)
-    )
-    await db.commit()
-    await db.refresh(article)
-    
-    return article
+    try:
+        result = await db.execute(
+            select(NewsArticle).where(NewsArticle.id == article_id)
+        )
+        article = result.scalar_one_or_none()
+        
+        if not article:
+            raise HTTPException(status_code=404, detail="Articolo non trovato")
+        
+        if not article.is_published:
+            raise HTTPException(status_code=404, detail="Articolo non pubblicato")
+        
+        # Incrementa views
+        await db.execute(
+            update(NewsArticle)
+            .where(NewsArticle.id == article_id)
+            .values(views=NewsArticle.views + 1)
+        )
+        await db.commit()
+        await db.refresh(article)
+        
+        return article
+    except HTTPException:
+        raise
+    except OperationalError as e:
+        logger.warning(f"DB non disponibile per article {article_id}: {e}")
+        raise HTTPException(status_code=503, detail="Servizio temporaneamente non disponibile")
+    except Exception as e:
+        logger.error(f"Errore article {article_id}: {e}")
+        raise HTTPException(status_code=500, detail="Errore interno del server")
 
 
 @router.get("/categories/list")
 async def get_categories(db: AsyncSession = Depends(get_db)):
     """Lista categorie disponibili"""
-    result = await db.execute(
-        select(NewsArticle.category)
-        .where(NewsArticle.is_published == True)
-        .distinct()
-    )
-    categories = [row[0] for row in result.fetchall()]
-    return {"categories": categories}
+    try:
+        result = await db.execute(
+            select(NewsArticle.category)
+            .where(NewsArticle.is_published == True)
+            .distinct()
+        )
+        categories = [row[0] for row in result.fetchall()]
+        return {"categories": categories}
+    except OperationalError as e:
+        logger.warning(f"DB non disponibile per categories: {e}")
+        return {"categories": []}
+    except Exception as e:
+        logger.error(f"Errore categories: {e}")
+        return {"categories": []}
 
 
 # ==========================================
