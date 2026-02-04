@@ -1,11 +1,13 @@
 """
 PURE LIFE OS - Main Server
 FastAPI Application con MySQL - Extended
+lb-phone WebView compatible
 """
 from fastapi import FastAPI, APIRouter, Depends, Request, Response, HTTPException
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 import os
 import logging
 import asyncio
@@ -22,6 +24,7 @@ from outbox_worker import outbox_worker
 from routers import auth, lspd, ems, dispatch, timeline
 from routers import city, news, justice, chat
 from routers import admin
+from routers import fivem_sso
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -35,6 +38,29 @@ logger = logging.getLogger(__name__)
 outbox_task = None
 db_connected = False
 migrations_status = {"status": "pending", "error": None}
+
+
+class EmbeddingMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware per permettere embedding in iframe (lb-phone WebView)
+    - Rimuove X-Frame-Options
+    - Imposta CSP permissivo per frame-ancestors
+    """
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # Rimuovi X-Frame-Options se presente
+        if "X-Frame-Options" in response.headers:
+            del response.headers["X-Frame-Options"]
+        
+        # Permetti embedding da qualsiasi origine (dev mode)
+        # In produzione: restringere a domini specifici FiveM
+        response.headers["Content-Security-Policy"] = "frame-ancestors *"
+        
+        # Permetti credenziali cross-origin per SSE
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        
+        return response
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
