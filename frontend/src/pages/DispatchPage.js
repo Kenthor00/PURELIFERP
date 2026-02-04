@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useSound } from '../../context/SoundContext';
-import { useSSE } from '../../context/SSEContext';
+import { useAuth } from '../context/AuthContext';
+import { useSound } from '../context/SoundContext';
+import { useSSE } from '../context/SSEContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Radio,
