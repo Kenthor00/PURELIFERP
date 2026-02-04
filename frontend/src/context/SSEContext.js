@@ -17,6 +17,7 @@ export const SSEProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
   const eventSourceRef = useRef(null);
   const listenersRef = useRef({});
+  const reconnectTimeoutRef = useRef(null);
 
   const subscribe = useCallback((eventType, callback) => {
     if (!listenersRef.current[eventType]) {
@@ -31,12 +32,23 @@ export const SSEProvider = ({ children }) => {
     };
   }, []);
 
+  const disconnect = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+      setConnected(false);
+    }
+  }, []);
+
   const connect = useCallback(() => {
     if (!token || eventSourceRef.current) return;
 
     const API_URL = process.env.REACT_APP_BACKEND_URL;
     
-    // SSE with authorization via query param (workaround for EventSource)
     const eventSource = new EventSource(
       `${API_URL}/api/sse/events?token=${token}`
     );
@@ -61,28 +73,19 @@ export const SSEProvider = ({ children }) => {
       }
     };
 
-    eventSource.onerror = (error) => {
-      console.error('SSE Error:', error);
+    eventSource.onerror = () => {
       setConnected(false);
       eventSource.close();
       eventSourceRef.current = null;
       
-      // Reconnect after 5s
-      setTimeout(() => {
-        if (token) connect();
+      // Schedule reconnect
+      reconnectTimeoutRef.current = setTimeout(() => {
+        reconnectTimeoutRef.current = null;
       }, 5000);
     };
 
     eventSourceRef.current = eventSource;
   }, [token]);
-
-  const disconnect = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-      setConnected(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
