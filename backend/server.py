@@ -34,18 +34,33 @@ logger = logging.getLogger(__name__)
 
 outbox_task = None
 db_connected = False
+migrations_status = {"status": "pending", "error": None}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global outbox_task, db_connected
+    global outbox_task, db_connected, migrations_status
     logger.info("PURE LIFE OS - Avvio sistema...")
     
     try:
-        await init_db()
+        # Test connessione DB
+        from sqlalchemy import text
+        async with async_session() as session:
+            await session.execute(text("SELECT 1"))
         db_connected = True
         logger.info("Database MySQL connesso")
+        
+        # Auto-migrations (idempotente)
+        migration_result = await run_auto_migrations()
+        if migration_result["success"]:
+            migrations_status = {"status": "ok", "error": None}
+            logger.info("Auto-migrations completate con successo")
+        else:
+            migrations_status = {"status": "failed", "error": migration_result.get("error")}
+            logger.warning(f"Auto-migrations fallite: {migration_result.get('error')}")
+            
     except Exception as e:
         db_connected = False
+        migrations_status = {"status": "unknown", "error": "DB non raggiungibile"}
         logger.warning(f"Database MySQL non disponibile: {e}")
     
     outbox_task = asyncio.create_task(outbox_worker.start(interval=30))
