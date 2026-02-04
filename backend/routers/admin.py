@@ -384,7 +384,7 @@ async def seed_database(
                 event_type=te["event_type"],
                 category=te["category"],
                 title=te["title"],
-                user_id=current_user.id
+                user_id=admin_user.id if admin_user else None
             )
             db.add(event)
         
@@ -395,7 +395,8 @@ async def seed_database(
         return {
             "success": True,
             "message": "Database popolato con dati demo",
-            "created": created
+            "created": created,
+            "bootstrap_mode": users_count == 0
         }
         
     except Exception as e:
