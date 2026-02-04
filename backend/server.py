@@ -21,6 +21,7 @@ from outbox_worker import outbox_worker
 
 from routers import auth, lspd, ems, dispatch, timeline
 from routers import city, news, justice, chat
+from routers import admin
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
