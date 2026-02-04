@@ -1,0 +1,85 @@
+{
+  "summary": "Testing PURE LIFE OS P0 stabilization - Degraded mode (DB down) functionality. Health endpoint works correctly. Frontend handles DB down gracefully. Public API endpoints return 500 instead of empty lists (known issue).",
+  
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/api/city/events",
+        "issue": "Returns 500/520 when DB is down instead of empty list []",
+        "priority": "HIGH",
+        "expected_behavior": "Should return 200 with empty list when DB is unavailable"
+      },
+      {
+        "endpoint": "/api/city/ads/active",
+        "issue": "Returns 500/520 when DB is down instead of empty list []",
+        "priority": "HIGH",
+        "expected_behavior": "Should return 200 with empty list when DB is unavailable"
+      },
+      {
+        "endpoint": "/api/news/",
+        "issue": "Returns 500/520 when DB is down instead of empty list []",
+        "priority": "HIGH",
+        "expected_behavior": "Should return 200 with empty list when DB is unavailable"
+      },
+      {
+        "endpoint": "/api/news/breaking",
+        "issue": "Returns 500/520 when DB is down instead of empty list []",
+        "priority": "HIGH",
+        "expected_behavior": "Should return 200 with empty list when DB is unavailable"
+      }
+    ],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "GET /api/health - Returns 200 with correct structure (backend:ok, db:{status:down, error}, migrations:{status}, sse:{status, connected_clients})",
+    "GET /api/ - Returns 200 with system info (system, version, status, moduli)",
+    "Health endpoint shows 'degraded' status when DB is down",
+    "Frontend /login page loads correctly with DB down",
+    "Health banner (data-testid='health-banner') visible on all pages when DB is down",
+    "Login page shows 'SISTEMA NON DISPONIBILE' message when DB is down",
+    "Login button is disabled and shows 'LOGIN DISABILITATO' when DB is down",
+    "Frontend /city page loads and shows 'Nessun evento in programma' and 'Nessuna news recente'",
+    "Frontend /city/news page loads and shows 'Nessuna news disponibile'",
+    "Deep links /city and /city/news work correctly"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_health_and_public.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+
+  "action_items": [
+    "FIX: Add try-except blocks to public endpoints (/api/city/events, /api/city/ads/active, /api/news/, /api/news/breaking) to return empty lists when DB is unavailable instead of 500 errors",
+    "The fix should wrap the DB query in try-except and return [] on database connection errors"
+  ],
+
+  "critical_code_review_comments": [
+    "Public endpoints in /app/backend/routers/city.py and /app/backend/routers/news.py need graceful degradation - they should catch DB connection errors and return empty lists",
+    "Consider adding a decorator or middleware to handle DB unavailability for public endpoints"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_health_and_public.py"
+  ],
+
+  "success_rate": {
+    "backend": "56% (5/9 tests fully passed, 4 tests show known issues with public endpoints)",
+    "frontend": "100% (all UI tests passed - pages load, health banner visible, login disabled)"
+  },
+
+  "seed_data_creation": "None - DB is intentionally not connected",
+  
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "MySQL is intentionally not connected to test degraded mode. The health endpoint works correctly. Frontend handles DB down gracefully. The main issue is that public API endpoints (/api/city/events, /api/city/ads/active, /api/news/, /api/news/breaking) return 500 errors instead of empty lists when DB is down. This needs to be fixed in the backend routers.",
+  
+  "rca_of_the_issue": "The public endpoints in city.py and news.py use `db: AsyncSession = Depends(get_db)` which throws an exception when the database is unavailable. The endpoints don't have try-except blocks to catch these exceptions and return graceful empty responses. The fix requires wrapping the DB queries in try-except blocks and returning empty lists on connection errors."
+}
