@@ -1,2 +1,91 @@
 /* PURE LIFE OS - App Styles */
 /* Global tactical overrides */
+
+/* ==========================================
+   Phone WebView Mode - Reduced Motion
+   ========================================== */
+
+/* Riduce/disabilita animazioni in modalità phone */
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Mantieni alcune transizioni essenziali ma velocizzate */
+body.reduced-motion .transition-colors,
+body.reduced-motion .transition-opacity {
+  transition-duration: 100ms !important;
+}
+
+/* Disabilita blur pesanti in phone mode */
+body.phone-webview .backdrop-blur-sm,
+body.phone-webview .backdrop-blur-md,
+body.phone-webview .backdrop-blur-lg,
+body.phone-webview .backdrop-blur-xl {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: rgba(10, 10, 10, 0.95) !important;
+}
+
+/* Semplifica effetti glass in phone mode */
+body.phone-webview .glass-effect,
+body.phone-webview [class*="glass"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Disabilita animazioni pulse/bounce in phone mode */
+body.phone-webview .animate-pulse,
+body.phone-webview .animate-bounce,
+body.phone-webview .animate-spin {
+  animation: none !important;
+}
+
+/* Ottimizza scrolling per touch */
+body.phone-webview {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Riduci ombre in phone mode per performance */
+body.phone-webview [class*="shadow-"] {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Nascondi elementi decorativi in phone mode */
+body.phone-webview .scanline-overlay,
+body.phone-webview .decorative-grid {
+  display: none !important;
+}
+
+/* Iframe compatibility */
+body.phone-webview {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Touch-friendly tap targets */
+body.phone-webview button,
+body.phone-webview a,
+body.phone-webview [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ==========================================
+   Prefers Reduced Motion (System Setting)
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
