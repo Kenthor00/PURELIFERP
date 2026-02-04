@@ -322,10 +322,10 @@ export const CityHubPage = () => {
       <footer className="bg-plos-surface border-t border-plos-border mt-12 py-6">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-plos-text-muted text-sm">
-            © 2024 PURE LIFE RP - Tutti i diritti riservati
+            © 2026 PURE LIFE RP - Tutti i diritti riservati
           </p>
           <p className="text-plos-text-muted text-xs mt-1 mono">
-            PURE LIFE OS v2.0.0
+            PURE LIFE OS v1
           </p>
         </div>
       </footer>
