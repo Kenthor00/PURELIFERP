@@ -3,12 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { useHealth } from '../context/HealthContext';
-import { Shield, AlertCircle, Loader2, Database, Server } from 'lucide-react';
+import { Shield, AlertCircle, Loader2, Database, Server, Zap } from 'lucide-react';
 
 export const LoginPage = () => {
   const { login } = useAuth();
   const { play } = useSound();
-  const { isDbAvailable, isBackendAvailable, health } = useHealth();
+  const { isDbAvailable, isBackendAvailable, health, needsSeed } = useHealth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -19,7 +19,7 @@ export const LoginPage = () => {
 
   const from = location.state?.from?.pathname || '/';
   
-  // Check if login is allowed
+  // Check if login is allowed (disabled if DB down, but allowed if just needs seed - seed banner handles that)
   const loginDisabled = !isBackendAvailable || !isDbAvailable;
 
   const handleSubmit = async (e) => {
