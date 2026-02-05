@@ -40,6 +40,214 @@ db_connected = False
 migrations_status = {"status": "pending", "error": None}
 
 
+async def run_auto_seed():
+    """Esegue il seed automatico se il database è vuoto"""
+    from passlib.context import CryptContext
+    from models import (
+        User, UserRole, UserPresence,
+        Case, CaseStatus, Patient, MedicalReport,
+        DispatchCall, CallPriority, CallStatus,
+        Business, CityEvent, EventStatus, EventCategory,
+        NewsArticle, CourtHearing, HearingStatus,
+        ChatChannel, ChatMessage, TimelineEvent
+    )
+    from datetime import timedelta
+    
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    password_hash = pwd_context.hash("demo123")
+    
+    DEMO_USERS = [
+        {"email": "admin@purelife.rp", "name": "Admin Sistema", "role": UserRole.ADMIN, "badge_number": "ADMIN-001"},
+        {"email": "lspd@purelife.rp", "name": "Officer Johnson", "role": UserRole.POLICE, "badge_number": "LSPD-1234", "department": "LSPD"},
+        {"email": "ems@purelife.rp", "name": "Dr. Martinez", "role": UserRole.EMS, "badge_number": "EMS-5678", "department": "EMS"},
+        {"email": "dispatch@purelife.rp", "name": "Dispatch Central", "role": UserRole.DISPATCH, "badge_number": "DSP-0001", "department": "Dispatch"},
+        {"email": "gov@purelife.rp", "name": "Gov. Williams", "role": UserRole.GOVERNMENT, "badge_number": "GOV-0001", "department": "Government"},
+        {"email": "judge@purelife.rp", "name": "Judge Thompson", "role": UserRole.JUDGE, "badge_number": "JDG-0001", "department": "Tribunal"},
+        {"email": "lawyer@purelife.rp", "name": "Avv. Rossi", "role": UserRole.LAWYER, "badge_number": "LAW-0001"},
+        {"email": "prosecutor@purelife.rp", "name": "Proc. Bianchi", "role": UserRole.PROSECUTOR, "badge_number": "PRO-0001", "department": "Procura"},
+        {"email": "weazel@purelife.rp", "name": "Reporter Smith", "role": UserRole.WEAZEL, "badge_number": "WZL-0001", "department": "Weazel News"},
+        {"email": "citizen@purelife.rp", "name": "Mario Cittadino", "role": UserRole.CITIZEN},
+    ]
+    
+    DEFAULT_CHANNELS = [
+        {"name": "dispatch", "display_name": "Dispatch", "description": "Canale principale dispatch", "allowed_roles": ["police", "ems", "dispatch", "admin"]},
+        {"name": "lspd", "display_name": "LSPD Radio", "description": "Comunicazioni LSPD", "allowed_roles": ["police", "dispatch", "admin"]},
+        {"name": "ems-radio", "display_name": "EMS Radio", "description": "Comunicazioni EMS", "allowed_roles": ["ems", "dispatch", "admin"]},
+        {"name": "government", "display_name": "Governo", "description": "Canale governativo", "allowed_roles": ["government", "judge", "admin"]},
+        {"name": "tribunal", "display_name": "Tribunale", "description": "Comunicazioni tribunale", "allowed_roles": ["judge", "lawyer", "prosecutor", "government", "admin"]},
+        {"name": "city", "display_name": "Annunci Città", "description": "Annunci pubblici", "allowed_roles": None},
+    ]
+    
+    try:
+        async with async_session() as db:
+            # 1. Crea utenti demo
+            for user_data in DEMO_USERS:
+                user = User(
+                    email=user_data["email"],
+                    password_hash=password_hash,
+                    name=user_data["name"],
+                    role=user_data["role"],
+                    badge_number=user_data.get("badge_number"),
+                    department=user_data.get("department"),
+                    presence=UserPresence.OFFLINE,
+                    is_active=True
+                )
+                db.add(user)
+            await db.commit()
+            logger.info("Auto-seed: utenti demo creati")
+            
+            # 2. Crea canali chat
+            for ch_data in DEFAULT_CHANNELS:
+                channel = ChatChannel(**ch_data)
+                db.add(channel)
+            await db.commit()
+            logger.info("Auto-seed: canali chat creati")
+            
+            # 3. Crea business demo
+            business = Business(
+                name="Pure Life Motors",
+                owner_name="Tony Stark",
+                category="concessionario",
+                description="Il miglior concessionario di Los Santos",
+                address="Vinewood Blvd 123",
+                phone="555-CARS",
+                is_verified=True
+            )
+            db.add(business)
+            await db.commit()
+            
+            # 4. Crea eventi città
+            events = [
+                {"title": "Gran Premio di Los Santos", "category": EventCategory.SPORT, "location": "Los Santos Racetrack"},
+                {"title": "Gala di Beneficenza", "category": EventCategory.BENEFICENZA, "location": "Vinewood Hills Mansion"},
+                {"title": "Apertura Club Eclipse", "category": EventCategory.CLUB, "location": "Downtown LS"},
+                {"title": "Festival Gastronomico", "category": EventCategory.RISTORANTE, "location": "Vespucci Beach"},
+                {"title": "Conferenza Stampa Sindaco", "category": EventCategory.GOVERNO, "location": "City Hall"},
+            ]
+            for i, ev in enumerate(events):
+                event = CityEvent(
+                    title=ev["title"],
+                    description=f"Descrizione evento {ev['title']}",
+                    category=ev["category"],
+                    location=ev["location"],
+                    event_date=datetime.now(timezone.utc) + timedelta(days=i+1, hours=20),
+                    status=EventStatus.APPROVED,
+                    business_id=business.id
+                )
+                db.add(event)
+            await db.commit()
+            logger.info("Auto-seed: eventi città creati")
+            
+            # 5. Crea news
+            news_data = [
+                {"title": "BREAKING: Sparatoria a Grove Street", "category": "cronaca", "is_breaking": True},
+                {"title": "Nuova iniziativa del Governo", "category": "politica", "is_breaking": False},
+                {"title": "Record di pazienti all'ospedale", "category": "sanità", "is_breaking": False},
+                {"title": "Apertura centro commerciale", "category": "economia", "is_breaking": False},
+                {"title": "Intervista al capo polizia", "category": "interviste", "is_breaking": False},
+            ]
+            
+            from sqlalchemy import select
+            admin_result = await db.execute(select(User).where(User.email == "admin@purelife.rp"))
+            admin_user = admin_result.scalar_one()
+            
+            for n in news_data:
+                article = NewsArticle(
+                    title=n["title"],
+                    subtitle="Sottotitolo news",
+                    content=f"Contenuto dell'articolo {n['title']}",
+                    category=n["category"],
+                    author_id=admin_user.id,
+                    is_breaking_news=n["is_breaking"],
+                    is_published=True,
+                    published_at=datetime.now(timezone.utc),
+                    views=50
+                )
+                db.add(article)
+            await db.commit()
+            logger.info("Auto-seed: news create")
+            
+            # 6. Crea casi LSPD
+            lspd_result = await db.execute(select(User).where(User.email == "lspd@purelife.rp"))
+            lspd_user = lspd_result.scalar_one()
+            
+            case1 = Case(
+                case_number="CASE-2026-1001",
+                title="Rapina alla Fleeca Bank",
+                description="Rapina a mano armata",
+                status=CaseStatus.INVESTIGATING,
+                officer_id=lspd_user.id,
+                suspect_name="John Doe",
+                location="Fleeca Bank Vinewood"
+            )
+            db.add(case1)
+            await db.commit()
+            logger.info("Auto-seed: casi LSPD creati")
+            
+            # 7. Crea paziente EMS
+            ems_result = await db.execute(select(User).where(User.email == "ems@purelife.rp"))
+            ems_user = ems_result.scalar_one()
+            
+            patient = Patient(
+                patient_number="PAT-2026-0001",
+                name="Mario Rossi",
+                identifier="ABC123",
+                blood_type="A+",
+                allergies="Penicillina"
+            )
+            db.add(patient)
+            await db.commit()
+            
+            report = MedicalReport(
+                report_number="REP-2026-0001",
+                patient_id=patient.id,
+                doctor_id=ems_user.id,
+                diagnosis="Trauma cranico lieve",
+                treatment="Riposo e osservazione"
+            )
+            db.add(report)
+            await db.commit()
+            logger.info("Auto-seed: pazienti EMS creati")
+            
+            # 8. Crea chiamata dispatch
+            call = DispatchCall(
+                call_number="CALL-2026-0001",
+                priority=CallPriority.P2,
+                status=CallStatus.PENDING,
+                call_type="Rapina in corso",
+                location="Fleeca Bank, Vinewood",
+                description="Segnalazione rapina",
+                caller_name="Anonimo",
+                caller_phone="911"
+            )
+            db.add(call)
+            await db.commit()
+            logger.info("Auto-seed: chiamate dispatch create")
+            
+            # 9. Crea udienza tribunale
+            judge_result = await db.execute(select(User).where(User.email == "judge@purelife.rp"))
+            judge_user = judge_result.scalar_one()
+            
+            hearing = CourtHearing(
+                hearing_number="UDI-2026-0001",
+                title="Udienza Rapina Fleeca",
+                description="Prima udienza",
+                case_id=case1.id,
+                judge_id=judge_user.id,
+                scheduled_date=datetime.now(timezone.utc) + timedelta(days=7),
+                courtroom="Aula 1",
+                status=HearingStatus.SCHEDULED
+            )
+            db.add(hearing)
+            await db.commit()
+            logger.info("Auto-seed: udienze create")
+            
+            logger.info("Auto-seed completato con successo!")
+            
+    except Exception as e:
+        logger.error(f"Errore auto-seed: {e}")
+
+
 class EmbeddingMiddleware(BaseHTTPMiddleware):
     """
     Middleware per permettere embedding in iframe (lb-phone WebView)
