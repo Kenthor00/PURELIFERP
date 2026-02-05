@@ -40,7 +40,7 @@ def build_database_url() -> str:
         logger.info("Usando DATABASE_URL da ambiente (Railway)")
         return database_url
     
-    # Fallback a variabili separate (legacy)
+    # Fallback a variabili separate (legacy/local dev)
     mysql_host = os.environ.get('MYSQL_HOST')
     mysql_port = os.environ.get('MYSQL_PORT', '3306')
     mysql_user = os.environ.get('MYSQL_USER')
@@ -52,7 +52,10 @@ def build_database_url() -> str:
         logger.info(f"Usando variabili MySQL separate (host: {mysql_host})")
         return url
     
-    raise ValueError("DATABASE_URL o MYSQL_HOST/MYSQL_USER non configurati")
+    # Nessuna configurazione DB - usa un URL placeholder che fallirà alla connessione
+    # Il server si avvierà comunque in stato degradato
+    logger.warning("DATABASE_URL non configurata - il server si avvierà in stato degradato")
+    return "mysql+aiomysql://placeholder:placeholder@localhost:3306/placeholder"
 
 
 # Build database URL
