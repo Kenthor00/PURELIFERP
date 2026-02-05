@@ -1,34 +1,74 @@
 """
 PURE LIFE OS - Database Configuration
 MySQL con SQLAlchemy Async
+Supporta DATABASE_URL (Railway) o variabili separate
 """
 import os
 import logging
+import re
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import text
 from dotenv import load_dotenv
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 logger = logging.getLogger(__name__)
 
-MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
-MYSQL_PORT = os.environ.get('MYSQL_PORT', '3306')
-MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
-MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
-MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'purelife_os')
 
-DATABASE_URL = f"mysql+aiomysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+def build_database_url() -> str:
+    """
+    Costruisce l'URL del database.
+    Priorità: DATABASE_URL (Railway) > variabili separate
+    Converte mysql:// in mysql+aiomysql:// per async
+    """
+    database_url = os.environ.get('DATABASE_URL')
+    
+    if database_url:
+        # Railway fornisce mysql:// ma SQLAlchemy async richiede mysql+aiomysql://
+        if database_url.startswith('mysql://'):
+            database_url = database_url.replace('mysql://', 'mysql+aiomysql://', 1)
+        elif database_url.startswith('mysql+pymysql://'):
+            database_url = database_url.replace('mysql+pymysql://', 'mysql+aiomysql://', 1)
+        elif not database_url.startswith('mysql+aiomysql://'):
+            # Se è un altro formato mysql, converti
+            database_url = re.sub(r'^mysql(\+\w+)?://', 'mysql+aiomysql://', database_url)
+        
+        logger.info("Usando DATABASE_URL da ambiente (Railway)")
+        return database_url
+    
+    # Fallback a variabili separate (legacy)
+    mysql_host = os.environ.get('MYSQL_HOST')
+    mysql_port = os.environ.get('MYSQL_PORT', '3306')
+    mysql_user = os.environ.get('MYSQL_USER')
+    mysql_password = os.environ.get('MYSQL_PASSWORD', '')
+    mysql_database = os.environ.get('MYSQL_DATABASE', 'purelife_os')
+    
+    if mysql_host and mysql_user:
+        url = f"mysql+aiomysql://{mysql_user}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_database}"
+        logger.info(f"Usando variabili MySQL separate (host: {mysql_host})")
+        return url
+    
+    raise ValueError("DATABASE_URL o MYSQL_HOST/MYSQL_USER non configurati")
 
+
+# Build database URL
+DATABASE_URL = build_database_url()
+
+# Crea engine con connection pooling
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
     pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20
+    pool_size=5,
+    max_overflow=10,
+    pool_recycle=300,  # Recycle connections ogni 5 minuti
+    connect_args={
+        "connect_timeout": 10
+    }
 )
 
 async_session = async_sessionmaker(
@@ -37,8 +77,10 @@ async_session = async_sessionmaker(
     expire_on_commit=False
 )
 
+
 class Base(DeclarativeBase):
     pass
+
 
 async def get_db():
     async with async_session() as session:
@@ -46,6 +88,7 @@ async def get_db():
             yield session
         finally:
             await session.close()
+
 
 async def check_tables_exist() -> bool:
     """Verifica se le tabelle principali esistono"""
@@ -59,6 +102,19 @@ async def check_tables_exist() -> bool:
         logger.error(f"Errore check tabelle: {e}")
         return False
 
+
+async def check_users_exist() -> bool:
+    """Verifica se esistono utenti nel database"""
+    try:
+        async with async_session() as session:
+            result = await session.execute(text("SELECT COUNT(*) FROM users"))
+            count = result.scalar()
+            return count > 0
+    except Exception as e:
+        logger.error(f"Errore check users: {e}")
+        return False
+
+
 async def init_db():
     """Inizializza il database creando tutte le tabelle (idempotente)"""
     try:
@@ -69,6 +125,7 @@ async def init_db():
     except Exception as e:
         logger.error(f"Errore init_db: {e}")
         return False
+
 
 async def run_auto_migrations() -> dict:
     """Esegue auto-migrations se necessario (idempotente)"""
