@@ -16,7 +16,7 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 
 from datetime import datetime, timezone
-from database import init_db, get_db, engine, async_session, run_auto_migrations, check_tables_exist
+from database import init_db, get_db, engine, async_session, run_auto_migrations, check_tables_exist, check_users_exist
 from auth import get_current_user
 from sse_manager import sse_manager
 from outbox_worker import outbox_worker
