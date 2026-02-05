@@ -80,6 +80,12 @@ async def lifespan(app: FastAPI):
         if migration_result["success"]:
             migrations_status = {"status": "ok", "error": None}
             logger.info("Auto-migrations completate con successo")
+            
+            # Auto-seed se database vuoto
+            users_exist = await check_users_exist()
+            if not users_exist:
+                logger.info("Database vuoto - esecuzione auto-seed...")
+                await run_auto_seed()
         else:
             migrations_status = {"status": "failed", "error": migration_result.get("error")}
             logger.warning(f"Auto-migrations fallite: {migration_result.get('error')}")
