@@ -107,20 +107,34 @@ export const CityHubPage = () => {
               </div>
             </div>
             
-            <nav className="flex items-center gap-4">
+            <nav className="flex items-center gap-4 flex-wrap">
+              <button
+                onClick={() => navigate('/city/announcements')}
+                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
+              >
+                <Megaphone size={16} />
+                <span className="hidden sm:inline">Annunci</span>
+              </button>
+              <button
+                onClick={() => navigate('/city/recruitment')}
+                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
+              >
+                <UserPlus size={16} />
+                <span className="hidden sm:inline">Lavora con noi</span>
+              </button>
+              <button
+                onClick={() => navigate('/city/appointments')}
+                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
+              >
+                <CalendarDays size={16} />
+                <span className="hidden sm:inline">Appuntamenti</span>
+              </button>
               <button
                 onClick={() => navigate('/city/news')}
                 className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
               >
                 <Newspaper size={16} />
                 <span className="hidden sm:inline">News</span>
-              </button>
-              <button
-                onClick={() => navigate('/city/events')}
-                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
-              >
-                <Calendar size={16} />
-                <span className="hidden sm:inline">Eventi</span>
               </button>
               <button
                 onClick={() => navigate('/login')}
