@@ -941,12 +941,12 @@ class Appointment(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     
     # Settore destinatario
-    target_sector = Column(Enum(Sector), nullable=False, index=True)
+    target_sector = Column(String(50), nullable=False, index=True)
     
     # Richiedente (utente loggato)
     requester_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     requester_game_name = Column(String(100), nullable=False)
-    requester_sector = Column(Enum(Sector), nullable=False)
+    requester_sector = Column(String(50), nullable=False)
     
     # Dettagli appuntamento
     subject = Column(String(200), nullable=False)
@@ -956,7 +956,7 @@ class Appointment(Base):
     urgency = Column(String(20), default="normal")  # low, normal, high
     
     # Stato e gestione
-    status = Column(Enum(AppointmentStatus), default=AppointmentStatus.PENDING, index=True)
+    status = Column(String(20), default="pending", index=True)
     handler_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     handler_game_name = Column(String(100), nullable=True)
     handler_notes = Column(Text, nullable=True)
