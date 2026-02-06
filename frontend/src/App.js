@@ -37,6 +37,9 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import AuditDashboard from './pages/admin/AuditDashboard';
 
+// Sector Management (for sector chiefs)
+import SectorManagement from './pages/SectorManagement';
+
 // Public
 import CityHubPage from './pages/public/CityHubPage';
 import NewsPage from './pages/public/NewsPage';
