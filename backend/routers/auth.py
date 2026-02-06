@@ -300,6 +300,7 @@ async def get_profile(
         sector=current_user.sector.value,
         grade=current_user.grade,
         hierarchy_level=current_user.hierarchy_level,
+        is_sector_chief=current_user.is_sector_chief or False,
         badge_number=current_user.badge_number,
         department=current_user.department,
         presence=current_user.presence.value if current_user.presence else "offline",
