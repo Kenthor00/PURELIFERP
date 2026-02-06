@@ -23,7 +23,7 @@ from outbox_worker import outbox_worker
 from routers import auth, lspd, ems, dispatch, timeline
 from routers import city, news, justice, chat
 from routers import fivem_sso
-from routers import users, audit
+from routers import users, audit, admin
 from routers import recruitment, appointments, announcements, advertising
 from routers import notifications
 from routers import news_v2, push
