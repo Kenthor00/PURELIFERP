@@ -1,6 +1,7 @@
 """
 PURE LIFE OS - Appointments Router
-Sistema di appuntamenti tra civili e settori
+Sistema di appuntamenti tra cittadini e settori governativi
+Con notifiche real-time e calendario operativo
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,12 +12,13 @@ from datetime import datetime, timezone
 
 from database import get_db
 from models import (
-    User, Sector, Appointment, AppointmentStatus, AuditAction
+    User, Sector, Appointment, AppointmentStatus, AuditAction, NotificationType
 )
 from auth import get_current_user
 from services.audit_service import AuditService
+from routers.notifications import notify_sector_chiefs, notify_user
 
-router = APIRouter(prefix="/appointments", tags=["appointments"])
+router = APIRouter(prefix="/appointments", tags=["Appuntamenti"])
 audit_service = AuditService()
 
 
