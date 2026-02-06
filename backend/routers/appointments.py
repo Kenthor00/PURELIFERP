@@ -96,16 +96,16 @@ async def create_appointment(
     
     # Crea appuntamento
     appointment = Appointment(
-        target_sector=target_sector,
+        target_sector=target_sector.value,
         requester_id=current_user.id,
         requester_game_name=current_user.game_name or current_user.email,
-        requester_sector=current_user.sector,
+        requester_sector=current_user.sector.value,
         subject=data.subject,
         description=data.description,
         preferred_date=preferred_date,
         preferred_time=data.preferred_time,
         urgency=data.urgency,
-        status=AppointmentStatus.PENDING
+        status=AppointmentStatus.PENDING.value
     )
     
     db.add(appointment)
