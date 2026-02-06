@@ -844,9 +844,10 @@ class Outbox(Base):
     event_type = Column(String(100), nullable=False)
     payload = Column(JSON, nullable=False)
     status = Column(Enum(OutboxStatus), default=OutboxStatus.PENDING, index=True)
-    attempts = Column(Integer, default=0)
-    last_attempt = Column(DateTime, nullable=True)
-    error_message = Column(Text, nullable=True)
+    retry_count = Column(Integer, default=0)
+    max_retries = Column(Integer, default=5)
+    last_error = Column(Text, nullable=True)
+    next_retry_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     processed_at = Column(DateTime, nullable=True)
 
