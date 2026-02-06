@@ -222,7 +222,7 @@ async def get_sector_appointments(
     
     # Query
     query = select(Appointment).where(
-        Appointment.target_sector == target_sector
+        Appointment.target_sector == target_sector.value
     )
     
     if status:
