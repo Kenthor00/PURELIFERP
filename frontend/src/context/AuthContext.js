@@ -84,12 +84,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('plos_token', res.data.access_token);
     localStorage.setItem('plos_refresh_token', res.data.refresh_token);
     setToken(res.data.access_token);
-    setUser({
+    
+    // Imposta user con tutti i dati dalla risposta
+    const userData = {
       id: res.data.user_id,
+      email: res.data.email,
       name: res.data.name,
-      role: res.data.role,
-    });
-    return res.data;
+      game_name: res.data.game_name,
+      sector: res.data.sector,
+      grade: res.data.grade,
+      hierarchy_level: res.data.hierarchy_level,
+      is_sector_chief: res.data.is_sector_chief,
+      needs_game_name: res.data.needs_game_name,
+      // Legacy compatibility
+      role: res.data.sector?.toLowerCase(),
+    };
+    setUser(userData);
+    
+    return { ...res.data, ...userData };
   };
 
   const fivemLogin = async (params) => {
