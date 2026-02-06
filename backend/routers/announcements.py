@@ -316,7 +316,7 @@ async def moderate_announcement(
     await db.refresh(announcement)
     
     # Audit log
-    audit_action = AuditAction.ANNOUNCEMENT_APPROVE if new_status == AnnouncementStatus.APPROVED else AuditAction.ANNOUNCEMENT_REJECT
+    audit_action = AuditAction.ANNOUNCEMENT_APPROVE if new_status == AnnouncementStatus.APPROVED.value else AuditAction.ANNOUNCEMENT_REJECT
     await audit_service.log(
         db,
         action=audit_action,
