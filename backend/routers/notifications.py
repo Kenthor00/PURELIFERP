@@ -11,10 +11,9 @@ from pydantic import BaseModel
 
 from database import get_db
 from models import (
-    User, Notification, NotificationType, Sector, AuditAction
+    User, Notification, NotificationType, Sector
 )
 from routers.auth import get_current_user
-from services.audit_service import log_audit
 
 router = APIRouter(prefix="/notifications", tags=["Notifiche"])
 
