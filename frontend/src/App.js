@@ -50,6 +50,10 @@ import AppointmentsPage from './pages/cityhub/AppointmentsPage';
 import AnnouncementsPage from './pages/cityhub/AnnouncementsPage';
 import AdvertisingPage from './pages/cityhub/AdvertisingPage';
 
+// Fase 4 - News Editor & Service Chat
+import NewsEditorPage from './pages/news/NewsEditorPage';
+import ServiceChatPage from './pages/ServiceChatPage';
+
 import './App.css';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
