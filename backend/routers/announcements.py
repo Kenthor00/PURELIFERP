@@ -190,6 +190,18 @@ async def create_announcement(
         request=request
     )
     
+    # Notifica ai moderatori (GOV e Admin)
+    await create_notification(
+        db=db,
+        notification_type=NotificationType.ANNOUNCEMENT_PENDING.value,
+        title="Annuncio in Attesa",
+        message=f"Nuovo annuncio da moderare: {data.title}",
+        sender=current_user,
+        is_global=True,
+        entity_type="announcement",
+        entity_id=announcement.id
+    )
+    
     return _announcement_to_response(announcement)
 
 
