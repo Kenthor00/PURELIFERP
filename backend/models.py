@@ -1301,6 +1301,9 @@ class ChatMessage(Base):
     content = Column(Text, nullable=False)
     message_type = Column(String(20), default="text")  # text, link, announcement
     
+    # Menzioni - lista di user_id menzionati come JSON array
+    mentions = Column(JSON, nullable=True, default=list)  # [1, 2, 3] = user_ids
+    
     # Stato
     is_pinned = Column(Boolean, default=False)
     is_deleted = Column(Boolean, default=False, index=True)
