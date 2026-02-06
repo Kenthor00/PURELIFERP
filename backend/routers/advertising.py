@@ -357,6 +357,18 @@ async def approve_ad_slot(
         request=request
     )
     
+    # Notifica al proprietario
+    await notify_user(
+        db=db,
+        user_id=ad.owner_id,
+        notification_type=NotificationType.AD_SLOT_ACTIVATED.value,
+        title="Pubblicità Attivata!",
+        message=f"Il tuo slot pubblicitario '{ad.business_name}' è stato approvato e attivato",
+        sender=current_user,
+        entity_type="ad_slot",
+        entity_id=ad.id
+    )
+    
     return _ad_to_response(ad)
 
 
