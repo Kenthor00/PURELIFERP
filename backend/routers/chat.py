@@ -382,6 +382,9 @@ async def send_message(
         if user_level < 3:
             raise HTTPException(status_code=403, detail="Solo livello 3+ può inviare annunci")
     
+    # Parsa le menzioni @NomeInGame
+    mentioned_user_ids = await parse_mentions(data.content.strip(), db, channel)
+    
     message = ChatMessage(
         channel_id=channel.id,
         author_id=current_user.id,
@@ -389,14 +392,15 @@ async def send_message(
         author_sector=current_user.sector.value if current_user.sector else "CIVIL",
         author_grade=current_user.grade,
         content=data.content.strip(),
-        message_type=data.message_type
+        message_type=data.message_type,
+        mentions=mentioned_user_ids if mentioned_user_ids else None
     )
     
     db.add(message)
     await db.commit()
     await db.refresh(message)
     
-    # Audit
+    # Audit messaggio
     await audit_service.log(
         db,
         action=AuditAction.CHAT_MESSAGE_SEND,
@@ -406,6 +410,52 @@ async def send_message(
         description=f"Messaggio in {channel.display_name}",
         request=request
     )
+    
+    # Se ci sono menzioni, notifica gli utenti menzionati
+    if mentioned_user_ids:
+        # Carica i dati degli utenti menzionati per l'audit
+        mentioned_result = await db.execute(
+            select(User).where(User.id.in_(mentioned_user_ids))
+        )
+        mentioned_users = mentioned_result.scalars().all()
+        mentioned_names = [u.game_name for u in mentioned_users]
+        
+        # Audit della menzione
+        await audit_service.log(
+            db,
+            action=AuditAction.CHAT_MENTION,
+            user=current_user,
+            entity_type="chat_message",
+            entity_id=message.id,
+            description=f"Menzione in {channel.display_name}: {', '.join(mentioned_names)}",
+            extra_data={"mentioned_user_ids": mentioned_user_ids, "channel": channel.name},
+            request=request
+        )
+        
+        # Invia notifiche SSE e Push a ogni utente menzionato
+        for mentioned_user in mentioned_users:
+            # Notifica SSE
+            await notify_user(
+                db=db,
+                user_id=mentioned_user.id,
+                notification_type=NotificationType.CHAT_MESSAGE.value,
+                title=f"💬 Menzione da {current_user.game_name}",
+                message=f"Ti ha menzionato in #{channel.display_name}: {data.content[:100]}{'...' if len(data.content) > 100 else ''}",
+                sender=current_user,
+                entity_type="chat_message",
+                entity_id=message.id
+            )
+            
+            # Notifica Push (se attiva)
+            await send_push_notification(
+                db=db,
+                user_id=mentioned_user.id,
+                notification_type="chat",
+                title=f"💬 {current_user.game_name} ti ha menzionato",
+                body=f"#{channel.display_name}: {data.content[:80]}{'...' if len(data.content) > 80 else ''}",
+                url=f"/chat?channel={channel.name}",
+                tag=f"chat-mention-{message.id}"
+            )
     
     # Aggiorna presenza
     await update_user_presence(db, current_user, channel.id)
