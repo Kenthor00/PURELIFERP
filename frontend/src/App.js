@@ -217,10 +217,14 @@ const DeepLinkHandler = () => {
           path = id ? `/ems/patients/${id}` : '/ems/patients';
           break;
         case 'chat':
-          path = '/chat';
+          const channel = searchParams.get('channel');
+          path = channel ? `/chat?channel=${channel}` : '/chat';
           break;
         case 'justice':
           path = '/justice';
+          break;
+        case 'news_editor':
+          path = '/news/editor';
           break;
         default:
           break;
