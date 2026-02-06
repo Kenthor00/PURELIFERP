@@ -1094,6 +1094,81 @@ class AdvertisingSlot(Base):
     approved_at = Column(DateTime, nullable=True)
     
     # Relationships
+
+
+# ==========================================
+# NOTIFICATIONS (Sistema Notifiche Real-Time)
+# ==========================================
+
+class NotificationType(str, enum.Enum):
+    """Tipi di notifica"""
+    # Recruitment
+    RECRUITMENT_NEW = "recruitment_new"
+    RECRUITMENT_STATUS_CHANGE = "recruitment_status_change"
+    RECRUITMENT_INTERVIEW = "recruitment_interview"
+    
+    # Appointments
+    APPOINTMENT_NEW = "appointment_new"
+    APPOINTMENT_ACCEPTED = "appointment_accepted"
+    APPOINTMENT_REJECTED = "appointment_rejected"
+    APPOINTMENT_COMPLETED = "appointment_completed"
+    
+    # Announcements
+    ANNOUNCEMENT_PENDING = "announcement_pending"
+    ANNOUNCEMENT_APPROVED = "announcement_approved"
+    ANNOUNCEMENT_REJECTED = "announcement_rejected"
+    
+    # Advertising
+    AD_SLOT_REQUESTED = "ad_slot_requested"
+    AD_SLOT_ACTIVATED = "ad_slot_activated"
+    AD_SLOT_EXPIRED = "ad_slot_expired"
+    AD_SLOT_REJECTED = "ad_slot_rejected"
+    
+    # System
+    SYSTEM_ALERT = "system_alert"
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Destinatario
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # NULL = globale per settore
+    target_sector = Column(String(50), nullable=True)  # Settore destinatario (se user_id è NULL)
+    is_global = Column(Boolean, default=False)  # Per Admin/GOV
+    
+    # Contenuto
+    notification_type = Column(String(50), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    
+    # Riferimento entità
+    entity_type = Column(String(50), nullable=True)  # recruitment, appointment, announcement, ad_slot
+    entity_id = Column(Integer, nullable=True)
+    
+    # Mittente (chi ha generato la notifica)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    sender_game_name = Column(String(100), nullable=True)
+    sender_sector = Column(String(50), nullable=True)
+    
+    # Stato
+    is_read = Column(Boolean, default=False, index=True)
+    read_at = Column(DateTime, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id])
+    sender = relationship("User", foreign_keys=[sender_id])
+    
+    # Index per query veloci
+    __table_args__ = (
+        Index('ix_notifications_user_unread', 'user_id', 'is_read'),
+        Index('ix_notifications_sector_unread', 'target_sector', 'is_read'),
+    )
+
     owner = relationship("User", foreign_keys=[owner_id])
     approver = relationship("User", foreign_keys=[approver_id])
 
