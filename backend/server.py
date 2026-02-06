@@ -229,6 +229,7 @@ api_router.include_router(recruitment.router)
 api_router.include_router(appointments.router)
 api_router.include_router(announcements.router)
 api_router.include_router(advertising.router)
+api_router.include_router(notifications.router)
 
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
