@@ -387,6 +387,10 @@ def _application_to_response(app: RecruitmentApplication) -> ApplicationResponse
         reviewer_id=app.reviewer_id,
         reviewer_game_name=app.reviewer_game_name,
         reviewer_notes=app.reviewer_notes,
+        interview_assigned_to=app.interview_assigned_to,
+        interview_assigned_name=app.interview_assigned_name,
+        interview_notes=app.interview_notes,
+        interview_scheduled_at=app.interview_scheduled_at.isoformat() if app.interview_scheduled_at else None,
         created_at=app.created_at.isoformat() if app.created_at else "",
         reviewed_at=app.reviewed_at.isoformat() if app.reviewed_at else None
     )
