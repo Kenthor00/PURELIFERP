@@ -203,7 +203,7 @@ async def review_application(
     if current_user.sector != Sector.ADMIN:
         if not current_user.is_sector_chief:
             raise HTTPException(status_code=403, detail="Non hai i permessi per revisionare candidature")
-        if current_user.sector != application.target_sector:
+        if current_user.sector.value != application.target_sector:
             raise HTTPException(status_code=403, detail="Puoi revisionare solo candidature del tuo settore")
         if current_user.hierarchy_level < 7:
             raise HTTPException(status_code=403, detail="Devi essere almeno livello 7 per revisionare")
