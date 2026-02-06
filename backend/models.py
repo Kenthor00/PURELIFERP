@@ -1187,6 +1187,221 @@ class Notification(Base):
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id])
+
+
+
+# ==========================================
+# WEAZEL NEWS 2.0 (Sistema Editoriale)
+# ==========================================
+
+class ArticleStatus(str, enum.Enum):
+    """Stati workflow articolo"""
+    DRAFT = "draft"           # Bozza
+    REVIEW = "review"         # In revisione
+    APPROVED = "approved"     # Approvato
+    PUBLISHED = "published"   # Pubblicato
+    ARCHIVED = "archived"     # Archiviato
+
+
+class ArticleCategory(str, enum.Enum):
+    """Categorie articoli"""
+    CRONACA = "cronaca"
+    POLITICA = "politica"
+    EVENTI = "eventi"
+    SPORT = "sport"
+    COMUNICATI = "comunicati"
+    ECONOMIA = "economia"
+    INTRATTENIMENTO = "intrattenimento"
+
+
+class Article(Base):
+    """Articolo Weazel News"""
+    __tablename__ = "articles"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Contenuto
+    title = Column(String(200), nullable=False)
+    subtitle = Column(String(300), nullable=True)
+    content = Column(Text, nullable=False)  # HTML/rich text
+    excerpt = Column(Text, nullable=True)   # Anteprima
+    
+    # Media (solo URL)
+    cover_image_url = Column(String(500), nullable=True)
+    gallery_urls = Column(JSON, nullable=True)  # Lista URL immagini
+    video_url = Column(String(500), nullable=True)  # YouTube/Twitch embed
+    
+    # Categorizzazione
+    category = Column(String(50), default="cronaca", index=True)
+    tags = Column(JSON, nullable=True)  # Lista tag
+    
+    # Autore
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    author_game_name = Column(String(100), nullable=False)
+    author_sector = Column(String(50), nullable=False)
+    
+    # Workflow
+    status = Column(String(20), default="draft", index=True)
+    is_breaking = Column(Boolean, default=False, index=True)
+    is_official = Column(Boolean, default=False)  # Comunicato ufficiale
+    
+    # Revisione
+    reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewer_game_name = Column(String(100), nullable=True)
+    reviewer_notes = Column(Text, nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    
+    # Pubblicazione
+    published_at = Column(DateTime, nullable=True)
+    published_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    published_by_name = Column(String(100), nullable=True)
+    
+    # Archiviazione
+    archived_at = Column(DateTime, nullable=True)
+    archived_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Stats
+    views = Column(Integer, default=0)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    author = relationship("User", foreign_keys=[author_id])
+    reviewer = relationship("User", foreign_keys=[reviewer_id])
+    published_by = relationship("User", foreign_keys=[published_by_id])
+
+
+# ==========================================
+# SERVICE CHAT 2.0 (Chat Interna)
+# ==========================================
+
+class ChatChannelType(str, enum.Enum):
+    """Tipi di canale chat"""
+    SECTOR = "sector"      # Canale di settore
+    STAFF = "staff"        # Staff/Admin
+    GENERAL = "general"    # Generale
+
+
+class ChatChannel(Base):
+    """Canale chat"""
+    __tablename__ = "chat_channels"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    name = Column(String(100), nullable=False, unique=True)
+    display_name = Column(String(100), nullable=False)
+    description = Column(String(255), nullable=True)
+    channel_type = Column(String(20), default="sector")
+    
+    # Accesso
+    sector = Column(String(50), nullable=True)  # Settore associato (NULL = tutti)
+    min_level = Column(Integer, default=1)      # Livello minimo per accesso
+    
+    # Stato
+    is_active = Column(Boolean, default=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Messages relationship
+    messages = relationship("ChatMessage", back_populates="channel", lazy="dynamic")
+
+
+class ChatMessage(Base):
+    """Messaggio chat"""
+    __tablename__ = "chat_messages"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Canale
+    channel_id = Column(Integer, ForeignKey("chat_channels.id"), nullable=False, index=True)
+    
+    # Autore
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    author_game_name = Column(String(100), nullable=False)
+    author_sector = Column(String(50), nullable=False)
+    author_grade = Column(String(50), nullable=True)
+    
+    # Contenuto
+    content = Column(Text, nullable=False)
+    message_type = Column(String(20), default="text")  # text, link, announcement
+    
+    # Stato
+    is_pinned = Column(Boolean, default=False)
+    is_deleted = Column(Boolean, default=False, index=True)
+    deleted_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    deleted_at = Column(DateTime, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    channel = relationship("ChatChannel", back_populates="messages")
+    author = relationship("User", foreign_keys=[author_id])
+    deleted_by = relationship("User", foreign_keys=[deleted_by_id])
+
+
+class UserPresenceRecord(Base):
+    """Record presenza utente per chat"""
+    __tablename__ = "user_presence"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    
+    # Stato
+    status = Column(String(20), default="offline", index=True)  # online, in_service, off_duty, offline
+    status_message = Column(String(100), nullable=True)
+    
+    # Ultima attività
+    last_seen = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    last_channel_id = Column(Integer, ForeignKey("chat_channels.id"), nullable=True)
+    
+    # Timestamps
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id])
+
+
+# ==========================================
+# WEB PUSH NOTIFICATIONS
+# ==========================================
+
+class PushSubscription(Base):
+    """Subscription Web Push per utente"""
+    __tablename__ = "push_subscriptions"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    
+    # Subscription data (from browser)
+    endpoint = Column(Text, nullable=False, unique=True)
+    p256dh_key = Column(String(255), nullable=False)  # Public key
+    auth_key = Column(String(255), nullable=False)    # Auth secret
+    
+    # Device info
+    user_agent = Column(String(500), nullable=True)
+    device_name = Column(String(100), nullable=True)
+    
+    # Preferenze
+    is_active = Column(Boolean, default=True)
+    notify_recruitment = Column(Boolean, default=True)
+    notify_appointments = Column(Boolean, default=True)
+    notify_breaking_news = Column(Boolean, default=True)
+    notify_chat = Column(Boolean, default=False)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    last_used_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id])
+
     sender = relationship("User", foreign_keys=[sender_id])
     
     # Index per query veloci
