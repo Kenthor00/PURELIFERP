@@ -8,12 +8,12 @@ from sqlalchemy import select, func, desc
 from typing import Optional, List
 
 from database import get_db
-from models import User, UserRole, DispatchCall, CallPriority, CallStatus, TimelineEvent
+from models import User, DispatchCall, CallPriority, CallStatus, TimelineEvent
 from schemas import (
     DispatchCallCreate, DispatchCallUpdate, DispatchCallResponse,
     TimelineEventResponse, MessageResponse
 )
-from auth import get_current_user, require_roles
+from auth import get_current_user, require_roles, UserRole
 from utils import generate_call_number
 from sse_manager import sse_manager
 

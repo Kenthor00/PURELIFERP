@@ -8,9 +8,9 @@ from sqlalchemy import select, func, desc, or_
 from typing import Optional, List
 
 from database import get_db
-from models import User, UserRole, TimelineEvent
+from models import User, TimelineEvent
 from schemas import TimelineEventResponse
-from auth import get_current_user, require_roles
+from auth import get_current_user, require_roles, UserRole
 
 router = APIRouter(prefix="/timeline", tags=["Timeline"])
 

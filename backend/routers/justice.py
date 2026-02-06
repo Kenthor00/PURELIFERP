@@ -11,14 +11,14 @@ import random
 import string
 
 from database import get_db
-from models import User, UserRole, LegalCase, LegalCaseStatus, CourtHearing, HearingStatus, LegalDocument, TimelineEvent
+from models import User, LegalCase, LegalCaseStatus, CourtHearing, HearingStatus, LegalDocument, TimelineEvent
 from schemas import (
     LegalCaseCreate, LegalCaseUpdate, LegalCaseResponse,
     CourtHearingCreate, CourtHearingUpdate, CourtHearingResponse,
     LegalDocumentCreate, LegalDocumentResponse,
     MessageResponse
 )
-from auth import get_current_user, require_roles
+from auth import get_current_user, require_roles, UserRole
 from sse_manager import sse_manager
 
 router = APIRouter(prefix="/justice", tags=["Governo & Giustizia"])

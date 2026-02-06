@@ -11,14 +11,14 @@ from datetime import datetime, timezone
 import logging
 
 from database import get_db
-from models import User, UserRole, Business, Advertisement, CityEvent, AdSlotType, AdStatus, EventStatus, EventCategory, TimelineEvent, Outbox, OutboxStatus
+from models import User, Business, Advertisement, CityEvent, AdSlotType, AdStatus, EventStatus, EventCategory, TimelineEvent, Outbox, OutboxStatus
 from schemas import (
     BusinessCreate, BusinessResponse,
     AdvertisementCreate, AdvertisementUpdate, AdvertisementResponse,
     CityEventCreate, CityEventUpdate, CityEventResponse,
     MessageResponse
 )
-from auth import get_current_user, require_roles
+from auth import get_current_user, require_roles, UserRole
 from sse_manager import sse_manager
 
 router = APIRouter(prefix="/city", tags=["City Hub"])

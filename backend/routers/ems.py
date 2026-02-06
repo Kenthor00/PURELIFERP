@@ -9,12 +9,12 @@ from typing import Optional, List
 from datetime import datetime, timezone
 
 from database import get_db
-from models import User, UserRole, Patient, MedicalReport, TimelineEvent
+from models import User, Patient, MedicalReport, TimelineEvent
 from schemas import (
     PatientCreate, PatientUpdate, PatientResponse, PatientDetailResponse,
     MedicalReportCreate, MedicalReportResponse, TimelineEventResponse, MessageResponse
 )
-from auth import get_current_user, require_roles
+from auth import get_current_user, require_roles, UserRole
 from utils import generate_patient_number, generate_report_number, get_template, fill_template, MEDICAL_TEMPLATES
 from sse_manager import sse_manager
 

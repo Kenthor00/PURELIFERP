@@ -24,7 +24,7 @@ from models import (
     ChatChannel, ChatMessage,
     TimelineEvent
 )
-from auth import get_current_user, require_roles
+from auth import get_current_user, require_roles, UserRole
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 logger = logging.getLogger(__name__)

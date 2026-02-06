@@ -11,12 +11,12 @@ from datetime import datetime, timezone
 import logging
 
 from database import get_db
-from models import User, UserRole, NewsArticle, TimelineEvent
+from models import User, NewsArticle, TimelineEvent
 from schemas import (
     NewsArticleCreate, NewsArticleUpdate, NewsArticleResponse,
     MessageResponse
 )
-from auth import get_current_user, require_roles
+from auth import get_current_user, require_roles, UserRole
 from sse_manager import sse_manager
 
 router = APIRouter(prefix="/news", tags=["Weazel News"])

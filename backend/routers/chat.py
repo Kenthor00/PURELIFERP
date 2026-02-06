@@ -9,7 +9,7 @@ from typing import Optional, List
 from datetime import datetime, timezone
 
 from database import get_db
-from models import User, UserRole, UserPresence, ChatChannel, ChatMessage, TimelineEvent
+from models import User, UserPresence, ChatChannel, ChatMessage, TimelineEvent
 from schemas import (
     ChatChannelCreate, ChatChannelResponse,
     ChatMessageCreate, ChatMessageResponse,

@@ -8,13 +8,13 @@ from sqlalchemy import select, func, desc
 from typing import Optional, List
 
 from database import get_db
-from models import User, UserRole, Case, CaseStatus, Warrant, Fine, Evidence, TimelineEvent, Outbox, OutboxStatus
+from models import User, Case, CaseStatus, Warrant, Fine, Evidence, TimelineEvent, Outbox, OutboxStatus
 from schemas import (
     CaseCreate, CaseUpdate, CaseResponse, CaseDetailResponse,
     WarrantCreate, WarrantResponse, FineCreate, FineResponse,
     EvidenceCreate, EvidenceResponse, TimelineEventResponse, MessageResponse
 )
-from auth import get_current_user, require_roles, log_audit
+from auth import get_current_user, require_roles, UserRole, log_audit
 from utils import generate_case_number, generate_warrant_number, generate_fine_number
 from sse_manager import sse_manager
 
