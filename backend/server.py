@@ -24,6 +24,7 @@ from routers import auth, lspd, ems, dispatch, timeline
 from routers import city, news, justice, chat
 from routers import fivem_sso
 from routers import users, audit
+from routers import recruitment, appointments, announcements, advertising
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
