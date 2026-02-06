@@ -358,21 +358,21 @@ async def get_appointment_stats(
         base_query = select(Appointment)
     else:
         base_query = select(Appointment).where(
-            Appointment.target_sector == current_user.sector
+            Appointment.target_sector == current_user.sector.value
         )
     
     # Conta per stato
     pending = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.PENDING)
+        base_query.where(Appointment.status == AppointmentStatus.PENDING.value)
     )
     accepted = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.ACCEPTED)
+        base_query.where(Appointment.status == AppointmentStatus.ACCEPTED.value)
     )
     completed = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.COMPLETED)
+        base_query.where(Appointment.status == AppointmentStatus.COMPLETED.value)
     )
     rejected = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.REJECTED)
+        base_query.where(Appointment.status == AppointmentStatus.REJECTED.value)
     )
     
     return {
