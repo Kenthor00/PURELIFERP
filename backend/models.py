@@ -146,6 +146,21 @@ class AuditAction(str, enum.Enum):
     ARTICLE_PUBLISH = "article_publish"
     ARTICLE_UPDATE = "article_update"
     ARTICLE_DELETE = "article_delete"
+    ARTICLE_SUBMIT_REVIEW = "article_submit_review"
+    ARTICLE_APPROVE = "article_approve"
+    ARTICLE_REJECT = "article_reject"
+    ARTICLE_ARCHIVE = "article_archive"
+    ARTICLE_BREAKING = "article_breaking"
+    
+    # Service Chat
+    CHAT_MESSAGE_SEND = "chat_message_send"
+    CHAT_MESSAGE_DELETE = "chat_message_delete"
+    CHAT_MESSAGE_PIN = "chat_message_pin"
+    PRESENCE_CHANGE = "presence_change"
+    
+    # Push Notifications
+    PUSH_SUBSCRIBE = "push_subscribe"
+    PUSH_UNSUBSCRIBE = "push_unsubscribe"
     
     # City Hub - Recruitment
     APPLICATION_CREATE = "application_create"
