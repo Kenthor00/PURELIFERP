@@ -154,6 +154,27 @@ def require_sector(*sectors: Sector):
     return sector_checker
 
 
+def require_roles(*roles: UserRole):
+    """
+    Legacy compatibility: accepts UserRole and converts to Sector.
+    Use require_sector for new code.
+    """
+    sectors = set()
+    for role in roles:
+        mapped_sector = ROLE_TO_SECTOR.get(role)
+        if mapped_sector:
+            sectors.add(mapped_sector)
+    
+    async def role_checker(current_user: User = Depends(get_current_user)):
+        if current_user.sector in sectors or current_user.sector == Sector.ADMIN:
+            return current_user
+        raise HTTPException(
+            status_code=403,
+            detail=f"Accesso negato. Ruoli richiesti: {[r.value for r in roles]}"
+        )
+    return role_checker
+
+
 async def log_audit(
     db: AsyncSession,
     action: AuditAction,
