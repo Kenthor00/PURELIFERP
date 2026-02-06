@@ -88,7 +88,7 @@ async def get_active_ads(
     if position:
         try:
             pos_enum = AdSlotPosition(position.lower())
-            query = query.where(AdvertisingSlot.position == pos_enum)
+            query = query.where(AdvertisingSlot.position == pos_enum.value)
         except ValueError:
             pass
     
