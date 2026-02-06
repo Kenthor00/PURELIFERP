@@ -339,13 +339,13 @@ async def get_announcement_stats(
     
     # Conta per stato
     pending = await db.execute(
-        select(Announcement).where(Announcement.status == AnnouncementStatus.PENDING)
+        select(Announcement).where(Announcement.status == AnnouncementStatus.PENDING.value)
     )
     approved = await db.execute(
-        select(Announcement).where(Announcement.status == AnnouncementStatus.APPROVED)
+        select(Announcement).where(Announcement.status == AnnouncementStatus.APPROVED.value)
     )
     rejected = await db.execute(
-        select(Announcement).where(Announcement.status == AnnouncementStatus.REJECTED)
+        select(Announcement).where(Announcement.status == AnnouncementStatus.REJECTED.value)
     )
     
     # Conta per categoria (solo approvati)
@@ -353,8 +353,8 @@ async def get_announcement_stats(
     for cat in AnnouncementCategory:
         result = await db.execute(
             select(Announcement)
-            .where(Announcement.status == AnnouncementStatus.APPROVED)
-            .where(Announcement.category == cat)
+            .where(Announcement.status == AnnouncementStatus.APPROVED.value)
+            .where(Announcement.category == cat.value)
         )
         by_category[cat.value] = len(result.scalars().all())
     
