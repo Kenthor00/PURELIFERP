@@ -13,7 +13,7 @@ from database import get_db
 from models import (
     User, Sector, Article, ArticleStatus, ArticleCategory, AuditAction, NotificationType
 )
-from routers.auth import get_current_user
+from auth import get_current_user
 from services.audit_service import AuditService
 from routers.notifications import notify_sector_chiefs, notify_user, create_notification
 

@@ -13,7 +13,7 @@ from database import get_db
 from models import (
     User, Notification, NotificationType, Sector
 )
-from routers.auth import get_current_user
+from auth import get_current_user
 
 router = APIRouter(prefix="/notifications", tags=["Notifiche"])
 

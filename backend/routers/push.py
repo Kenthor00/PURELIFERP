@@ -13,7 +13,7 @@ import json
 
 from database import get_db
 from models import User, PushSubscription, AuditAction
-from routers.auth import get_current_user
+from auth import get_current_user
 from services.audit_service import AuditService
 
 router = APIRouter(prefix="/push", tags=["Push Notifications"])
