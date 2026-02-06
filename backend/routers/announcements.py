@@ -1,6 +1,6 @@
 """
 PURE LIFE OS - Announcements Router
-Bacheca annunci cittadina
+Bacheca annunci cittadina con moderazione e tracking
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,12 +11,13 @@ from datetime import datetime, timezone, timedelta
 
 from database import get_db
 from models import (
-    User, Sector, Announcement, AnnouncementCategory, AnnouncementStatus, AuditAction
+    User, Sector, Announcement, AnnouncementCategory, AnnouncementStatus, AuditAction, NotificationType
 )
 from auth import get_current_user
 from services.audit_service import AuditService
+from routers.notifications import notify_sector_chiefs, notify_user, create_notification
 
-router = APIRouter(prefix="/announcements", tags=["announcements"])
+router = APIRouter(prefix="/announcements", tags=["Annunci"])
 audit_service = AuditService()
 
 
