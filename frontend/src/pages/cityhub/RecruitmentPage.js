@@ -10,22 +10,29 @@ import {
   Clock,
   Eye,
   Send,
-  ChevronDown,
-  AlertCircle,
+  Filter,
+  ArrowUpDown,
   Briefcase,
+  MessageSquare,
+  Calendar,
+  User,
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const RecruitmentPage = () => {
   const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState('apply'); // 'apply' | 'my-applications' | 'manage'
+  const [activeTab, setActiveTab] = useState('apply');
   const [sectors, setSectors] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [sectorApplications, setSectorApplications] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Filtri
+  const [statusFilter, setStatusFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' | 'desc'
   
   // Form state
   const [formData, setFormData] = useState({
@@ -39,6 +46,10 @@ const RecruitmentPage = () => {
   // Review modal
   const [reviewModal, setReviewModal] = useState(null);
   const [reviewNotes, setReviewNotes] = useState('');
+  const [interviewDate, setInterviewDate] = useState('');
+  
+  // Profile view modal
+  const [profileModal, setProfileModal] = useState(null);
 
   const isAdmin = user?.sector?.toUpperCase() === 'ADMIN';
   const isSectorChief = user?.is_sector_chief;
@@ -83,7 +94,7 @@ const RecruitmentPage = () => {
 
   const fetchSectorApplications = async () => {
     try {
-      const sector = isAdmin ? 'LSPD' : user?.sector; // Admin può vedere tutti, mostra LSPD di default
+      const sector = isAdmin ? 'LSPD' : user?.sector;
       const res = await axios.get(`${API_URL}/api/recruitment/sector/${sector}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -135,15 +146,32 @@ const RecruitmentPage = () => {
 
   const handleReview = async (applicationId, status) => {
     try {
-      await axios.put(`${API_URL}/api/recruitment/${applicationId}/review`, {
+      const payload = {
         status,
         notes: reviewNotes
-      }, {
+      };
+      
+      // Se è colloquio, aggiungi data
+      if (status === 'interview' && interviewDate) {
+        payload.interview_scheduled_at = interviewDate;
+        payload.interview_assigned_to = user.id;
+      }
+      
+      await axios.put(`${API_URL}/api/recruitment/${applicationId}/review`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success(`Candidatura ${status === 'accepted' ? 'accettata' : status === 'rejected' ? 'rifiutata' : 'in revisione'}`);
+      
+      const statusLabels = {
+        reviewing: 'in revisione',
+        interview: 'convocata a colloquio',
+        accepted: 'accettata',
+        rejected: 'rifiutata'
+      };
+      
+      toast.success(`Candidatura ${statusLabels[status]}`);
       setReviewModal(null);
       setReviewNotes('');
+      setInterviewDate('');
       fetchSectorApplications();
       fetchStats();
     } catch (err) {
@@ -155,6 +183,7 @@ const RecruitmentPage = () => {
     const badges = {
       pending: { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50', icon: Clock, label: 'In Attesa' },
       reviewing: { color: 'bg-blue-500/20 text-blue-400 border-blue-500/50', icon: Eye, label: 'In Revisione' },
+      interview: { color: 'bg-purple-500/20 text-purple-400 border-purple-500/50', icon: MessageSquare, label: 'Colloquio' },
       accepted: { color: 'bg-green-500/20 text-green-400 border-green-500/50', icon: CheckCircle, label: 'Accettata' },
       rejected: { color: 'bg-red-500/20 text-red-400 border-red-500/50', icon: XCircle, label: 'Rifiutata' },
     };
@@ -168,6 +197,15 @@ const RecruitmentPage = () => {
     );
   };
 
+  // Filtra e ordina candidature
+  const filteredApplications = sectorApplications
+    .filter(app => !statusFilter || app.status === statusFilter)
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+
   if (loading) {
     return (
       <div className="min-h-screen tactical-bg flex items-center justify-center">
@@ -177,7 +215,7 @@ const RecruitmentPage = () => {
   }
 
   return (
-    <div className="min-h-screen tactical-bg p-6" data-testid="recruitment-page">
+    <div className="min-h-screen tactical-bg p-6 pt-16" data-testid="recruitment-page">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -186,7 +224,7 @@ const RecruitmentPage = () => {
           </div>
           <div>
             <h1 className="font-heading text-2xl tracking-wider">RECLUTAMENTO</h1>
-            <p className="text-plos-text-secondary text-sm">Candidati per un lavoro nei settori governativi</p>
+            <p className="text-plos-text-secondary text-sm">Sistema di candidature per i settori governativi</p>
           </div>
         </div>
 
@@ -262,27 +300,30 @@ const RecruitmentPage = () => {
 
               <div>
                 <label className="block text-sm text-plos-text-secondary mb-2">
-                  Motivazione *
+                  Motivazione * <span className="text-plos-text-muted">(min. 100 caratteri)</span>
                 </label>
                 <textarea
                   value={formData.motivation}
                   onChange={(e) => setFormData({ ...formData, motivation: e.target.value })}
-                  rows={4}
-                  placeholder="Perché vuoi entrare in questo settore?"
+                  rows={5}
+                  placeholder="Spiega perché vuoi entrare in questo settore. Cosa ti spinge? Quali sono i tuoi obiettivi?"
                   className="w-full bg-plos-surface border border-plos-border p-3 focus:border-plos-primary outline-none resize-none"
                   data-testid="input-motivation"
                 />
+                <div className="text-xs text-plos-text-muted mt-1">
+                  {formData.motivation.length} caratteri
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm text-plos-text-secondary mb-2">
-                  Esperienza precedente
+                  Esperienza RP *
                 </label>
                 <textarea
                   value={formData.experience}
                   onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                  rows={3}
-                  placeholder="Hai esperienza simile su altri server o nella vita reale?"
+                  rows={4}
+                  placeholder="Hai esperienza di roleplay? Su quali server? Quali ruoli hai interpretato? Quanto tempo giochi?"
                   className="w-full bg-plos-surface border border-plos-border p-3 focus:border-plos-primary outline-none resize-none"
                   data-testid="input-experience"
                 />
@@ -290,13 +331,13 @@ const RecruitmentPage = () => {
 
               <div>
                 <label className="block text-sm text-plos-text-secondary mb-2">
-                  Disponibilità oraria
+                  Disponibilità oraria *
                 </label>
                 <input
                   type="text"
                   value={formData.availability}
                   onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-                  placeholder="Es: Sera/weekend, 10-20 ore settimanali"
+                  placeholder="Es: Sera e weekend, 15-20 ore settimanali, disponibile dalle 18 alle 23"
                   className="w-full bg-plos-surface border border-plos-border p-3 focus:border-plos-primary outline-none"
                   data-testid="input-availability"
                 />
@@ -309,8 +350,8 @@ const RecruitmentPage = () => {
                 <textarea
                   value={formData.additional_info}
                   onChange={(e) => setFormData({ ...formData, additional_info: e.target.value })}
-                  rows={2}
-                  placeholder="Altre info che ritieni utili..."
+                  rows={3}
+                  placeholder="Altre informazioni che ritieni utili per la tua candidatura..."
                   className="w-full bg-plos-surface border border-plos-border p-3 focus:border-plos-primary outline-none resize-none"
                   data-testid="input-additional"
                 />
@@ -318,8 +359,8 @@ const RecruitmentPage = () => {
 
               <button
                 type="submit"
-                disabled={submitting}
-                className="btn-tactical w-full flex items-center justify-center gap-2"
+                disabled={submitting || formData.motivation.length < 50}
+                className="btn-tactical w-full flex items-center justify-center gap-2 disabled:opacity-50"
                 data-testid="btn-submit-application"
               >
                 {submitting ? (
@@ -361,12 +402,28 @@ const RecruitmentPage = () => {
                         <span className="font-heading text-plos-primary">{app.target_sector}</span>
                         {getStatusBadge(app.status)}
                       </div>
-                      <p className="text-sm text-plos-text-secondary mb-2">{app.motivation}</p>
+                      <p className="text-sm text-plos-text-secondary mb-2 line-clamp-2">{app.motivation}</p>
                       <p className="text-xs text-plos-text-muted">
                         Inviata: {new Date(app.created_at).toLocaleDateString('it-IT')}
                       </p>
                     </div>
                   </div>
+                  
+                  {/* Info colloquio */}
+                  {app.status === 'interview' && app.interview_scheduled_at && (
+                    <div className="mt-3 p-3 bg-purple-500/10 border-l-2 border-purple-500">
+                      <p className="text-sm text-purple-400 flex items-center gap-2">
+                        <Calendar size={14} />
+                        Colloquio: {new Date(app.interview_scheduled_at).toLocaleString('it-IT')}
+                      </p>
+                      {app.interview_assigned_name && (
+                        <p className="text-xs text-plos-text-muted mt-1">
+                          Con: {app.interview_assigned_name}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
                   {app.reviewer_notes && (
                     <div className="mt-3 p-3 bg-plos-surface/50 border-l-2 border-plos-primary">
                       <p className="text-xs text-plos-text-secondary">Note del revisore:</p>
@@ -384,7 +441,7 @@ const RecruitmentPage = () => {
           <div className="space-y-6">
             {/* Stats */}
             {stats && (
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-5 gap-4">
                 <div className="card-tactical p-4 text-center">
                   <div className="text-2xl font-heading text-yellow-400">{stats.pending}</div>
                   <div className="text-xs text-plos-text-muted">In Attesa</div>
@@ -392,6 +449,10 @@ const RecruitmentPage = () => {
                 <div className="card-tactical p-4 text-center">
                   <div className="text-2xl font-heading text-blue-400">{stats.reviewing}</div>
                   <div className="text-xs text-plos-text-muted">In Revisione</div>
+                </div>
+                <div className="card-tactical p-4 text-center">
+                  <div className="text-2xl font-heading text-purple-400">{stats.interview || 0}</div>
+                  <div className="text-xs text-plos-text-muted">Colloquio</div>
                 </div>
                 <div className="card-tactical p-4 text-center">
                   <div className="text-2xl font-heading text-green-400">{stats.accepted}</div>
@@ -404,29 +465,63 @@ const RecruitmentPage = () => {
               </div>
             )}
 
+            {/* Filtri */}
+            <div className="flex items-center gap-4 p-3 bg-plos-surface/50 border border-plos-border">
+              <Filter size={16} className="text-plos-text-muted" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-plos-surface border border-plos-border p-2 text-sm focus:border-plos-primary outline-none"
+              >
+                <option value="">Tutti gli stati</option>
+                <option value="pending">In Attesa</option>
+                <option value="reviewing">In Revisione</option>
+                <option value="interview">Colloquio</option>
+                <option value="accepted">Accettate</option>
+                <option value="rejected">Rifiutate</option>
+              </select>
+              
+              <button
+                onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                className="flex items-center gap-1 px-3 py-2 text-sm border border-plos-border hover:border-plos-primary"
+              >
+                <ArrowUpDown size={14} />
+                {sortOrder === 'desc' ? 'Più recenti' : 'Meno recenti'}
+              </button>
+              
+              <span className="text-xs text-plos-text-muted ml-auto">
+                {filteredApplications.length} candidature
+              </span>
+            </div>
+
             {/* Applications List */}
             <div className="space-y-4">
-              <h3 className="font-heading text-lg">CANDIDATURE DA REVISIONARE</h3>
-              {sectorApplications.length === 0 ? (
+              {filteredApplications.length === 0 ? (
                 <div className="card-tactical p-8 text-center">
                   <CheckCircle className="mx-auto text-green-500 mb-4" size={48} />
-                  <p className="text-plos-text-muted">Nessuna candidatura da revisionare</p>
+                  <p className="text-plos-text-muted">Nessuna candidatura trovata</p>
                 </div>
               ) : (
-                sectorApplications.map((app) => (
+                filteredApplications.map((app) => (
                   <div key={app.id} className="card-tactical p-4" data-testid={`manage-application-${app.id}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="font-heading">{app.game_name}</span>
+                          <button
+                            onClick={() => setProfileModal(app)}
+                            className="font-heading text-plos-primary hover:underline flex items-center gap-1"
+                          >
+                            <User size={14} />
+                            {app.game_name}
+                          </button>
                           <span className="text-xs text-plos-text-muted">da {app.user_sector}</span>
                           {getStatusBadge(app.status)}
                         </div>
-                        <p className="text-sm text-plos-text-secondary mb-2">
+                        <p className="text-sm text-plos-text-secondary mb-2 line-clamp-2">
                           <strong>Motivazione:</strong> {app.motivation}
                         </p>
                         {app.experience && (
-                          <p className="text-sm text-plos-text-secondary mb-2">
+                          <p className="text-sm text-plos-text-secondary mb-2 line-clamp-1">
                             <strong>Esperienza:</strong> {app.experience}
                           </p>
                         )}
@@ -436,18 +531,31 @@ const RecruitmentPage = () => {
                           </p>
                         )}
                         <p className="text-xs text-plos-text-muted mt-2">
-                          Inviata: {new Date(app.created_at).toLocaleDateString('it-IT')}
+                          Inviata: {new Date(app.created_at).toLocaleString('it-IT')}
                         </p>
                       </div>
-                      {app.status === 'pending' || app.status === 'reviewing' ? (
-                        <div className="flex gap-2 ml-4">
-                          <button
-                            onClick={() => setReviewModal({ app, action: 'reviewing' })}
-                            className="p-2 bg-blue-500/20 border border-blue-500/50 hover:bg-blue-500/30"
-                            title="In Revisione"
-                          >
-                            <Eye size={16} className="text-blue-400" />
-                          </button>
+                      
+                      {/* Actions */}
+                      {['pending', 'reviewing', 'interview'].includes(app.status) && (
+                        <div className="flex gap-2 ml-4 flex-shrink-0">
+                          {app.status === 'pending' && (
+                            <button
+                              onClick={() => setReviewModal({ app, action: 'reviewing' })}
+                              className="p-2 bg-blue-500/20 border border-blue-500/50 hover:bg-blue-500/30"
+                              title="Prendi in carico"
+                            >
+                              <Eye size={16} className="text-blue-400" />
+                            </button>
+                          )}
+                          {['pending', 'reviewing'].includes(app.status) && (
+                            <button
+                              onClick={() => setReviewModal({ app, action: 'interview' })}
+                              className="p-2 bg-purple-500/20 border border-purple-500/50 hover:bg-purple-500/30"
+                              title="Convoca a colloquio"
+                            >
+                              <MessageSquare size={16} className="text-purple-400" />
+                            </button>
+                          )}
                           <button
                             onClick={() => setReviewModal({ app, action: 'accepted' })}
                             className="p-2 bg-green-500/20 border border-green-500/50 hover:bg-green-500/30"
@@ -463,8 +571,17 @@ const RecruitmentPage = () => {
                             <XCircle size={16} className="text-red-400" />
                           </button>
                         </div>
-                      ) : null}
+                      )}
                     </div>
+                    
+                    {/* Info colloquio se presente */}
+                    {app.status === 'interview' && app.interview_scheduled_at && (
+                      <div className="mt-3 p-2 bg-purple-500/10 border border-purple-500/30 text-sm">
+                        <Calendar size={14} className="inline mr-2 text-purple-400" />
+                        Colloquio: {new Date(app.interview_scheduled_at).toLocaleString('it-IT')}
+                        {app.interview_assigned_name && ` - ${app.interview_assigned_name}`}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -478,18 +595,35 @@ const RecruitmentPage = () => {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-plos-surface border border-plos-border p-6 max-w-md w-full">
             <h3 className="font-heading text-lg mb-4">
-              {reviewModal.action === 'reviewing' && 'METTI IN REVISIONE'}
+              {reviewModal.action === 'reviewing' && 'PRENDI IN CARICO'}
+              {reviewModal.action === 'interview' && 'CONVOCA A COLLOQUIO'}
               {reviewModal.action === 'accepted' && 'ACCETTA CANDIDATURA'}
               {reviewModal.action === 'rejected' && 'RIFIUTA CANDIDATURA'}
             </h3>
             <p className="text-sm text-plos-text-secondary mb-4">
               Candidatura di <strong>{reviewModal.app.game_name}</strong> per <strong>{reviewModal.app.target_sector}</strong>
             </p>
+            
+            {/* Data colloquio per interview */}
+            {reviewModal.action === 'interview' && (
+              <div className="mb-4">
+                <label className="block text-sm text-plos-text-secondary mb-2">
+                  Data e ora colloquio
+                </label>
+                <input
+                  type="datetime-local"
+                  value={interviewDate}
+                  onChange={(e) => setInterviewDate(e.target.value)}
+                  className="w-full bg-plos-background border border-plos-border p-3 focus:border-plos-primary outline-none"
+                />
+              </div>
+            )}
+            
             <textarea
               value={reviewNotes}
               onChange={(e) => setReviewNotes(e.target.value)}
               rows={3}
-              placeholder="Note (opzionale)..."
+              placeholder={reviewModal.action === 'rejected' ? 'Motivo del rifiuto...' : 'Note (opzionale)...'}
               className="w-full bg-plos-background border border-plos-border p-3 focus:border-plos-primary outline-none resize-none mb-4"
             />
             <div className="flex gap-2">
@@ -497,6 +631,7 @@ const RecruitmentPage = () => {
                 onClick={() => {
                   setReviewModal(null);
                   setReviewNotes('');
+                  setInterviewDate('');
                 }}
                 className="flex-1 px-4 py-2 border border-plos-border hover:border-plos-text-muted"
               >
@@ -507,11 +642,71 @@ const RecruitmentPage = () => {
                 className={`flex-1 px-4 py-2 ${
                   reviewModal.action === 'accepted' ? 'bg-green-600' :
                   reviewModal.action === 'rejected' ? 'bg-red-600' :
+                  reviewModal.action === 'interview' ? 'bg-purple-600' :
                   'bg-blue-600'
                 }`}
               >
                 Conferma
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Modal */}
+      {profileModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-plos-surface border border-plos-border p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-lg">PROFILO CANDIDATO</h3>
+              <button
+                onClick={() => setProfileModal(null)}
+                className="text-plos-text-muted hover:text-plos-text"
+              >
+                <XCircle size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-plos-primary/20 border border-plos-primary flex items-center justify-center">
+                  <User className="text-plos-primary" size={24} />
+                </div>
+                <div>
+                  <p className="font-heading text-plos-primary">{profileModal.game_name}</p>
+                  <p className="text-sm text-plos-text-muted">{profileModal.user_sector}</p>
+                </div>
+              </div>
+              
+              <div className="border-t border-plos-border pt-4">
+                <h4 className="font-heading text-sm mb-2">MOTIVAZIONE</h4>
+                <p className="text-sm text-plos-text-secondary whitespace-pre-wrap">{profileModal.motivation}</p>
+              </div>
+              
+              {profileModal.experience && (
+                <div className="border-t border-plos-border pt-4">
+                  <h4 className="font-heading text-sm mb-2">ESPERIENZA RP</h4>
+                  <p className="text-sm text-plos-text-secondary whitespace-pre-wrap">{profileModal.experience}</p>
+                </div>
+              )}
+              
+              {profileModal.availability && (
+                <div className="border-t border-plos-border pt-4">
+                  <h4 className="font-heading text-sm mb-2">DISPONIBILITÀ</h4>
+                  <p className="text-sm text-plos-text-secondary">{profileModal.availability}</p>
+                </div>
+              )}
+              
+              {profileModal.additional_info && (
+                <div className="border-t border-plos-border pt-4">
+                  <h4 className="font-heading text-sm mb-2">INFO AGGIUNTIVE</h4>
+                  <p className="text-sm text-plos-text-secondary whitespace-pre-wrap">{profileModal.additional_info}</p>
+                </div>
+              )}
+              
+              <div className="border-t border-plos-border pt-4 text-xs text-plos-text-muted">
+                Candidatura inviata: {new Date(profileModal.created_at).toLocaleString('it-IT')}
+              </div>
             </div>
           </div>
         </div>
