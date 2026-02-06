@@ -26,6 +26,8 @@ from routers import fivem_sso
 from routers import users, audit
 from routers import recruitment, appointments, announcements, advertising
 from routers import notifications
+from routers import news_v2, push
+from routers import chat as service_chat
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
