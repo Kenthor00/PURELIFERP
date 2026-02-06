@@ -180,6 +180,7 @@ async def login(
         sector=user.sector.value,
         grade=user.grade,
         hierarchy_level=user.hierarchy_level,
+        is_sector_chief=user.is_sector_chief or False,
         game_name=user.game_name,
         needs_game_name=user.needs_game_name
     )
