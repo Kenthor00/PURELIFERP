@@ -36,7 +36,7 @@ class AuditService:
             entity_type=entity_type,
             entity_id=entity_id,
             description=description,
-            metadata=metadata
+            extra_data=metadata  # mapped to extra_data column
         )
         
         # Dati utente
