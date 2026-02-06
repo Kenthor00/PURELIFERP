@@ -289,7 +289,7 @@ async def handle_appointment(
             pass
     
     # Aggiorna appuntamento
-    appointment.status = new_status
+    appointment.status = new_status.value
     appointment.handler_id = current_user.id
     appointment.handler_game_name = current_user.game_name
     appointment.handler_notes = data.notes
