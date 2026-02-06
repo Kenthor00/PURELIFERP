@@ -216,6 +216,7 @@ app.add_middleware(
 api_router.include_router(auth.router)
 api_router.include_router(users.router)
 api_router.include_router(audit.router)
+api_router.include_router(admin.router)
 api_router.include_router(lspd.router)
 api_router.include_router(ems.router)
 api_router.include_router(dispatch.router)
