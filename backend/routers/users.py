@@ -219,6 +219,7 @@ async def create_user(
         sector=target_sector,
         grade=data.grade or valid_grades.get(data.hierarchy_level, ""),
         hierarchy_level=data.hierarchy_level,
+        is_sector_chief=data.is_sector_chief if current_user.sector == Sector.ADMIN else False,
         badge_number=data.badge_number,
         department=data.department,
         is_active=True
