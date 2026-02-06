@@ -353,6 +353,7 @@ class User(Base):
     sector = Column(Enum(Sector), nullable=False, default=Sector.CIVIL)
     grade = Column(String(100), nullable=False, default="Cittadino")
     hierarchy_level = Column(Integer, nullable=False, default=1)
+    is_sector_chief = Column(Boolean, default=False)  # Capo settore
     
     # Dati opzionali
     badge_number = Column(String(50), unique=True, nullable=True)
