@@ -562,7 +562,7 @@ async def get_user_access_history(
     result = await db.execute(
         select(AuditLog)
         .where(AuditLog.user_id == user_id)
-        .where(AuditLog.action.in_([AuditAction.LOGIN, AuditAction.LOGOUT, AuditAction.LOGIN_FAILED]))
+        .where(AuditLog.action.in_([AuditAction.LOGIN_SUCCESS, AuditAction.LOGOUT, AuditAction.LOGIN_FAILED]))
         .order_by(AuditLog.timestamp.desc())
         .limit(limit)
     )
