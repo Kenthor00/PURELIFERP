@@ -424,7 +424,7 @@ class User(Base):
     fines = relationship("Fine", back_populates="issued_by_user", foreign_keys="Fine.issued_by")
     medical_reports = relationship("MedicalReport", back_populates="doctor")
     news_articles = relationship("NewsArticle", back_populates="author")
-    chat_messages = relationship("ChatMessage", back_populates="author")
+    chat_messages = relationship("ChatMessage", back_populates="author", foreign_keys="ChatMessage.author_id")
     audit_logs = relationship("AuditLog", back_populates="user")
     
     def has_permission(self, permission: Permission) -> bool:
