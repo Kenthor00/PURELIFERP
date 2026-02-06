@@ -5,8 +5,7 @@ import axios from 'axios';
 import {
   MessageSquare, Send, Users, Pin, Trash2, Settings,
   ArrowLeft, RefreshCw, Circle, Hash, Shield, Radio,
-  Newspaper, MapPin, FileText, Activity, ChevronDown,
-  AlertCircle
+  Newspaper, MapPin, FileText, Activity, AtSign
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -29,13 +28,6 @@ const STATUS_COLORS = {
   offline: 'bg-gray-500'
 };
 
-const STATUS_LABELS = {
-  online: 'Online',
-  in_service: 'In Servizio',
-  off_duty: 'Fuori Servizio',
-  offline: 'Offline'
-};
-
 export const ServiceChatPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -50,6 +42,13 @@ export const ServiceChatPage = () => {
   const [sending, setSending] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [showPresence, setShowPresence] = useState(false);
+  
+  // Autocomplete menzioni
+  const [showMentionPopup, setShowMentionPopup] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionUsers, setMentionUsers] = useState([]);
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState(0);
   
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -68,7 +67,6 @@ export const ServiceChatPage = () => {
       const res = await axios.get(`${API_URL}/api/chat/channels`, { headers: authHeaders });
       setChannels(res.data);
       
-      // Auto-select channel from URL or first one
       const paramChannel = searchParams.get('channel')?.toLowerCase();
       if (paramChannel) {
         const found = res.data.find(c => c.name === paramChannel);
@@ -114,6 +112,22 @@ export const ServiceChatPage = () => {
     }
   }, [activeChannel, token]);
 
+  // Fetch users for mention autocomplete
+  const fetchMentionUsers = useCallback(async (query) => {
+    if (!activeChannel) return;
+    try {
+      const res = await axios.get(
+        `${API_URL}/api/chat/channels/${activeChannel.name}/users?q=${encodeURIComponent(query)}`,
+        { headers: authHeaders }
+      );
+      setMentionUsers(res.data);
+      setMentionIndex(0);
+    } catch (error) {
+      console.error('Errore fetch mention users:', error);
+      setMentionUsers([]);
+    }
+  }, [activeChannel, token]);
+
   // Update my presence
   const updateMyPresence = async (status) => {
     try {
@@ -140,6 +154,7 @@ export const ServiceChatPage = () => {
         { headers: authHeaders }
       );
       setNewMessage('');
+      setShowMentionPopup(false);
       fetchMessages();
     } catch (error) {
       console.error('Errore invio messaggio:', error);
@@ -178,6 +193,82 @@ export const ServiceChatPage = () => {
     }
   };
 
+  // Handle mention selection
+  const selectMention = (mentionUser) => {
+    const input = inputRef.current;
+    if (!input) return;
+    
+    // Find the @ position before cursor
+    const textBeforeCursor = newMessage.substring(0, cursorPosition);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      const before = newMessage.substring(0, lastAtIndex);
+      const after = newMessage.substring(cursorPosition);
+      const newText = `${before}@${mentionUser.game_name} ${after}`;
+      setNewMessage(newText);
+      
+      // Set cursor after the mention
+      setTimeout(() => {
+        const newPos = lastAtIndex + mentionUser.game_name.length + 2;
+        input.setSelectionRange(newPos, newPos);
+        input.focus();
+      }, 0);
+    }
+    
+    setShowMentionPopup(false);
+    setMentionQuery('');
+  };
+
+  // Handle input change with mention detection
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart;
+    setNewMessage(value);
+    setCursorPosition(cursorPos);
+    
+    // Check for @ mention trigger
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      // Check if there's a space before @ (or it's at the start)
+      const charBeforeAt = lastAtIndex > 0 ? value[lastAtIndex - 1] : ' ';
+      
+      if ((charBeforeAt === ' ' || charBeforeAt === '\n' || lastAtIndex === 0) && 
+          !textAfterAt.includes(' ') && textAfterAt.length <= 30) {
+        setMentionQuery(textAfterAt);
+        setShowMentionPopup(true);
+        fetchMentionUsers(textAfterAt);
+        return;
+      }
+    }
+    
+    setShowMentionPopup(false);
+  };
+
+  // Handle key navigation in mention popup
+  const handleKeyDown = (e) => {
+    if (showMentionPopup && mentionUsers.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMentionIndex(prev => (prev + 1) % mentionUsers.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMentionIndex(prev => (prev - 1 + mentionUsers.length) % mentionUsers.length);
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        selectMention(mentionUsers[mentionIndex]);
+      } else if (e.key === 'Escape') {
+        setShowMentionPopup(false);
+      }
+    } else if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
   // Initial load
   useEffect(() => {
     fetchChannels();
@@ -206,15 +297,7 @@ export const ServiceChatPage = () => {
     };
   }, [activeChannel, fetchMessages, fetchPresence]);
 
-  // Handle Enter key
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  // Quick Actions
+  // Quick Actions component
   const QuickActions = () => (
     <div className="p-3 border-t border-plos-border bg-plos-surface/50">
       <div className="text-xs text-plos-text-muted mb-2">AZIONI RAPIDE</div>
@@ -237,15 +320,46 @@ export const ServiceChatPage = () => {
     </div>
   );
 
+  // Render message content with highlighted mentions
+  const renderMessageContent = (content, mentions) => {
+    if (!mentions || mentions.length === 0) {
+      return <span>{content}</span>;
+    }
+    
+    // Highlight @mentions
+    const parts = content.split(/(@[A-Za-zÀ-ÿ0-9_\s]+?)(?=\s|$)/g);
+    return (
+      <>
+        {parts.map((part, index) => {
+          if (part.startsWith('@')) {
+            const isMentionMe = part.toLowerCase().includes(user?.game_name?.toLowerCase() || '');
+            return (
+              <span 
+                key={index} 
+                className={`font-medium ${isMentionMe ? 'bg-plos-primary/30 text-plos-primary px-1 rounded' : 'text-blue-400'}`}
+              >
+                {part}
+              </span>
+            );
+          }
+          return <span key={index}>{part}</span>;
+        })}
+      </>
+    );
+  };
+
   // Message component
   const MessageItem = ({ msg }) => {
     const isOwn = msg.author_id === user?.id;
+    const isMentioned = msg.mentions && msg.mentions.includes(user?.id);
     const canDelete = isOwn || (user?.hierarchy_level >= 7) || user?.sector === 'ADMIN' || user?.is_sector_chief;
     const canPin = (user?.hierarchy_level >= 3) || user?.sector === 'ADMIN';
     
     return (
       <div 
-        className={`group flex gap-3 px-4 py-2 hover:bg-plos-surface/50 ${msg.is_pinned ? 'bg-yellow-500/5 border-l-2 border-yellow-500' : ''}`}
+        className={`group flex gap-3 px-4 py-2 hover:bg-plos-surface/50 transition-colors
+          ${msg.is_pinned ? 'bg-yellow-500/5 border-l-2 border-yellow-500' : ''} 
+          ${isMentioned ? 'bg-plos-primary/10 border-l-2 border-plos-primary' : ''}`}
         data-testid={`message-${msg.id}`}
       >
         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-plos-surface flex items-center justify-center text-xs font-bold text-plos-primary">
@@ -263,14 +377,15 @@ export const ServiceChatPage = () => {
               {new Date(msg.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
             </span>
             {msg.is_pinned && <Pin size={12} className="text-yellow-500" />}
+            {isMentioned && <AtSign size={12} className="text-plos-primary" />}
           </div>
           
           <p className="text-sm text-plos-text-secondary mt-1 whitespace-pre-wrap break-words">
-            {msg.content}
+            {renderMessageContent(msg.content, msg.mentions)}
           </p>
         </div>
         
-        <div className="opacity-0 group-hover:opacity-100 flex items-start gap-1">
+        <div className="opacity-0 group-hover:opacity-100 flex items-start gap-1 transition-opacity">
           {canPin && (
             <button onClick={() => togglePin(msg.id)} className="p-1 text-plos-text-muted hover:text-yellow-500">
               <Pin size={14} />
@@ -394,9 +509,14 @@ export const ServiceChatPage = () => {
                 <p className="text-xs text-plos-text-muted mt-1">{activeChannel.description}</p>
               )}
             </div>
-            <button onClick={() => { fetchMessages(); fetchPresence(); }} className="btn-tactical-secondary p-2">
-              <RefreshCw size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-plos-text-muted flex items-center gap-1">
+                <AtSign size={12} /> Usa @nome per menzionare
+              </span>
+              <button onClick={() => { fetchMessages(); fetchPresence(); }} className="btn-tactical-secondary p-2">
+                <RefreshCw size={16} />
+              </button>
+            </div>
           </div>
         )}
         
@@ -427,17 +547,47 @@ export const ServiceChatPage = () => {
           )}
         </div>
         
-        {/* Message Input */}
+        {/* Message Input with Mention Autocomplete */}
         {activeChannel && (
-          <div className="p-4 border-t border-plos-border bg-plos-surface">
+          <div className="relative p-4 border-t border-plos-border bg-plos-surface">
+            {/* Mention Autocomplete Popup */}
+            {showMentionPopup && mentionUsers.length > 0 && (
+              <div 
+                className="absolute bottom-full left-4 right-4 mb-2 bg-plos-bg border border-plos-border rounded-lg shadow-xl max-h-48 overflow-y-auto"
+                data-testid="mention-autocomplete"
+              >
+                <div className="p-2 text-xs text-plos-text-muted border-b border-plos-border">
+                  Menziona utente
+                </div>
+                {mentionUsers.map((u, index) => (
+                  <button
+                    key={u.id}
+                    onClick={() => selectMention(u)}
+                    className={`w-full px-3 py-2 flex items-center gap-2 text-sm text-left hover:bg-plos-surface transition-colors ${
+                      index === mentionIndex ? 'bg-plos-primary/20' : ''
+                    }`}
+                  >
+                    <div className="w-6 h-6 rounded-full bg-plos-surface flex items-center justify-center text-xs font-bold text-plos-primary">
+                      {u.game_name?.charAt(0) || '?'}
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-medium">{u.game_name}</span>
+                      <span className="text-xs text-plos-text-muted ml-2">{u.sector}</span>
+                    </div>
+                    {u.grade && <span className="text-xs text-plos-text-muted">{u.grade}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+            
             <div className="flex gap-3">
               <input
                 ref={inputRef}
                 type="text"
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={`Scrivi in #${activeChannel.display_name}...`}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder={`Scrivi in #${activeChannel.display_name}... (usa @ per menzionare)`}
                 className="input-tactical flex-1"
                 disabled={sending}
                 data-testid="chat-input"
