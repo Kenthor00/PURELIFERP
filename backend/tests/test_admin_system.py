@@ -123,7 +123,8 @@ class TestUserManagement:
     def test_create_user_success(self, auth_token):
         """Test creating a new user"""
         import time
-        test_email = f"test_lspd_{int(time.time())}@purelife.rp"
+        timestamp = int(time.time())
+        test_email = f"test_lspd_{timestamp}@purelife.rp"
         
         response = requests.post(
             f"{BASE_URL}/api/users/create",
@@ -136,7 +137,7 @@ class TestUserManagement:
                 "grade": "Cadetto",
                 "hierarchy_level": 1,
                 "is_sector_chief": False,
-                "badge_number": "TEST001",
+                "badge_number": f"TEST{timestamp}",  # Unique badge number
                 "department": "Patrol"
             }
         )
@@ -147,9 +148,6 @@ class TestUserManagement:
         assert data["sector"] == "LSPD"
         assert data["game_name"] == "Test Officer"
         print(f"Created user: {data['email']}, ID: {data['id']}")
-        
-        # Return user ID for cleanup
-        return data["id"]
     
     def test_create_user_duplicate_email(self, auth_token):
         """Test creating user with duplicate email fails"""
