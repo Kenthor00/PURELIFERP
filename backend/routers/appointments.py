@@ -174,10 +174,10 @@ async def cancel_appointment(
             raise HTTPException(status_code=403, detail="Non puoi annullare questo appuntamento")
     
     # Solo se pending o accepted
-    if appointment.status not in [AppointmentStatus.PENDING, AppointmentStatus.ACCEPTED]:
+    if appointment.status not in [AppointmentStatus.PENDING.value, AppointmentStatus.ACCEPTED.value]:
         raise HTTPException(status_code=400, detail="Non puoi annullare questo appuntamento")
     
-    appointment.status = AppointmentStatus.CANCELLED
+    appointment.status = AppointmentStatus.CANCELLED.value
     appointment.updated_at = datetime.now(timezone.utc)
     
     await db.commit()
