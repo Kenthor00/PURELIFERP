@@ -44,6 +44,12 @@ import SectorManagement from './pages/SectorManagement';
 import CityHubPage from './pages/public/CityHubPage';
 import NewsPage from './pages/public/NewsPage';
 
+// City Hub v2
+import RecruitmentPage from './pages/cityhub/RecruitmentPage';
+import AppointmentsPage from './pages/cityhub/AppointmentsPage';
+import AnnouncementsPage from './pages/cityhub/AnnouncementsPage';
+import AdvertisingPage from './pages/cityhub/AdvertisingPage';
+
 import './App.css';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
