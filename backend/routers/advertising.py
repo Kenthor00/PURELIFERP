@@ -273,7 +273,7 @@ async def get_pending_slots(
     
     result = await db.execute(
         select(AdvertisingSlot)
-        .where(AdvertisingSlot.status == AdSlotStatus.PENDING)
+        .where(AdvertisingSlot.status == AdSlotStatus.PENDING.value)
         .order_by(AdvertisingSlot.created_at)
     )
     ads = result.scalars().all()
@@ -306,7 +306,7 @@ async def approve_ad_slot(
     if not ad:
         raise HTTPException(status_code=404, detail="Slot non trovato")
     
-    if ad.status != AdSlotStatus.PENDING:
+    if ad.status != AdSlotStatus.PENDING.value:
         raise HTTPException(status_code=400, detail="Questo slot non è in attesa di approvazione")
     
     # Parse data inizio
@@ -321,7 +321,7 @@ async def approve_ad_slot(
     expires_at = starts_at + timedelta(days=ad.duration_days)
     
     # Aggiorna slot
-    ad.status = AdSlotStatus.ACTIVE
+    ad.status = AdSlotStatus.ACTIVE.value
     ad.approver_id = current_user.id
     ad.approver_game_name = current_user.game_name
     ad.approver_notes = data.notes
@@ -373,7 +373,7 @@ async def reject_ad_slot(
         raise HTTPException(status_code=404, detail="Slot non trovato")
     
     # Aggiorna slot
-    ad.status = AdSlotStatus.REJECTED
+    ad.status = AdSlotStatus.REJECTED.value
     ad.approver_id = current_user.id
     ad.approver_game_name = current_user.game_name
     ad.approver_notes = data.notes
