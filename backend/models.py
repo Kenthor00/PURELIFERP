@@ -823,36 +823,9 @@ class CourtHearing(Base):
 
 
 # ==========================================
-# CHAT MODELS
+# CHAT MODELS (Legacy - vedi SERVICE CHAT 2.0)
 # ==========================================
-
-class ChatChannel(Base):
-    __tablename__ = "chat_channels"
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), unique=True, nullable=False)
-    display_name = Column(String(100), nullable=False)
-    description = Column(Text, nullable=True)
-    allowed_sectors = Column(JSON, nullable=True)  # Lista settori che possono accedere
-    is_public = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    
-    messages = relationship("ChatMessage", back_populates="channel")
-
-
-class ChatMessage(Base):
-    __tablename__ = "chat_messages"
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    channel_id = Column(Integer, ForeignKey("chat_channels.id"), nullable=False)
-    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    content = Column(Text, nullable=False)
-    message_type = Column(String(20), default="text")
-    extra_data = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
-    
-    channel = relationship("ChatChannel", back_populates="messages")
-    sender = relationship("User", back_populates="chat_messages")
+# ChatChannel e ChatMessage sono definiti nella sezione SERVICE CHAT 2.0
 
 
 # ==========================================
