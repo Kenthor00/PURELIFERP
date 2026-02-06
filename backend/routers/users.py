@@ -516,7 +516,7 @@ async def reset_user_password(
     await db.commit()
     
     # Audit log
-    await AuditService.log(
+    await audit_service.log(
         db,
         action=AuditAction.PASSWORD_CHANGE,
         user=current_user,
