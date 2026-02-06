@@ -124,6 +124,18 @@ async def create_application(
         request=request
     )
     
+    # Notifica ai capi settore
+    await notify_sector_chiefs(
+        db=db,
+        sector=target_sector.value,
+        notification_type=NotificationType.RECRUITMENT_NEW.value,
+        title="Nuova Candidatura",
+        message=f"{current_user.game_name} ha inviato una candidatura per {target_sector.value}",
+        sender=current_user,
+        entity_type="recruitment",
+        entity_id=application.id
+    )
+    
     return _application_to_response(application)
 
 
