@@ -340,6 +340,30 @@ async def moderate_announcement(
         request=request
     )
     
+    # Notifica all'autore
+    if new_status == AnnouncementStatus.APPROVED.value:
+        await notify_user(
+            db=db,
+            user_id=announcement.author_id,
+            notification_type=NotificationType.ANNOUNCEMENT_APPROVED.value,
+            title="Annuncio Approvato",
+            message=f"Il tuo annuncio '{announcement.title}' è stato approvato e pubblicato",
+            sender=current_user,
+            entity_type="announcement",
+            entity_id=announcement.id
+        )
+    else:
+        await notify_user(
+            db=db,
+            user_id=announcement.author_id,
+            notification_type=NotificationType.ANNOUNCEMENT_REJECTED.value,
+            title="Annuncio Rifiutato",
+            message=f"Il tuo annuncio '{announcement.title}' non è stato approvato",
+            sender=current_user,
+            entity_type="announcement",
+            entity_id=announcement.id
+        )
+    
     return _announcement_to_response(announcement)
 
 
