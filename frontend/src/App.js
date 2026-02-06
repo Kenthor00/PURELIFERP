@@ -466,6 +466,16 @@ const AppRoutes = () => {
           }
         />
 
+        {/* Sector Chief Routes */}
+        <Route
+          path="/sector-management"
+          element={
+            <ProtectedRoute>
+              <SectorManagement />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Common Routes */}
         <Route
           path="/timeline"
