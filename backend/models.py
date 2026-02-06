@@ -857,19 +857,211 @@ class Outbox(Base):
 # RECRUITMENT (Candidature)
 # ==========================================
 
+class ApplicationStatus(str, Enum):
+    PENDING = "pending"
+    REVIEWING = "reviewing"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+
+
 class RecruitmentApplication(Base):
     __tablename__ = "recruitment_applications"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    sector = Column(Enum(Sector), nullable=False)
-    applicant_name = Column(String(100), nullable=False)
-    applicant_email = Column(String(255), nullable=False)
+    
+    # Settore target
+    target_sector = Column(Enum(Sector), nullable=False)
+    
+    # Dati candidato (utente loggato)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     game_name = Column(String(100), nullable=False)
-    fivem_identifier = Column(String(100), nullable=True)
-    motivation = Column(Text, nullable=True)
+    user_sector = Column(Enum(Sector), nullable=False)  # Settore attuale del candidato
+    
+    # Info candidatura
+    motivation = Column(Text, nullable=False)
     experience = Column(Text, nullable=True)
-    status = Column(String(20), default="pending")  # pending, reviewing, accepted, rejected
+    availability = Column(String(200), nullable=True)  # Disponibilità oraria
+    additional_info = Column(Text, nullable=True)
+    
+    # Stato e revisione
+    status = Column(Enum(ApplicationStatus), default=ApplicationStatus.PENDING, index=True)
     reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewer_game_name = Column(String(100), nullable=True)
     reviewer_notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     reviewed_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    applicant = relationship("User", foreign_keys=[user_id])
+    reviewer = relationship("User", foreign_keys=[reviewer_id])
+
+
+# ==========================================
+# APPOINTMENTS (Appuntamenti)
+# ==========================================
+
+class AppointmentStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Settore destinatario
+    target_sector = Column(Enum(Sector), nullable=False, index=True)
+    
+    # Richiedente (utente loggato)
+    requester_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    requester_game_name = Column(String(100), nullable=False)
+    requester_sector = Column(Enum(Sector), nullable=False)
+    
+    # Dettagli appuntamento
+    subject = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
+    preferred_date = Column(DateTime, nullable=True)  # Data preferita
+    preferred_time = Column(String(50), nullable=True)  # Es: "pomeriggio", "sera"
+    urgency = Column(String(20), default="normal")  # low, normal, high
+    
+    # Stato e gestione
+    status = Column(Enum(AppointmentStatus), default=AppointmentStatus.PENDING, index=True)
+    handler_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    handler_game_name = Column(String(100), nullable=True)
+    handler_notes = Column(Text, nullable=True)
+    scheduled_date = Column(DateTime, nullable=True)  # Data confermata
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    requester = relationship("User", foreign_keys=[requester_id])
+    handler = relationship("User", foreign_keys=[handler_id])
+
+
+# ==========================================
+# ANNOUNCEMENTS (Annunci Bacheca)
+# ==========================================
+
+class AnnouncementCategory(str, Enum):
+    LAVORO = "lavoro"
+    VENDITA = "vendita"
+    AFFITTI = "affitti"
+    SERVIZI = "servizi"
+    EVENTI = "eventi"
+
+
+class AnnouncementStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    EXPIRED = "expired"
+
+
+class Announcement(Base):
+    __tablename__ = "announcements"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Autore (utente loggato)
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    author_game_name = Column(String(100), nullable=False)
+    author_sector = Column(Enum(Sector), nullable=False)
+    
+    # Contenuto
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
+    category = Column(Enum(AnnouncementCategory), nullable=False, index=True)
+    image_url = Column(String(500), nullable=True)
+    contact_info = Column(String(200), nullable=True)  # Telefono, email, etc.
+    price = Column(String(50), nullable=True)  # Per vendita/affitti
+    location = Column(String(200), nullable=True)
+    
+    # Stato e moderazione
+    status = Column(Enum(AnnouncementStatus), default=AnnouncementStatus.PENDING, index=True)
+    moderator_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    moderator_game_name = Column(String(100), nullable=True)
+    moderator_notes = Column(Text, nullable=True)
+    
+    # Durata
+    expires_at = Column(DateTime, nullable=True)  # Scadenza annuncio
+    
+    # Stats
+    views = Column(Integer, default=0)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    approved_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    author = relationship("User", foreign_keys=[author_id])
+    moderator = relationship("User", foreign_keys=[moderator_id])
+
+
+# ==========================================
+# ADVERTISING SLOTS (Slot Pubblicitari)
+# ==========================================
+
+class AdSlotStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    ACTIVE = "active"
+    EXPIRED = "expired"
+
+
+class AdSlotPosition(str, Enum):
+    HOMEPAGE_BANNER = "homepage_banner"
+    SIDEBAR = "sidebar"
+    FOOTER = "footer"
+    POPUP = "popup"
+
+
+class AdvertisingSlot(Base):
+    __tablename__ = "advertising_slots"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Richiedente/Acquirente
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    owner_game_name = Column(String(100), nullable=False)
+    owner_sector = Column(Enum(Sector), nullable=False)
+    business_name = Column(String(200), nullable=False)  # Nome azienda/attività
+    
+    # Contenuto pubblicitario
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    image_url = Column(String(500), nullable=False)
+    link_url = Column(String(500), nullable=True)
+    position = Column(Enum(AdSlotPosition), nullable=False)
+    
+    # Stato e approvazione
+    status = Column(Enum(AdSlotStatus), default=AdSlotStatus.PENDING, index=True)
+    approver_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approver_game_name = Column(String(100), nullable=True)
+    approver_notes = Column(Text, nullable=True)
+    
+    # Durata
+    starts_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    duration_days = Column(Integer, default=7)
+    
+    # Stats e tracking
+    views = Column(Integer, default=0)
+    clicks = Column(Integer, default=0)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    approved_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    owner = relationship("User", foreign_keys=[owner_id])
+    approver = relationship("User", foreign_keys=[approver_id])
+
