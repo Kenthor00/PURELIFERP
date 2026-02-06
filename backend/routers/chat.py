@@ -429,7 +429,7 @@ async def send_message(
             entity_type="chat_message",
             entity_id=message.id,
             description=f"Menzione in {channel.display_name}: {', '.join(mentioned_names)}",
-            extra_data={"mentioned_user_ids": mentioned_user_ids, "channel": channel.name},
+            metadata={"mentioned_user_ids": mentioned_user_ids, "channel": channel.name},
             request=request
         )
         
