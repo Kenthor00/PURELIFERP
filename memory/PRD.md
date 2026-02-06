@@ -1,215 +1,192 @@
-# PURE LIFE OS (PLOS) - Product Requirements Document
-
-## Panoramica
-Sistema Operativo Governativo Digitale per server FiveM PURE LIFE RP.
-Un ecosistema unico per browser desktop, tablet di reparto e WebView lb-phone.
-
-## Architettura
-- **Backend**: FastAPI (Python) con SQLAlchemy ORM
-- **Frontend**: React + TailwindCSS
-- **Database**: 
-  - Produzione: MySQL su Railway (via DATABASE_URL)
-  - Development: SQLite locale (fallback automatico)
-- **Realtime**: Server-Sent Events (SSE) + Polling notifiche
-- **Auth**: JWT custom + FiveM SSO + RBAC avanzato per settori
+# PURE LIFE OS - PRD (Product Requirements Document)
+## Sistema Operativo Governativo RP
 
 ---
 
-## FASE 1 - Sistema Operativo Governativo ✅ COMPLETATA
+## 📋 Descrizione del Prodotto
 
-### Funzionalità Completate
-- [x] Sistema Login Avanzato con JWT, settore, grado, livello_gerarchico
-- [x] Campo `game_name` obbligatorio al primo accesso
-- [x] `is_sector_chief` per identificare i capi settore
-- [x] Gerarchia e Permessi Multi-livello con PERMISSION_MATRIX
-- [x] Admin System Completo (Dashboard, Gestione Utenti, Audit Dashboard)
-- [x] Gestione Reparto per Capi Settore (`/sector-management`)
-- [x] Blocco Definitivo Demo (nessun seed pubblico)
+PURE LIFE OS è un sistema operativo web completo per gestire un server RP (roleplay) GTA. Fornisce dashboard per le forze dell'ordine (LSPD), servizi medici (EMS), dispatch, governo, news e cittadini civili.
 
 ---
 
-## FASE 2 - City Hub Base ✅ COMPLETATA
+## 🎯 Obiettivi Principali
 
-### Funzionalità Completate
-- [x] Modulo Reclutamento con workflow PENDING → REVIEWING → ACCEPTED/REJECTED
-- [x] Sistema Appuntamenti con gestione richieste e calendario
-- [x] Bacheca Annunci con moderazione e tracking views
-- [x] Slot Pubblicitari con gestione manuale Admin/GOV
-
----
-
-## FASE 3 - City Hub Avanzato ✅ COMPLETATA (2026-02-06)
-
-### 1. Sistema Notifiche Real-Time ✅
-- [x] Modello `Notification` con tipo, titolo, messaggio, entità riferita
-- [x] API `/api/notifications/*` complete (count, list, read, read-all)
-- [x] Notifiche automatiche per tutti gli eventi City Hub:
-  - Nuova candidatura → capi settore
-  - Cambio stato candidatura → candidato
-  - Nuovo appuntamento → settore target
-  - Accettazione/rifiuto appuntamento → richiedente
-  - Nuovo annuncio → GOV/Admin (globale)
-  - Moderazione annuncio → autore
-  - Richiesta slot pubblicitario → GOV/Admin (globale)
-  - Approvazione/rifiuto slot → proprietario
-- [x] Regole di visibilità:
-  - Capi settore → notifiche SOLO del proprio settore
-  - GOV/Admin → notifiche globali
-- [x] Polling ogni 15 secondi per aggiornamento automatico
-
-### 2. Reclutamento 2.0 ✅
-- [x] Nuovo stato `INTERVIEW` (Colloquio) nel workflow
-- [x] Workflow: PENDING → REVIEWING → INTERVIEW → ACCEPTED/REJECTED
-- [x] Campi colloquio: `interview_assigned_to`, `interview_assigned_name`, `interview_notes`, `interview_scheduled_at`
-- [x] Filtri per stato nella tab Gestisci
-- [x] Ordinamento per data (più recenti/meno recenti)
-- [x] Modal profilo candidato con tutti i dettagli
-- [x] Stats card con conteggio per ogni stato incluso Colloquio
-
-### 3. Calendario Appuntamenti ✅
-- [x] Vista lista (default)
-- [x] Vista calendario mensile con griglia giorni
-- [x] Navigazione mese precedente/successivo
-- [x] Appuntamenti visualizzati sui giorni corretti con orario
-- [x] Indicatore "oggi" evidenziato
-- [x] Stati colorati:
-  - 🟡 In attesa (pending)
-  - 🟢 Accettato (accepted)
-  - 🔴 Rifiutato (rejected)
-  - 🔵 Completato (completed)
-
-### 4. TopBar Avanzata ✅
-- [x] Campanella notifiche con badge contatore
-- [x] Dropdown lista notifiche con:
-  - Titolo e messaggio
-  - Icona per tipo (UserPlus, Calendar, Megaphone, Tv)
-  - Tempo relativo ("Ora", "5m fa", "2h fa")
-  - Indicatore non letto (pallino colorato)
-  - Link diretto alla risorsa
-- [x] "Segna tutte lette" button
-- [x] Menu rapido hamburger con:
-  - City Hub, Reclutamento, Appuntamenti, Annunci, Pubblicità
-  - Link settoriali (LSPD, EMS, Dispatch, News)
-  - Admin (solo per Admin)
-- [x] Compatibilità Desktop/iframe/lb-phone
-- [x] Info utente visibile (game_name, grade) su desktop
+1. **Gestione centralizzata** di tutti i dipartimenti governativi RP
+2. **City Hub pubblico** per cittadini con reclutamento, appuntamenti, annunci, news
+3. **Comunicazione real-time** tra settori (chat interna)
+4. **Audit trail completo** per ogni azione
+5. **Integrazione FiveM** con SSO e deep links per lb-phone
 
 ---
 
-## COMPLETATO (Prima della trasformazione)
+## ✅ Fasi Completate
 
-### MVP Base ✅
-- [x] Autenticazione JWT con RBAC
-- [x] Modulo LSPD (casi, mandati, multe)
-- [x] Modulo EMS (pazienti, referti)
-- [x] Dispatch Center
-- [x] Timeline globale
-- [x] SSE per realtime
+### FASE 1 - Sistema Base ✅
+- Sistema di autenticazione JWT con ruoli
+- Dashboard Admin con gestione utenti
+- Sistema di Audit Log completo
+- Pannello gestione per capi settore
+- Bootstrap admin per primo avvio
 
-### Espansione ✅
-- [x] City Hub pubblico (eventi, annunci)
-- [x] Weazel News (articoli, breaking news)
-- [x] Service Chat (canali, messaggi)
-- [x] Governo & Giustizia (udienze, pratiche)
-- [x] Deep linking per lb-phone
+### FASE 2 - City Hub Base ✅
+- Modulo Reclutamento con candidature online
+- Modulo Appuntamenti con prenotazioni
+- Modulo Annunci pubblici
+- Modulo Slot Pubblicitari
+- **Test passati:** 31/31 (100%)
 
----
+### FASE 3 - City Hub Avanzato ✅
+- Sistema notifiche real-time (SSE)
+- Reclutamento potenziato (stato Colloquio, filtri)
+- Calendario visuale per appuntamenti
+- TopBar con campanella notifiche
+- **Test passati:** 43/43 (100%)
 
-## PROSSIMI TASK (P1)
+### FASE 4 - News, Chat, Push ✅ (Completata 06/02/2026)
+#### Weazel News 2.0
+- Dashboard redazionale `/news/editor`
+- Workflow articoli: Bozza → Revisione → Approvato → Pubblicato
+- RBAC: Reporter(1), Editor(2), Caporedattore(3), Direttore(4)
+- Breaking News con notifiche globali
+- Pagina pubblica `/city/news` con filtro categorie
+- Supporto video embed (YouTube/Twitch)
 
-### Weazel News 2.0
-- [ ] Portale per la creazione di articoli
-- [ ] Workflow approvazione: DRAFT → SUBMITTED → REVIEW → PUBLISHED
-- [ ] Permessi di pubblicazione per gradi NEWS
-- [ ] Breaking News management
+#### Service Chat 2.0
+- Chat interna per settori `/chat`
+- 6 canali: LSPD, EMS, GOV, DISPATCH, WEAZEL, STAFF
+- Sistema presenza utenti (Online, In Servizio, Fuori Servizio)
+- Quick Actions per navigazione rapida
+- Moderazione con permessi gerarchici
 
-### Service Chat 2.0
-- [ ] Chat interna per i dipartimenti
-- [ ] Stato presenza utenti (online, in_service, off_duty, offline)
-- [ ] Canali per settore
-- [ ] Notifiche real-time
+#### Push Notifications
+- Integrazione Web Push con VAPID keys
+- Subscribe/Unsubscribe per dispositivo
+- Preferenze notifiche per tipo (recruitment, appointments, breaking, chat)
+- Integrazione con Breaking News
 
----
-
-## BACKLOG (P2)
-
-### Miglioramenti UX Admin
-- [ ] Notifiche per login falliti multipli
-- [ ] Dashboard con grafici temporali
-
-### Affinamento Audit
-- [ ] Grafici attività per settore
-- [ ] Alert per attività sospette
-- [ ] Report schedulati
-
----
-
-## Credenziali Test
-
-**Admin (Super Admin):**
-```
-Email: admin@purelife.rp
-Password: Admin@2026!
-Bootstrap Key: plos-bootstrap-admin-key-2026
-```
+**Test passati:** 24/24 backend + 100% frontend
 
 ---
 
-## File Principali
+## 🏗️ Architettura Tecnica
 
 ### Backend
-- `/app/backend/server.py` - Entry point FastAPI
-- `/app/backend/models.py` - Modelli SQLAlchemy (User, Notification, RecruitmentApplication, Appointment, Announcement, AdvertisingSlot)
-- `/app/backend/routers/notifications.py` - API Notifiche
-- `/app/backend/routers/recruitment.py` - API Reclutamento 2.0
-- `/app/backend/routers/appointments.py` - API Appuntamenti con calendario
-- `/app/backend/routers/announcements.py` - API Annunci
-- `/app/backend/routers/advertising.py` - API Pubblicità
+- **Framework:** FastAPI (Python 3.11)
+- **Database:** SQLite (dev) / MySQL Railway (prod)
+- **ORM:** SQLAlchemy Async
+- **Auth:** JWT con access/refresh token
+- **Real-time:** Server-Sent Events (SSE)
+- **Push:** pywebpush con VAPID
 
 ### Frontend
-- `/app/frontend/src/components/TopBar.js` - TopBar con campanella e menu
-- `/app/frontend/src/pages/cityhub/RecruitmentPage.js` - Reclutamento 2.0
-- `/app/frontend/src/pages/cityhub/AppointmentsPage.js` - Appuntamenti con calendario
-- `/app/frontend/src/pages/cityhub/AnnouncementsPage.js` - Annunci
-- `/app/frontend/src/pages/cityhub/AdvertisingPage.js` - Pubblicità
+- **Framework:** React 18
+- **Routing:** React Router v6
+- **Styling:** TailwindCSS custom "tactical" theme
+- **UI Components:** Shadcn/UI
+- **State:** Context API (Auth, SSE, Sound, Health)
 
-### Test
-- `/app/backend/tests/test_notifications_and_upgrades.py` - Test nuove funzionalità
-- `/app/test_reports/iteration_5.json` - Report test FASE 3
+### Struttura Directory
+```
+/app/
+├── backend/
+│   ├── routers/
+│   │   ├── auth.py           # Autenticazione JWT
+│   │   ├── users.py          # Gestione utenti
+│   │   ├── audit.py          # Audit log
+│   │   ├── recruitment.py    # Candidature
+│   │   ├── appointments.py   # Appuntamenti
+│   │   ├── announcements.py  # Annunci
+│   │   ├── advertising.py    # Slot pubblicitari
+│   │   ├── notifications.py  # Notifiche SSE
+│   │   ├── news_v2.py        # Weazel News 2.0
+│   │   ├── chat.py           # Service Chat 2.0
+│   │   └── push.py           # Push Notifications
+│   ├── services/
+│   │   └── audit_service.py  # Servizio audit centralizzato
+│   ├── models.py             # Modelli SQLAlchemy
+│   ├── database.py           # Configurazione DB
+│   └── server.py             # Entry point FastAPI
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── public/       # CityHub, News
+│   │   │   ├── cityhub/      # Recruitment, Appointments, etc.
+│   │   │   ├── news/         # NewsEditorPage
+│   │   │   ├── admin/        # Admin Dashboard
+│   │   │   └── ...
+│   │   ├── components/
+│   │   │   ├── ui/           # Shadcn components
+│   │   │   └── TopBar.js     # Navigation bar
+│   │   └── context/          # Auth, SSE, Sound, Health
+│   └── package.json
+└── memory/
+    └── PRD.md                # Questo file
+```
 
 ---
 
-## Note Tecniche
+## 🔐 Credenziali Test
 
-### Sistema Notifiche
-- **NotificationType enum**: RECRUITMENT_NEW, RECRUITMENT_STATUS_CHANGE, RECRUITMENT_INTERVIEW, APPOINTMENT_NEW, APPOINTMENT_ACCEPTED, APPOINTMENT_REJECTED, APPOINTMENT_COMPLETED, ANNOUNCEMENT_PENDING, ANNOUNCEMENT_APPROVED, ANNOUNCEMENT_REJECTED, AD_SLOT_REQUESTED, AD_SLOT_ACTIVATED, AD_SLOT_EXPIRED, AD_SLOT_REJECTED, SYSTEM_ALERT
-- **Targeting**: `user_id` per notifica diretta, `target_sector` per capi settore, `is_global=True` per GOV/Admin
-
-### Workflow Reclutamento
-- **Stati**: pending, reviewing, interview, accepted, rejected
-- **Transizioni valide**:
-  - pending → reviewing, interview, accepted, rejected
-  - reviewing → interview, accepted, rejected
-  - interview → accepted, rejected
-
-### Permessi Moderazione
-- **Annunci**: GOV livello 3+ o Admin
-- **Pubblicità**: GOV livello 4+ o Admin
-- **Reclutamento**: Capi settore livello 7+ per il proprio settore, Admin per tutti
+| Ruolo | Email | Password | Note |
+|-------|-------|----------|------|
+| Admin | admin@purelife.rp | Admin@2026! | Override totale |
+| Direttore NEWS | director.news@purelife.rp | News@2026! | Hierarchy level 4 |
+| Reporter NEWS | reporter.news@purelife.rp | News@2026! | Hierarchy level 1 |
+| Capo LSPD | chief.lspd@purelife.rp | ChiefPass@123! | Capo settore |
 
 ---
 
-## Changelog
+## 📡 API Endpoints Principali
 
-### 2026-02-06 (Sessione 2)
-- ✅ Completata FASE 3 - City Hub Avanzato
-- ✅ Sistema Notifiche Real-Time implementato
-- ✅ Reclutamento 2.0 con workflow Colloquio
-- ✅ Calendario Appuntamenti mensile
-- ✅ TopBar con campanella e menu rapido
-- ✅ 43/43 test backend passati (100%)
-- ✅ Fix colonne interview nel database
+### Auth
+- `POST /api/auth/login` - Login
+- `POST /api/auth/bootstrap` - Bootstrap admin
+- `POST /api/auth/refresh` - Refresh token
 
-### 2026-02-06 (Sessione 1)
-- ✅ Completata FASE 2 - City Hub Base
-- ✅ 31/31 test backend passati (100%)
+### News v2
+- `GET /api/v2/news/published` - Articoli pubblicati
+- `GET /api/v2/news/breaking` - Solo breaking news
+- `POST /api/v2/news/newsroom/create` - Crea articolo
+- `POST /api/v2/news/newsroom/{id}/submit-review` - Invia revisione
+- `POST /api/v2/news/newsroom/{id}/approve` - Approva
+- `POST /api/v2/news/newsroom/{id}/publish` - Pubblica
+- `POST /api/v2/news/newsroom/{id}/toggle-breaking` - Toggle breaking
+
+### Chat
+- `GET /api/chat/channels` - Lista canali accessibili
+- `POST /api/chat/channels/{name}/messages` - Invia messaggio
+- `GET /api/chat/channels/{name}/messages` - Leggi messaggi
+- `GET /api/chat/presence` - Lista utenti online
+- `PUT /api/chat/presence` - Aggiorna stato
+
+### Push
+- `GET /api/push/vapid-public-key` - Chiave pubblica
+- `POST /api/push/subscribe` - Attiva push
+- `DELETE /api/push/unsubscribe` - Disattiva push
+
+---
+
+## 🔮 Backlog / Future Tasks
+
+Non ci sono altre fasi definite. I prossimi sviluppi dipenderanno dal feedback utente. Possibili miglioramenti:
+
+1. **Integrazione FiveM avanzata** - Sync in-game con dashboard
+2. **Sistema multe/sanzioni** - Gestione completa multe LSPD
+3. **Gestione veicoli** - Registro veicoli cittadini
+4. **Sistema eventi** - Calendario eventi RP
+5. **Analytics** - Dashboard statistiche per admin
+
+---
+
+## 📅 Changelog
+
+| Data | Versione | Modifiche |
+|------|----------|-----------|
+| 2026-02-06 | 4.0 | FASE 4 completata: News 2.0, Chat 2.0, Push Notifications |
+| 2026-02-05 | 3.0 | FASE 3 completata: Notifiche SSE, Calendario, TopBar |
+| 2026-02-04 | 2.0 | FASE 2 completata: City Hub base |
+| 2026-02-03 | 1.0 | FASE 1 completata: Sistema base |
+
+---
+
+*Ultimo aggiornamento: 2026-02-06*
