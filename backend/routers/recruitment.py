@@ -55,6 +55,10 @@ class ApplicationResponse(BaseModel):
     reviewer_id: Optional[int]
     reviewer_game_name: Optional[str]
     reviewer_notes: Optional[str]
+    interview_assigned_to: Optional[int]
+    interview_assigned_name: Optional[str]
+    interview_notes: Optional[str]
+    interview_scheduled_at: Optional[str]
     created_at: str
     reviewed_at: Optional[str]
 
