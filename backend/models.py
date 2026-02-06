@@ -882,7 +882,7 @@ class Outbox(Base):
 # RECRUITMENT (Candidature)
 # ==========================================
 
-class ApplicationStatus(str, Enum):
+class ApplicationStatus(str, enum.Enum):
     PENDING = "pending"
     REVIEWING = "reviewing"
     ACCEPTED = "accepted"
@@ -927,7 +927,7 @@ class RecruitmentApplication(Base):
 # APPOINTMENTS (Appuntamenti)
 # ==========================================
 
-class AppointmentStatus(str, Enum):
+class AppointmentStatus(str, enum.Enum):
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
@@ -975,7 +975,7 @@ class Appointment(Base):
 # ANNOUNCEMENTS (Annunci Bacheca)
 # ==========================================
 
-class AnnouncementCategory(str, Enum):
+class AnnouncementCategory(str, enum.Enum):
     LAVORO = "lavoro"
     VENDITA = "vendita"
     AFFITTI = "affitti"
@@ -983,7 +983,7 @@ class AnnouncementCategory(str, Enum):
     EVENTI = "eventi"
 
 
-class AnnouncementStatus(str, Enum):
+class AnnouncementStatus(str, enum.Enum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -1034,7 +1034,7 @@ class Announcement(Base):
 # ADVERTISING SLOTS (Slot Pubblicitari)
 # ==========================================
 
-class AdSlotStatus(str, Enum):
+class AdSlotStatus(str, enum.Enum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -1042,7 +1042,7 @@ class AdSlotStatus(str, Enum):
     EXPIRED = "expired"
 
 
-class AdSlotPosition(str, Enum):
+class AdSlotPosition(str, enum.Enum):
     HOMEPAGE_BANNER = "homepage_banner"
     SIDEBAR = "sidebar"
     FOOTER = "footer"
