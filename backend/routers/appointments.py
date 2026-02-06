@@ -259,7 +259,7 @@ async def handle_appointment(
     
     # Verifica permessi
     if current_user.sector != Sector.ADMIN:
-        if current_user.sector != appointment.target_sector:
+        if current_user.sector.value != appointment.target_sector:
             raise HTTPException(status_code=403, detail="Puoi gestire solo appuntamenti del tuo settore")
         if current_user.hierarchy_level < 3:
             raise HTTPException(status_code=403, detail="Non hai i permessi per gestire appuntamenti")
