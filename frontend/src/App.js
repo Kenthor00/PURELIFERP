@@ -442,6 +442,32 @@ const AppRoutes = () => {
           }
         />
 
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedSectors={['ADMIN']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedSectors={['ADMIN']}>
+              <UserManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/audit"
+          element={
+            <ProtectedRoute allowedSectors={['ADMIN']}>
+              <AuditDashboard />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Common Routes */}
         <Route
           path="/timeline"
@@ -459,6 +485,9 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* Set Game Name (required for first login) */}
+        <Route path="/set-game-name" element={<SetGameNamePage />} />
 
         {/* Default Redirect */}
         <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
@@ -478,7 +507,10 @@ function App() {
               <SSEProvider>
                 <SSOHandler />
                 <HealthBanner />
-                <AppRoutes />
+                <TopBar />
+                <div className="pt-12"> {/* Padding for TopBar */}
+                  <AppRoutes />
+                </div>
                 <Toaster
                   position="top-right"
                   toastOptions={{
