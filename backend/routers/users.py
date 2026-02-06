@@ -458,6 +458,7 @@ def _user_to_response(user: User) -> UserResponse:
         sector=user.sector.value,
         grade=user.grade,
         hierarchy_level=user.hierarchy_level,
+        is_sector_chief=user.is_sector_chief or False,
         badge_number=user.badge_number,
         department=user.department,
         is_active=user.is_active,
@@ -466,3 +467,197 @@ def _user_to_response(user: User) -> UserResponse:
         last_login=user.last_login.isoformat() if user.last_login else None,
         created_at=user.created_at.isoformat() if user.created_at else ""
     )
+
+
+# ==========================================
+# RESET PASSWORD
+# ==========================================
+
+@router.post("/{user_id}/reset-password")
+async def reset_user_password(
+    user_id: int,
+    request_data: ResetPasswordRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Reset password di un utente (solo admin o capo settore)"""
+    # Verifica permessi
+    if current_user.sector != Sector.ADMIN and not current_user.is_sector_chief:
+        raise HTTPException(status_code=403, detail="Non hai i permessi per resettare password")
+    
+    # Trova l'utente target
+    result = await db.execute(select(User).where(User.id == user_id))
+    target_user = result.scalar_one_or_none()
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # I capi settore possono solo resettare password del proprio settore
+    if current_user.sector != Sector.ADMIN:
+        if current_user.sector != target_user.sector:
+            raise HTTPException(status_code=403, detail="Puoi resettare solo password del tuo settore")
+    
+    # Valida la nuova password
+    from services.security_service import SecurityService
+    is_valid, error_msg = SecurityService.validate_password(request_data.new_password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Reset password
+    from auth import pwd_context
+    target_user.password_hash = pwd_context.hash(request_data.new_password)
+    await db.commit()
+    
+    # Audit log
+    await AuditService.log(
+        db,
+        action=AuditAction.PASSWORD_CHANGE,
+        user=current_user,
+        entity_type="user",
+        entity_id=target_user.id,
+        description=f"Password resettata per {target_user.email}",
+        request=request
+    )
+    
+    return {"message": "Password resettata con successo"}
+
+
+# ==========================================
+# STORICO ACCESSI UTENTE
+# ==========================================
+
+@router.get("/{user_id}/access-history")
+async def get_user_access_history(
+    user_id: int,
+    limit: int = 50,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Ottiene lo storico accessi di un utente"""
+    # Verifica permessi
+    if current_user.sector != Sector.ADMIN and not current_user.is_sector_chief:
+        raise HTTPException(status_code=403, detail="Non hai i permessi per visualizzare lo storico")
+    
+    # Trova l'utente target
+    result = await db.execute(select(User).where(User.id == user_id))
+    target_user = result.scalar_one_or_none()
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # I capi settore possono vedere solo il proprio settore
+    if current_user.sector != Sector.ADMIN:
+        if current_user.sector != target_user.sector:
+            raise HTTPException(status_code=403, detail="Puoi visualizzare solo il tuo settore")
+    
+    # Query audit log per login/logout
+    from models import AuditLog
+    result = await db.execute(
+        select(AuditLog)
+        .where(AuditLog.user_id == user_id)
+        .where(AuditLog.action.in_([AuditAction.LOGIN, AuditAction.LOGOUT, AuditAction.LOGIN_FAILED]))
+        .order_by(AuditLog.timestamp.desc())
+        .limit(limit)
+    )
+    logs = result.scalars().all()
+    
+    return [
+        {
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+            "action": log.action.value,
+            "ip_address": log.ip_address,
+            "user_agent": log.user_agent,
+            "description": log.description
+        }
+        for log in logs
+    ]
+
+
+# ==========================================
+# LOG AZIONI UTENTE
+# ==========================================
+
+@router.get("/{user_id}/activity-log")
+async def get_user_activity_log(
+    user_id: int,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Ottiene il log di tutte le azioni di un utente"""
+    # Verifica permessi
+    if current_user.sector != Sector.ADMIN and not current_user.is_sector_chief:
+        raise HTTPException(status_code=403, detail="Non hai i permessi per visualizzare le azioni")
+    
+    # Trova l'utente target
+    result = await db.execute(select(User).where(User.id == user_id))
+    target_user = result.scalar_one_or_none()
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # I capi settore possono vedere solo il proprio settore
+    if current_user.sector != Sector.ADMIN:
+        if current_user.sector != target_user.sector:
+            raise HTTPException(status_code=403, detail="Puoi visualizzare solo il tuo settore")
+    
+    # Query audit log per tutte le azioni
+    from models import AuditLog
+    result = await db.execute(
+        select(AuditLog)
+        .where(AuditLog.user_id == user_id)
+        .order_by(AuditLog.timestamp.desc())
+        .limit(limit)
+    )
+    logs = result.scalars().all()
+    
+    return [
+        {
+            "timestamp": log.timestamp.isoformat() if log.timestamp else None,
+            "action": log.action.value,
+            "entity_type": log.entity_type,
+            "entity_id": log.entity_id,
+            "description": log.description,
+            "ip_address": log.ip_address
+        }
+        for log in logs
+    ]
+
+
+# ==========================================
+# TUTTI GLI UTENTI (SOLO ADMIN)
+# ==========================================
+
+@router.get("/all/list")
+async def get_all_users(
+    sector: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Ottiene tutti gli utenti (solo admin)"""
+    if current_user.sector != Sector.ADMIN:
+        raise HTTPException(status_code=403, detail="Solo gli admin possono visualizzare tutti gli utenti")
+    
+    query = select(User)
+    
+    if sector:
+        try:
+            sector_enum = Sector(sector.upper())
+            query = query.where(User.sector == sector_enum)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Settore non valido: {sector}")
+    
+    if is_active is not None:
+        query = query.where(User.is_active == is_active)
+    
+    query = query.order_by(User.created_at.desc()).limit(limit).offset(offset)
+    
+    result = await db.execute(query)
+    users = result.scalars().all()
+    
+    return [_user_to_response(u) for u in users]
+
