@@ -182,14 +182,14 @@ async def request_ad_slot(
     ad_slot = AdvertisingSlot(
         owner_id=current_user.id,
         owner_game_name=current_user.game_name or current_user.email,
-        owner_sector=current_user.sector,
+        owner_sector=current_user.sector.value,
         business_name=data.business_name,
         title=data.title,
         description=data.description,
         image_url=data.image_url,
         link_url=data.link_url,
-        position=position,
-        status=AdSlotStatus.PENDING,
+        position=position.value,
+        status=AdSlotStatus.PENDING.value,
         duration_days=data.duration_days,
         views=0,
         clicks=0
