@@ -1128,6 +1128,17 @@ class NotificationType(str, enum.Enum):
     APPOINTMENT_REJECTED = "appointment_rejected"
     APPOINTMENT_COMPLETED = "appointment_completed"
     
+    # News
+    ARTICLE_PUBLISHED = "article_published"
+    ARTICLE_BREAKING = "article_breaking"
+    ARTICLE_REVIEW_NEEDED = "article_review_needed"
+    ARTICLE_APPROVED = "article_approved"
+    ARTICLE_REJECTED = "article_rejected"
+    
+    # Chat
+    CHAT_MESSAGE = "chat_message"
+    CHAT_MENTION = "chat_mention"
+    
     # Announcements
     ANNOUNCEMENT_PENDING = "announcement_pending"
     ANNOUNCEMENT_APPROVED = "announcement_approved"
