@@ -133,10 +133,10 @@ export const NewsPage = () => {
             </span>
           </div>
 
-          {selectedArticle.image_url && (
+          {selectedArticle.cover_image_url && (
             <div
               className="w-full h-64 sm:h-96 mt-6 bg-cover bg-center border border-plos-border"
-              style={{ backgroundImage: `url(${selectedArticle.image_url})` }}
+              style={{ backgroundImage: `url(${selectedArticle.cover_image_url})` }}
             />
           )}
 
