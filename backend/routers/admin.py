@@ -37,27 +37,20 @@ SEED_KEY = os.environ.get('SEED_KEY', 'purelife-seed-key-change-me')
 # ==========================================
 # SEED DATA
 # ==========================================
+# NOTA: Il vecchio sistema di seed non è più usato.
+# Il bootstrap avviene tramite /api/auth/bootstrap.
+# Queste definizioni sono mantenute per retrocompatibilità.
 
 DEMO_USERS = [
-    {"email": "admin@purelife.rp", "name": "Admin Sistema", "role": UserRole.ADMIN, "badge_number": "ADMIN-001"},
-    {"email": "lspd@purelife.rp", "name": "Officer Johnson", "role": UserRole.POLICE, "badge_number": "LSPD-1234", "department": "LSPD"},
-    {"email": "ems@purelife.rp", "name": "Dr. Martinez", "role": UserRole.EMS, "badge_number": "EMS-5678", "department": "EMS"},
-    {"email": "dispatch@purelife.rp", "name": "Dispatch Central", "role": UserRole.DISPATCH, "badge_number": "DSP-0001", "department": "Dispatch"},
-    {"email": "gov@purelife.rp", "name": "Gov. Williams", "role": UserRole.GOVERNMENT, "badge_number": "GOV-0001", "department": "Government"},
-    {"email": "judge@purelife.rp", "name": "Judge Thompson", "role": UserRole.JUDGE, "badge_number": "JDG-0001", "department": "Tribunal"},
-    {"email": "lawyer@purelife.rp", "name": "Avv. Rossi", "role": UserRole.LAWYER, "badge_number": "LAW-0001"},
-    {"email": "prosecutor@purelife.rp", "name": "Proc. Bianchi", "role": UserRole.PROSECUTOR, "badge_number": "PRO-0001", "department": "Procura"},
-    {"email": "weazel@purelife.rp", "name": "Reporter Smith", "role": UserRole.WEAZEL, "badge_number": "WZL-0001", "department": "Weazel News"},
-    {"email": "citizen@purelife.rp", "name": "Mario Cittadino", "role": UserRole.CITIZEN},
+    {"email": "admin@purelife.rp", "name": "Admin Sistema", "sector": "ADMIN", "badge_number": "ADMIN-001"},
 ]
 
 DEFAULT_CHANNELS = [
-    {"name": "dispatch", "display_name": "Dispatch", "description": "Canale principale dispatch", "allowed_roles": ["police", "ems", "dispatch", "admin"]},
-    {"name": "lspd", "display_name": "LSPD Radio", "description": "Comunicazioni LSPD", "allowed_roles": ["police", "dispatch", "admin"]},
-    {"name": "ems-radio", "display_name": "EMS Radio", "description": "Comunicazioni EMS", "allowed_roles": ["ems", "dispatch", "admin"]},
-    {"name": "government", "display_name": "Governo", "description": "Canale governativo", "allowed_roles": ["government", "judge", "admin"]},
-    {"name": "tribunal", "display_name": "Tribunale", "description": "Comunicazioni tribunale", "allowed_roles": ["judge", "lawyer", "prosecutor", "government", "admin"]},
-    {"name": "city", "display_name": "Annunci Città", "description": "Annunci pubblici", "allowed_roles": None},
+    {"name": "dispatch", "display_name": "Dispatch", "description": "Canale principale dispatch", "allowed_sectors": ["LSPD", "EMS", "DISPATCH", "ADMIN"]},
+    {"name": "lspd", "display_name": "LSPD Radio", "description": "Comunicazioni LSPD", "allowed_sectors": ["LSPD", "DISPATCH", "ADMIN"]},
+    {"name": "ems-radio", "display_name": "EMS Radio", "description": "Comunicazioni EMS", "allowed_sectors": ["EMS", "DISPATCH", "ADMIN"]},
+    {"name": "government", "display_name": "Governo", "description": "Canale governativo", "allowed_sectors": ["GOV", "ADMIN"]},
+    {"name": "city", "display_name": "Annunci Città", "description": "Annunci pubblici", "allowed_sectors": None},
 ]
 
 
