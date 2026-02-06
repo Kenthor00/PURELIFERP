@@ -1,8 +1,9 @@
 """
 PURE LIFE OS - Recruitment Router
-Sistema di candidature per i settori
+Sistema di candidature per i settori governativi
+Con notifiche real-time e workflow colloquio
 """
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from pydantic import BaseModel
@@ -11,12 +12,13 @@ from datetime import datetime, timezone
 
 from database import get_db
 from models import (
-    User, Sector, RecruitmentApplication, ApplicationStatus, AuditAction
+    User, Sector, RecruitmentApplication, ApplicationStatus, AuditAction, NotificationType
 )
 from auth import get_current_user
 from services.audit_service import AuditService
+from routers.notifications import notify_sector_chiefs, notify_user
 
-router = APIRouter(prefix="/recruitment", tags=["recruitment"])
+router = APIRouter(prefix="/recruitment", tags=["Reclutamento"])
 audit_service = AuditService()
 
 
