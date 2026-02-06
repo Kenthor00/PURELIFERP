@@ -1065,10 +1065,10 @@ class AdvertisingSlot(Base):
     description = Column(Text, nullable=True)
     image_url = Column(String(500), nullable=False)
     link_url = Column(String(500), nullable=True)
-    position = Column(Enum(AdSlotPosition), nullable=False)
+    position = Column(String(30), nullable=False)
     
     # Stato e approvazione
-    status = Column(Enum(AdSlotStatus), default=AdSlotStatus.PENDING, index=True)
+    status = Column(String(20), default="pending", index=True)
     approver_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     approver_game_name = Column(String(100), nullable=True)
     approver_notes = Column(Text, nullable=True)
