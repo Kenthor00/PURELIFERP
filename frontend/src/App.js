@@ -291,15 +291,10 @@ const AppRoutes = () => {
       case 'GOV':
         return '/justice';
       case 'NEWS':
+      case 'WEAZEL':
         return '/city/news';
       case 'ADMIN':
         return '/admin';
-      default:
-        return '/city';
-    }
-  };
-      case 'weazel':
-        return '/city/news';
       default:
         return '/city';
     }
