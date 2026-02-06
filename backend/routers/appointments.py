@@ -140,7 +140,7 @@ async def get_my_requests(
     if status:
         try:
             status_enum = AppointmentStatus(status.lower())
-            query = query.where(Appointment.status == status_enum)
+            query = query.where(Appointment.status == status_enum.value)
         except ValueError:
             pass
     
@@ -228,7 +228,7 @@ async def get_sector_appointments(
     if status:
         try:
             status_enum = AppointmentStatus(status.lower())
-            query = query.where(Appointment.status == status_enum)
+            query = query.where(Appointment.status == status_enum.value)
         except ValueError:
             pass
     
