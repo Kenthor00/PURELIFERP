@@ -11,11 +11,10 @@ import random
 import string
 
 from database import get_db
-from models import User, LegalCase, LegalCaseStatus, CourtHearing, HearingStatus, LegalDocument, TimelineEvent
+from models import User, LegalCase, LegalCaseStatus, CourtHearing, HearingStatus, TimelineEvent
 from schemas import (
     LegalCaseCreate, LegalCaseUpdate, LegalCaseResponse,
     CourtHearingCreate, CourtHearingUpdate, CourtHearingResponse,
-    LegalDocumentCreate, LegalDocumentResponse,
     MessageResponse
 )
 from auth import get_current_user, require_roles, UserRole
