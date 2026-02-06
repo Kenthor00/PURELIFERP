@@ -217,7 +217,7 @@ async def get_sector_appointments(
     
     # Verifica permessi
     if current_user.sector != Sector.ADMIN:
-        if current_user.sector != target_sector:
+        if current_user.sector.value != target_sector.value:
             raise HTTPException(status_code=403, detail="Puoi visualizzare solo appuntamenti del tuo settore")
     
     # Query
