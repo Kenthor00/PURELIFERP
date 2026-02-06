@@ -163,13 +163,13 @@ async def get_sector_applications(
     
     # Query
     query = select(RecruitmentApplication).where(
-        RecruitmentApplication.target_sector == target_sector
+        RecruitmentApplication.target_sector == target_sector.value
     )
     
     if status:
         try:
             status_enum = ApplicationStatus(status.lower())
-            query = query.where(RecruitmentApplication.status == status_enum)
+            query = query.where(RecruitmentApplication.status == status_enum.value)
         except ValueError:
             pass
     
