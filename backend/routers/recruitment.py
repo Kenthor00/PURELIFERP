@@ -234,16 +234,30 @@ async def review_application(
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Stato non valido: {data.status}")
     
-    if new_status not in [ApplicationStatus.REVIEWING, ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED]:
+    valid_statuses = [ApplicationStatus.REVIEWING, ApplicationStatus.INTERVIEW, ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED]
+    if new_status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Stato non valido per la revisione")
     
-    # Determina azione audit
+    # Determina azione audit e tipo notifica
+    notification_type = NotificationType.RECRUITMENT_STATUS_CHANGE.value
+    notification_title = "Aggiornamento Candidatura"
+    
     if new_status == ApplicationStatus.REVIEWING:
         audit_action = AuditAction.APPLICATION_REVIEW
+        notification_message = f"La tua candidatura per {application.target_sector} è in revisione"
+    elif new_status == ApplicationStatus.INTERVIEW:
+        audit_action = AuditAction.APPLICATION_REVIEW
+        notification_type = NotificationType.RECRUITMENT_INTERVIEW.value
+        notification_title = "Colloquio Programmato"
+        notification_message = f"Sei stato convocato per un colloquio per {application.target_sector}"
     elif new_status == ApplicationStatus.ACCEPTED:
         audit_action = AuditAction.APPLICATION_ACCEPT
+        notification_title = "Candidatura Accettata!"
+        notification_message = f"Congratulazioni! La tua candidatura per {application.target_sector} è stata accettata"
     else:
         audit_action = AuditAction.APPLICATION_REJECT
+        notification_title = "Candidatura Rifiutata"
+        notification_message = f"La tua candidatura per {application.target_sector} non è stata accettata"
     
     # Aggiorna candidatura
     application.status = new_status.value
@@ -251,6 +265,24 @@ async def review_application(
     application.reviewer_game_name = current_user.game_name
     application.reviewer_notes = data.notes
     application.reviewed_at = datetime.now(timezone.utc)
+    
+    # Se è colloquio, aggiorna i campi interview
+    if new_status == ApplicationStatus.INTERVIEW:
+        if data.interview_assigned_to:
+            # Trova l'utente assegnato
+            interviewer_result = await db.execute(
+                select(User).where(User.id == data.interview_assigned_to)
+            )
+            interviewer = interviewer_result.scalar_one_or_none()
+            if interviewer:
+                application.interview_assigned_to = interviewer.id
+                application.interview_assigned_name = interviewer.game_name
+        
+        if data.interview_scheduled_at:
+            try:
+                application.interview_scheduled_at = datetime.fromisoformat(data.interview_scheduled_at.replace('Z', '+00:00'))
+            except:
+                pass
     
     await db.commit()
     await db.refresh(application)
@@ -264,6 +296,18 @@ async def review_application(
         entity_id=application.id,
         description=f"Candidatura {new_status.value}: {application.game_name} per {application.target_sector}",
         request=request
+    )
+    
+    # Notifica al candidato
+    await notify_user(
+        db=db,
+        user_id=application.user_id,
+        notification_type=notification_type,
+        title=notification_title,
+        message=notification_message,
+        sender=current_user,
+        entity_type="recruitment",
+        entity_id=application.id
     )
     
     return _application_to_response(application)
