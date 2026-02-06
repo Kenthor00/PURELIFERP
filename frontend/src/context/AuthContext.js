@@ -145,6 +145,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const refreshUser = async () => {
+    try {
+      const res = await api.get('/auth/me');
+      setUser(res.data);
+      return res.data;
+    } catch (error) {
+      console.error('Errore refresh user:', error);
+      return null;
+    }
+  };
+
   const updateSettings = async (settings) => {
     const params = new URLSearchParams(settings).toString();
     const res = await api.put(`/auth/me/settings?${params}`);
@@ -161,6 +172,7 @@ export const AuthProvider = ({ children }) => {
         login,
         fivemLogin,
         logout,
+        refreshUser,
         updateSettings,
         api,
         isAuthenticated: !!token && !!user,
