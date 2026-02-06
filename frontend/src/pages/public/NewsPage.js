@@ -225,15 +225,15 @@ export const NewsPage = () => {
                 className="card-tactical overflow-hidden cursor-pointer group"
                 data-testid={`news-${article.id}`}
               >
-                {article.image_url && (
+                {article.cover_image_url && (
                   <div
                     className="h-40 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${article.image_url})` }}
+                    style={{ backgroundImage: `url(${article.cover_image_url})` }}
                   />
                 )}
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    {article.is_breaking_news && (
+                    {article.is_breaking && (
                       <span className="px-2 py-0.5 bg-red-500/20 text-red-500 text-xs font-heading">
                         BREAKING
                       </span>
