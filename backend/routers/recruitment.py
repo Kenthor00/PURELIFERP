@@ -226,7 +226,7 @@ async def review_application(
         audit_action = AuditAction.APPLICATION_REJECT
     
     # Aggiorna candidatura
-    application.status = new_status
+    application.status = new_status.value
     application.reviewer_id = current_user.id
     application.reviewer_game_name = current_user.game_name
     application.reviewer_notes = data.notes
