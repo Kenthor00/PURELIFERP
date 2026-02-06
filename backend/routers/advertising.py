@@ -1,6 +1,7 @@
 """
 PURE LIFE OS - Advertising Slots Router
-Sistema di slot pubblicitari acquistabili
+Sistema di slot pubblicitari per aziende RP
+Con tracking performance e notifiche
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,12 +12,13 @@ from datetime import datetime, timezone, timedelta
 
 from database import get_db
 from models import (
-    User, Sector, AdvertisingSlot, AdSlotStatus, AdSlotPosition, AuditAction
+    User, Sector, AdvertisingSlot, AdSlotStatus, AdSlotPosition, AuditAction, NotificationType
 )
 from auth import get_current_user
 from services.audit_service import AuditService
+from routers.notifications import notify_user, create_notification
 
-router = APIRouter(prefix="/advertising", tags=["advertising"])
+router = APIRouter(prefix="/advertising", tags=["Pubblicità"])
 audit_service = AuditService()
 
 
