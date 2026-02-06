@@ -65,6 +65,7 @@ class MessageResponse(BaseModel):
     is_pinned: bool
     is_deleted: bool
     created_at: str
+    mentions: List[int] = []
 
 
 class PresenceUpdate(BaseModel):
