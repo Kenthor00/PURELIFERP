@@ -61,6 +61,34 @@ DEFAULT_CHANNELS = [
 ]
 
 
+@router.get("/seed/status")
+async def get_seed_status(db: AsyncSession = Depends(get_db)):
+    """
+    Controlla lo stato del seed del database.
+    Endpoint pubblico usato dal frontend per verificare se il DB è inizializzato.
+    """
+    try:
+        # Check users count
+        result = await db.execute(select(func.count(User.id)))
+        users_count = result.scalar() or 0
+        
+        return {
+            "db_connected": True,
+            "users_count": users_count,
+            "needs_seed": users_count == 0,
+            "seed_key_accepted": users_count == 0  # Key accepted only if DB empty
+        }
+    except Exception as e:
+        logger.error(f"Errore checking seed status: {e}")
+        return {
+            "db_connected": False,
+            "users_count": 0,
+            "needs_seed": False,
+            "seed_key_accepted": False,
+            "error": str(e)
+        }
+
+
 @router.post("/seed")
 async def seed_database(
     x_seed_key: Optional[str] = Header(None, alias="X-SEED-KEY"),
