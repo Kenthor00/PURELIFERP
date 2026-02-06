@@ -323,7 +323,7 @@ async def moderate_announcement(
         user=current_user,
         entity_type="announcement",
         entity_id=announcement.id,
-        description=f"Annuncio {new_status.value}: {announcement.title}",
+        description=f"Annuncio {new_status}: {announcement.title}",
         request=request
     )
     
