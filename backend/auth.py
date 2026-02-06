@@ -109,16 +109,16 @@ async def get_current_user(
     return user
 
 
-def require_roles(*roles: UserRole):
-    """Decorator per richiedere ruoli specifici"""
-    async def role_checker(current_user: User = Depends(get_current_user)):
-        if current_user.role not in roles and current_user.role != UserRole.ADMIN:
+def require_sector(*sectors: Sector):
+    """Dependency per richiedere settori specifici"""
+    async def sector_checker(current_user: User = Depends(get_current_user)):
+        if current_user.sector not in sectors and current_user.sector != Sector.ADMIN:
             raise HTTPException(
                 status_code=403, 
-                detail=f"Accesso negato. Ruoli richiesti: {[r.value for r in roles]}"
+                detail=f"Accesso negato. Settori richiesti: {[s.value for s in sectors]}"
             )
         return current_user
-    return role_checker
+    return sector_checker
 
 
 async def log_audit(
