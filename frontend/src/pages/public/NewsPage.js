@@ -101,7 +101,7 @@ export const NewsPage = () => {
         </header>
 
         <main className="max-w-4xl mx-auto px-4 py-8">
-          {selectedArticle.is_breaking_news && (
+          {selectedArticle.is_breaking && (
             <div className="flex items-center gap-2 text-red-500 mb-4">
               <AlertCircle size={18} className="animate-pulse" />
               <span className="font-heading text-sm">BREAKING NEWS</span>
