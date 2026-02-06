@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 from database import get_db
-from models import User, UserRole, AuditLog
+from models import User, Sector, AuditLog, AuditAction
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
