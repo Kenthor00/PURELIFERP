@@ -14,7 +14,7 @@ from models import (
     User, Sector, ChatChannel, ChatMessage, UserPresenceRecord, 
     AuditAction, NotificationType
 )
-from routers.auth import get_current_user
+from auth import get_current_user
 from services.audit_service import AuditService
 from routers.notifications import notify_user, create_notification
 
