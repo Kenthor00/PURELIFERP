@@ -82,8 +82,8 @@ async def create_application(
     existing = await db.execute(
         select(RecruitmentApplication)
         .where(RecruitmentApplication.user_id == current_user.id)
-        .where(RecruitmentApplication.target_sector == target_sector)
-        .where(RecruitmentApplication.status.in_([ApplicationStatus.PENDING, ApplicationStatus.REVIEWING]))
+        .where(RecruitmentApplication.target_sector == target_sector.value)
+        .where(RecruitmentApplication.status.in_([ApplicationStatus.PENDING.value, ApplicationStatus.REVIEWING.value]))
     )
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Hai già una candidatura pendente per questo settore")
