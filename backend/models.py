@@ -156,6 +156,7 @@ class AuditAction(str, enum.Enum):
     CHAT_MESSAGE_SEND = "chat_message_send"
     CHAT_MESSAGE_DELETE = "chat_message_delete"
     CHAT_MESSAGE_PIN = "chat_message_pin"
+    CHAT_MENTION = "chat_mention"
     PRESENCE_CHANGE = "presence_change"
     
     # Push Notifications
