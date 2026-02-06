@@ -418,6 +418,18 @@ async def reject_ad_slot(
         request=request
     )
     
+    # Notifica al proprietario
+    await notify_user(
+        db=db,
+        user_id=ad.owner_id,
+        notification_type=NotificationType.AD_SLOT_REJECTED.value,
+        title="Pubblicità Rifiutata",
+        message=f"La richiesta per '{ad.business_name}' non è stata approvata",
+        sender=current_user,
+        entity_type="ad_slot",
+        entity_id=ad.id
+    )
+    
     return _ad_to_response(ad)
 
 
