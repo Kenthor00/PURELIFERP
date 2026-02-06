@@ -108,7 +108,7 @@ async def record_ad_view(
     )
     ad = result.scalar_one_or_none()
     
-    if ad and ad.status == AdSlotStatus.ACTIVE:
+    if ad and ad.status == AdSlotStatus.ACTIVE.value:
         ad.views += 1
         await db.commit()
     
@@ -128,7 +128,7 @@ async def record_ad_click(
     )
     ad = result.scalar_one_or_none()
     
-    if ad and ad.status == AdSlotStatus.ACTIVE:
+    if ad and ad.status == AdSlotStatus.ACTIVE.value:
         ad.clicks += 1
         await db.commit()
         
