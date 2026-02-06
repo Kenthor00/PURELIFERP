@@ -161,15 +161,15 @@ async def create_announcement(
     announcement = Announcement(
         author_id=current_user.id,
         author_game_name=current_user.game_name or current_user.email,
-        author_sector=current_user.sector,
+        author_sector=current_user.sector.value,
         title=data.title,
         description=data.description,
-        category=category,
+        category=category.value,
         image_url=data.image_url,
         contact_info=data.contact_info,
         price=data.price,
         location=data.location,
-        status=AnnouncementStatus.PENDING,
+        status=AnnouncementStatus.PENDING.value,
         expires_at=expires_at,
         views=0
     )
