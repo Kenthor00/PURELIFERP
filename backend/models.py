@@ -1357,7 +1357,8 @@ class PushSubscription(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     
     # Subscription data (from browser)
-    endpoint = Column(Text, nullable=False, unique=True)
+    # Endpoint URL può essere lungo, usiamo 500 chars per MySQL compatibility
+    endpoint = Column(String(500), nullable=False, unique=True)
     p256dh_key = Column(String(255), nullable=False)  # Public key
     auth_key = Column(String(255), nullable=False)    # Auth secret
     
