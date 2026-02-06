@@ -107,7 +107,7 @@ async def get_public_announcement(
     result = await db.execute(
         select(Announcement)
         .where(Announcement.id == announcement_id)
-        .where(Announcement.status == AnnouncementStatus.APPROVED)
+        .where(Announcement.status == AnnouncementStatus.APPROVED.value)
     )
     announcement = result.scalar_one_or_none()
     
