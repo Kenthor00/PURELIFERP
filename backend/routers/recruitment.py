@@ -35,8 +35,10 @@ class CreateApplicationRequest(BaseModel):
 
 
 class ReviewApplicationRequest(BaseModel):
-    status: str  # "reviewing", "accepted", "rejected"
+    status: str  # "reviewing", "interview", "accepted", "rejected"
     notes: Optional[str] = None
+    interview_assigned_to: Optional[int] = None
+    interview_scheduled_at: Optional[str] = None
 
 
 class ApplicationResponse(BaseModel):
