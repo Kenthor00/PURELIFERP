@@ -359,56 +359,10 @@ async def update_hearing(
 
 
 # ==========================================
-# LEGAL DOCUMENTS
+# LEGAL DOCUMENTS (TODO: Add LegalDocument model)
 # ==========================================
 
-@router.get("/cases/{case_id}/documents", response_model=List[LegalDocumentResponse])
-async def get_case_documents(
-    case_id: int,
-    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
-    db: AsyncSession = Depends(get_db)
-):
-    """Lista documenti pratica"""
-    result = await db.execute(
-        select(LegalDocument)
-        .where(LegalDocument.legal_case_id == case_id)
-        .order_by(LegalDocument.created_at)
-    )
-    return result.scalars().all()
-
-
-@router.post("/documents", response_model=LegalDocumentResponse)
-async def submit_document(
-    request: LegalDocumentCreate,
-    current_user: User = Depends(require_roles(UserRole.LAWYER, UserRole.PROSECUTOR)),
-    db: AsyncSession = Depends(get_db)
-):
-    """Deposita documento"""
-    result = await db.execute(select(LegalCase).where(LegalCase.id == request.legal_case_id))
-    if not result.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Pratica non trovata")
-    
-    document = LegalDocument(
-        **request.model_dump(),
-        submitted_by=current_user.id
-    )
-    
-    db.add(document)
-    await db.commit()
-    await db.refresh(document)
-    
-    timeline_event = TimelineEvent(
-        event_type="document_submitted",
-        category="justice",
-        title=f"Documento depositato: {document.title}",
-        reference_id=document.legal_case_id,
-        reference_type="legal_case",
-        user_id=current_user.id
-    )
-    db.add(timeline_event)
-    await db.commit()
-    
-    return document
+# Endpoints for LegalDocument disabled until model is added
 
 
 # ==========================================
