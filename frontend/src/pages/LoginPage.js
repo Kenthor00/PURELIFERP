@@ -32,21 +32,37 @@ export const LoginPage = () => {
       const result = await login(email, password);
       play('success');
       
-      // Redirect based on role
+      // Check if needs game_name
+      if (result.needs_game_name) {
+        navigate('/set-game-name', { replace: true });
+        return;
+      }
+      
+      // Redirect based on sector
       let redirectPath = from;
       if (from === '/' || from === '/login') {
-        switch (result.role) {
-          case 'police':
+        const sector = result.sector?.toUpperCase();
+        switch (sector) {
+          case 'ADMIN':
+            redirectPath = '/admin';
+            break;
+          case 'LSPD':
             redirectPath = '/lspd';
             break;
-          case 'ems':
+          case 'EMS':
             redirectPath = '/ems';
             break;
-          case 'dispatch':
+          case 'DISPATCH':
             redirectPath = '/dispatch';
             break;
+          case 'GOV':
+            redirectPath = '/justice';
+            break;
+          case 'NEWS':
+            redirectPath = '/city/news';
+            break;
           default:
-            redirectPath = '/lspd';
+            redirectPath = '/city';
         }
       }
       
