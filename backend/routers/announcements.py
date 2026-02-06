@@ -302,14 +302,14 @@ async def moderate_announcement(
     if data.status.lower() not in ["approved", "rejected"]:
         raise HTTPException(status_code=400, detail="Stato non valido")
     
-    new_status = AnnouncementStatus.APPROVED if data.status.lower() == "approved" else AnnouncementStatus.REJECTED
+    new_status = AnnouncementStatus.APPROVED.value if data.status.lower() == "approved" else AnnouncementStatus.REJECTED.value
     
     # Aggiorna annuncio
     announcement.status = new_status
     announcement.moderator_id = current_user.id
     announcement.moderator_game_name = current_user.game_name
     announcement.moderator_notes = data.notes
-    if new_status == AnnouncementStatus.APPROVED:
+    if new_status == AnnouncementStatus.APPROVED.value:
         announcement.approved_at = datetime.now(timezone.utc)
     
     await db.commit()
