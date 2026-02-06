@@ -895,12 +895,12 @@ class RecruitmentApplication(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     
     # Settore target
-    target_sector = Column(Enum(Sector), nullable=False)
+    target_sector = Column(String(50), nullable=False)
     
     # Dati candidato (utente loggato)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     game_name = Column(String(100), nullable=False)
-    user_sector = Column(Enum(Sector), nullable=False)  # Settore attuale del candidato
+    user_sector = Column(String(50), nullable=False)  # Settore attuale del candidato
     
     # Info candidatura
     motivation = Column(Text, nullable=False)
@@ -909,7 +909,7 @@ class RecruitmentApplication(Base):
     additional_info = Column(Text, nullable=True)
     
     # Stato e revisione
-    status = Column(Enum(ApplicationStatus), default=ApplicationStatus.PENDING, index=True)
+    status = Column(String(20), default="pending", index=True)
     reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     reviewer_game_name = Column(String(100), nullable=True)
     reviewer_notes = Column(Text, nullable=True)
