@@ -885,6 +885,7 @@ class Outbox(Base):
 class ApplicationStatus(str, enum.Enum):
     PENDING = "pending"
     REVIEWING = "reviewing"
+    INTERVIEW = "interview"  # Colloquio
     ACCEPTED = "accepted"
     REJECTED = "rejected"
 
