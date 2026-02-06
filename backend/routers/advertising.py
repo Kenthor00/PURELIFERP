@@ -212,6 +212,18 @@ async def request_ad_slot(
         request=request
     )
     
+    # Notifica ai moderatori (GOV e Admin)
+    await create_notification(
+        db=db,
+        notification_type=NotificationType.AD_SLOT_REQUESTED.value,
+        title="Nuova Richiesta Pubblicità",
+        message=f"{current_user.game_name} richiede slot pubblicitario: {data.business_name}",
+        sender=current_user,
+        is_global=True,
+        entity_type="ad_slot",
+        entity_id=ad_slot.id
+    )
+    
     return _ad_to_response(ad_slot)
 
 
