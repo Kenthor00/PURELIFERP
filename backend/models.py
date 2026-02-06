@@ -147,7 +147,32 @@ class AuditAction(str, enum.Enum):
     ARTICLE_UPDATE = "article_update"
     ARTICLE_DELETE = "article_delete"
     
-    # City Hub
+    # City Hub - Recruitment
+    APPLICATION_CREATE = "application_create"
+    APPLICATION_REVIEW = "application_review"
+    APPLICATION_ACCEPT = "application_accept"
+    APPLICATION_REJECT = "application_reject"
+    
+    # City Hub - Appointments
+    APPOINTMENT_CREATE = "appointment_create"
+    APPOINTMENT_ACCEPT = "appointment_accept"
+    APPOINTMENT_REJECT = "appointment_reject"
+    APPOINTMENT_COMPLETE = "appointment_complete"
+    APPOINTMENT_CANCEL = "appointment_cancel"
+    
+    # City Hub - Announcements
+    ANNOUNCEMENT_CREATE = "announcement_create"
+    ANNOUNCEMENT_APPROVE = "announcement_approve"
+    ANNOUNCEMENT_REJECT = "announcement_reject"
+    ANNOUNCEMENT_DELETE = "announcement_delete"
+    
+    # City Hub - Advertising
+    AD_SLOT_REQUEST = "ad_slot_request"
+    AD_SLOT_APPROVE = "ad_slot_approve"
+    AD_SLOT_REJECT = "ad_slot_reject"
+    AD_SLOT_CLICK = "ad_slot_click"
+    
+    # Legacy City Hub
     EVENT_CREATE = "event_create"
     EVENT_APPROVE = "event_approve"
     AD_CREATE = "ad_create"
