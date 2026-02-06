@@ -1374,11 +1374,3 @@ class PushSubscription(Base):
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id])
-
-    sender = relationship("User", foreign_keys=[sender_id])
-    
-    # Index per query veloci
-    __table_args__ = (
-        Index('ix_notifications_user_unread', 'user_id', 'is_read'),
-        Index('ix_notifications_sector_unread', 'target_sector', 'is_read'),
-    )
