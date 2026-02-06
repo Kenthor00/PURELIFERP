@@ -1,7 +1,7 @@
 """
 PURE LIFE OS - Database Configuration
-MySQL con SQLAlchemy Async
-Supporta DATABASE_URL (Railway) o variabili separate
+MySQL con SQLAlchemy Async + SQLite fallback per development
+Supporta DATABASE_URL (Railway) o variabili separate o SQLite locale
 """
 import os
 import logging
@@ -11,34 +11,40 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import text
 from dotenv import load_dotenv
 from pathlib import Path
-from urllib.parse import urlparse, urlunparse
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 logger = logging.getLogger(__name__)
 
+# Flag per indicare se stiamo usando SQLite
+USING_SQLITE = False
+
 
 def build_database_url() -> str:
     """
     Costruisce l'URL del database.
-    Priorità: DATABASE_URL (Railway) > variabili separate
-    Converte mysql:// in mysql+aiomysql:// per async
+    Priorità: DATABASE_URL (Railway) > variabili MySQL > SQLite locale
     """
+    global USING_SQLITE
+    
     database_url = os.environ.get('DATABASE_URL')
     
     if database_url:
-        # Railway fornisce mysql:// ma SQLAlchemy async richiede mysql+aiomysql://
-        if database_url.startswith('mysql://'):
-            database_url = database_url.replace('mysql://', 'mysql+aiomysql://', 1)
-        elif database_url.startswith('mysql+pymysql://'):
-            database_url = database_url.replace('mysql+pymysql://', 'mysql+aiomysql://', 1)
-        elif not database_url.startswith('mysql+aiomysql://'):
-            # Se è un altro formato mysql, converti
-            database_url = re.sub(r'^mysql(\+\w+)?://', 'mysql+aiomysql://', database_url)
-        
-        logger.info("Usando DATABASE_URL da ambiente (Railway)")
-        return database_url
+        # Verifica se è un URL di Railway interno (non raggiungibile da qui)
+        if 'railway.internal' in database_url:
+            logger.warning("DATABASE_URL punta a Railway internal - fallback a SQLite locale")
+        else:
+            # Railway fornisce mysql:// ma SQLAlchemy async richiede mysql+aiomysql://
+            if database_url.startswith('mysql://'):
+                database_url = database_url.replace('mysql://', 'mysql+aiomysql://', 1)
+            elif database_url.startswith('mysql+pymysql://'):
+                database_url = database_url.replace('mysql+pymysql://', 'mysql+aiomysql://', 1)
+            elif not database_url.startswith('mysql+aiomysql://'):
+                database_url = re.sub(r'^mysql(\+\w+)?://', 'mysql+aiomysql://', database_url)
+            
+            logger.info("Usando DATABASE_URL da ambiente")
+            return database_url
     
     # Fallback a variabili separate (legacy/local dev)
     mysql_host = os.environ.get('MYSQL_HOST')
@@ -52,27 +58,35 @@ def build_database_url() -> str:
         logger.info(f"Usando variabili MySQL separate (host: {mysql_host})")
         return url
     
-    # Nessuna configurazione DB - usa un URL placeholder che fallirà alla connessione
-    # Il server si avvierà comunque in stato degradato
-    logger.warning("DATABASE_URL non configurata - il server si avvierà in stato degradato")
-    return "mysql+aiomysql://placeholder:placeholder@localhost:3306/placeholder"
+    # Fallback finale: SQLite locale per development
+    USING_SQLITE = True
+    sqlite_path = ROOT_DIR / 'purelife_os.db'
+    logger.warning(f"Usando SQLite locale: {sqlite_path}")
+    return f"sqlite+aiosqlite:///{sqlite_path}"
 
 
 # Build database URL
 DATABASE_URL = build_database_url()
 
-# Crea engine con connection pooling
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
-    pool_recycle=300,  # Recycle connections ogni 5 minuti
-    connect_args={
-        "connect_timeout": 10
-    }
-)
+# Crea engine - configurazione diversa per SQLite vs MySQL
+if USING_SQLITE:
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
+        pool_recycle=300,
+        connect_args={
+            "connect_timeout": 10
+        }
+    )
 
 async_session = async_sessionmaker(
     engine,
@@ -97,9 +111,12 @@ async def check_tables_exist() -> bool:
     """Verifica se le tabelle principali esistono"""
     try:
         async with async_session() as session:
-            result = await session.execute(text("SHOW TABLES"))
+            if USING_SQLITE:
+                result = await session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+            else:
+                result = await session.execute(text("SHOW TABLES"))
             tables = [row[0] for row in result.fetchall()]
-            required_tables = ['users', 'cases', 'patients', 'dispatch_calls', 'chat_channels']
+            required_tables = ['users', 'audit_logs']
             return all(t in tables for t in required_tables)
     except Exception as e:
         logger.error(f"Errore check tabelle: {e}")
@@ -136,7 +153,8 @@ async def run_auto_migrations() -> dict:
         "tables_existed": False,
         "migrations_run": False,
         "success": False,
-        "error": None
+        "error": None,
+        "using_sqlite": USING_SQLITE
     }
     
     try:
@@ -149,7 +167,7 @@ async def run_auto_migrations() -> dict:
         
         result["migrations_run"] = True
         result["success"] = True
-        logger.info(f"Auto-migrations: tables_existed={result['tables_existed']}, success=True")
+        logger.info(f"Auto-migrations: tables_existed={result['tables_existed']}, success=True, sqlite={USING_SQLITE}")
         
     except Exception as e:
         result["error"] = str(e)[:200]
