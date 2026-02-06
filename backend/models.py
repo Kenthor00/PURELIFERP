@@ -998,19 +998,19 @@ class Announcement(Base):
     # Autore (utente loggato)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     author_game_name = Column(String(100), nullable=False)
-    author_sector = Column(Enum(Sector), nullable=False)
+    author_sector = Column(String(50), nullable=False)
     
     # Contenuto
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=False)
-    category = Column(Enum(AnnouncementCategory), nullable=False, index=True)
+    category = Column(String(20), nullable=False, index=True)
     image_url = Column(String(500), nullable=True)
     contact_info = Column(String(200), nullable=True)  # Telefono, email, etc.
     price = Column(String(50), nullable=True)  # Per vendita/affitti
     location = Column(String(200), nullable=True)
     
     # Stato e moderazione
-    status = Column(Enum(AnnouncementStatus), default=AnnouncementStatus.PENDING, index=True)
+    status = Column(String(20), default="pending", index=True)
     moderator_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     moderator_game_name = Column(String(100), nullable=True)
     moderator_notes = Column(Text, nullable=True)
@@ -1057,7 +1057,7 @@ class AdvertisingSlot(Base):
     # Richiedente/Acquirente
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     owner_game_name = Column(String(100), nullable=False)
-    owner_sector = Column(Enum(Sector), nullable=False)
+    owner_sector = Column(String(50), nullable=False)
     business_name = Column(String(200), nullable=False)  # Nome azienda/attività
     
     # Contenuto pubblicitario
