@@ -467,12 +467,22 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Chat Routes */}
+        {/* Chat Routes - Service Chat 2.0 */}
         <Route
           path="/chat"
           element={
             <ProtectedRoute>
-              <ChatPage />
+              <ServiceChatPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* News Editor - Weazel News 2.0 */}
+        <Route
+          path="/news/editor"
+          element={
+            <ProtectedRoute allowedSectors={['NEWS', 'ADMIN']}>
+              <NewsEditorPage />
             </ProtectedRoute>
           }
         />
