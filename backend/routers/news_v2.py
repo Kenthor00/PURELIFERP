@@ -384,7 +384,7 @@ async def create_article(
         category=data.category,
         tags=data.tags,
         author_id=current_user.id,
-        author_game_name=current_user.game_name or current_user.name,
+        author_game_name=current_user.game_name or current_user.email,
         author_sector=current_user.sector.value if current_user.sector else "NEWS",
         status=ArticleStatus.DRAFT.value,
         is_official=is_official

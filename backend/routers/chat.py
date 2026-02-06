@@ -275,7 +275,7 @@ async def send_message(
     message = ChatMessage(
         channel_id=channel.id,
         author_id=current_user.id,
-        author_game_name=current_user.game_name or current_user.name,
+        author_game_name=current_user.game_name or current_user.email,
         author_sector=current_user.sector.value if current_user.sector else "CIVIL",
         author_grade=current_user.grade,
         content=data.content.strip(),
@@ -566,7 +566,7 @@ async def update_my_presence(
     
     return PresenceResponse(
         user_id=current_user.id,
-        game_name=current_user.game_name or current_user.name,
+        game_name=current_user.game_name or current_user.email,
         sector=current_user.sector.value if current_user.sector else "CIVIL",
         grade=current_user.grade,
         status=presence.status,
@@ -598,7 +598,7 @@ async def get_my_presence(
     
     return PresenceResponse(
         user_id=current_user.id,
-        game_name=current_user.game_name or current_user.name,
+        game_name=current_user.game_name or current_user.email,
         sector=current_user.sector.value if current_user.sector else "CIVIL",
         grade=current_user.grade,
         status=presence.status,
