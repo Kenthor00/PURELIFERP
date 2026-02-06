@@ -311,15 +311,15 @@ async def get_available_sectors(
 def _application_to_response(app: RecruitmentApplication) -> ApplicationResponse:
     return ApplicationResponse(
         id=app.id,
-        target_sector=app.target_sector.value,
+        target_sector=app.target_sector,
         user_id=app.user_id,
         game_name=app.game_name,
-        user_sector=app.user_sector.value,
+        user_sector=app.user_sector,
         motivation=app.motivation,
         experience=app.experience,
         availability=app.availability,
         additional_info=app.additional_info,
-        status=app.status.value,
+        status=app.status,
         reviewer_id=app.reviewer_id,
         reviewer_game_name=app.reviewer_game_name,
         reviewer_notes=app.reviewer_notes,
