@@ -125,6 +125,18 @@ async def create_appointment(
         request=request
     )
     
+    # Notifica al settore
+    await notify_sector_chiefs(
+        db=db,
+        sector=target_sector.value,
+        notification_type=NotificationType.APPOINTMENT_NEW.value,
+        title="Nuova Richiesta Appuntamento",
+        message=f"{current_user.game_name} richiede un appuntamento: {data.subject}",
+        sender=current_user,
+        entity_type="appointment",
+        entity_id=appointment.id
+    )
+    
     return _appointment_to_response(appointment)
 
 
