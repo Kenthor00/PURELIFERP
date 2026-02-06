@@ -81,7 +81,7 @@ async def get_public_announcements(
     if category:
         try:
             cat_enum = AnnouncementCategory(category.lower())
-            query = query.where(Announcement.category == cat_enum)
+            query = query.where(Announcement.category == cat_enum.value)
         except ValueError:
             pass
     
