@@ -319,6 +319,33 @@ const AppRoutes = () => {
         <Route path="/city/news/:articleId" element={<NewsPage />} />
         <Route path="/city/events" element={<CityHubPage />} />
         <Route path="/city/events/:eventId" element={<CityHubPage />} />
+        
+        {/* City Hub v2 - Announcements are public, others require auth */}
+        <Route path="/city/announcements" element={<AnnouncementsPage />} />
+        <Route
+          path="/city/recruitment"
+          element={
+            <ProtectedRoute>
+              <RecruitmentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/city/appointments"
+          element={
+            <ProtectedRoute>
+              <AppointmentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/city/advertising"
+          element={
+            <ProtectedRoute>
+              <AdvertisingPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
