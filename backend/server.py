@@ -233,6 +233,10 @@ api_router.include_router(announcements.router)
 api_router.include_router(advertising.router)
 api_router.include_router(notifications.router)
 
+# FASE 4 - Weazel News 2.0, Service Chat 2.0, Push Notifications
+api_router.include_router(news_v2.router)
+api_router.include_router(push.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
