@@ -1,205 +1,414 @@
 """
-PURE LIFE OS - Auth Router
-Login, Refresh, FiveM SSO
+PURE LIFE OS - Authentication Router
+Login sicuro con rate limiting, audit e game_name obbligatorio
 """
-from fastapi import APIRouter, Depends, HTTPException, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from datetime import datetime, timezone
 from typing import Optional
+from passlib.context import CryptContext
+from pydantic import BaseModel, EmailStr
+import logging
 
 from database import get_db
-from models import User, UserRole
-from schemas import (
-    LoginRequest, TokenResponse, RefreshTokenRequest,
-    FiveMExchangeRequest, FiveMTokenResponse, UserCreate, UserResponse, MessageResponse
-)
-from auth import (
-    verify_password, hash_password, create_access_token, create_refresh_token,
-    decode_token, verify_fivem_secret, get_current_user, log_audit
-)
-from utils import map_fivem_job_to_role
+from models import User, Sector, AuditAction, SystemConfig
+from auth import create_access_token, create_refresh_token, get_current_user
+from services.audit_service import audit_service
+from services.security_service import security_service
 
-router = APIRouter(prefix="/auth", tags=["Autenticazione"])
+router = APIRouter(prefix="/auth", tags=["Authentication"])
+logger = logging.getLogger(__name__)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer(auto_error=False)
 
 
-@router.post("/login", response_model=TokenResponse)
+# ==========================================
+# SCHEMAS
+# ==========================================
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    user_id: int
+    name: str
+    email: str
+    sector: str
+    grade: str
+    hierarchy_level: int
+    game_name: Optional[str]
+    needs_game_name: bool
+
+
+class SetGameNameRequest(BaseModel):
+    game_name: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class UserProfileResponse(BaseModel):
+    id: int
+    email: str
+    name: str
+    game_name: Optional[str]
+    sector: str
+    grade: str
+    hierarchy_level: int
+    badge_number: Optional[str]
+    department: Optional[str]
+    presence: str
+    needs_game_name: bool
+    permissions: list
+
+
+# ==========================================
+# ENDPOINTS
+# ==========================================
+
+@router.post("/login", response_model=LoginResponse)
 async def login(
-    request: LoginRequest,
-    req: Request,
-    db: AsyncSession = Depends(get_db)
-):
-    """Login con email e password"""
-    result = await db.execute(select(User).where(User.email == request.email))
-    user = result.scalar_one_or_none()
-    
-    if not user or not verify_password(request.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Credenziali non valide")
-    
-    if not user.is_active:
-        raise HTTPException(status_code=401, detail="Account disattivato")
-    
-    access_token = create_access_token({"sub": str(user.id), "role": user.role.value})
-    refresh_token = create_refresh_token({"sub": str(user.id)})
-    
-    await log_audit(
-        db, user.id, "login", "user", user.id,
-        {"method": "password"},
-        req.client.host if req.client else None
-    )
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        role=user.role,
-        user_id=user.id,
-        name=user.name
-    )
-
-
-@router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(
-    request: RefreshTokenRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    """Rinnova access token con refresh token"""
-    payload = decode_token(request.refresh_token)
-    
-    if payload.get("type") != "refresh":
-        raise HTTPException(status_code=401, detail="Token non valido per refresh")
-    
-    user_id = payload.get("sub")
-    result = await db.execute(select(User).where(User.id == int(user_id)))
-    user = result.scalar_one_or_none()
-    
-    if not user or not user.is_active:
-        raise HTTPException(status_code=401, detail="Utente non trovato o disattivato")
-    
-    access_token = create_access_token({"sub": str(user.id), "role": user.role.value})
-    refresh_token = create_refresh_token({"sub": str(user.id)})
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        role=user.role,
-        user_id=user.id,
-        name=user.name
-    )
-
-
-@router.post("/fivem/exchange", response_model=FiveMTokenResponse)
-async def fivem_exchange(
-    request: FiveMExchangeRequest,
-    req: Request,
-    x_fivem_secret: str = Header(..., alias="X-FIVEM-SECRET"),
+    request: Request,
+    login_data: LoginRequest,
     db: AsyncSession = Depends(get_db)
 ):
     """
-    SSO FiveM - Scambia credenziali FiveM per token JWT
-    Header richiesto: X-FIVEM-SECRET
+    Login con rate limiting e audit.
+    Se game_name mancante, needs_game_name = true.
     """
-    if not verify_fivem_secret(x_fivem_secret):
-        raise HTTPException(status_code=401, detail="FiveM secret non valido")
+    ip_address = _get_client_ip(request)
+    user_agent = request.headers.get("user-agent", "")
     
-    result = await db.execute(
-        select(User).where(User.fivem_identifier == request.identifier)
+    # Rate limit check
+    is_allowed, error_msg = await security_service.check_rate_limit(
+        db, login_data.email, ip_address
     )
-    user = result.scalar_one_or_none()
+    if not is_allowed:
+        # Log tentativo bloccato
+        await audit_service.log(
+            db,
+            action=AuditAction.LOGIN_FAILED,
+            description=f"Rate limit: {error_msg}",
+            metadata={"email": login_data.email, "reason": "rate_limit"},
+            request=request
+        )
+        raise HTTPException(status_code=429, detail=error_msg)
     
-    role = map_fivem_job_to_role(request.job)
+    # Cerca utente
+    result = await db.execute(select(User).where(User.email == login_data.email))
+    user = result.scalar_one_or_none()
     
     if not user:
-        user = User(
-            email=f"{request.identifier}@fivem.local",
-            password_hash=hash_password(request.identifier),
-            name=request.name,
-            role=UserRole(role),
-            fivem_identifier=request.identifier,
-            phone_number=request.phone_number,
-            is_active=True
+        # Record tentativo fallito
+        await security_service.record_login_attempt(
+            db, login_data.email, ip_address, success=False, user_agent=user_agent
         )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-    else:
-        user.name = request.name
-        user.role = UserRole(role)
-        if request.phone_number:
-            user.phone_number = request.phone_number
-        await db.commit()
+        await audit_service.log(
+            db,
+            action=AuditAction.LOGIN_FAILED,
+            description="Email non trovata",
+            metadata={"email": login_data.email},
+            request=request
+        )
+        raise HTTPException(status_code=401, detail="Credenziali non valide")
     
-    access_token = create_access_token({"sub": str(user.id), "role": user.role.value})
+    # Check account lock
+    is_locked, lock_msg = await security_service.check_account_lock(db, user)
+    if is_locked:
+        await audit_service.log(
+            db,
+            action=AuditAction.LOGIN_FAILED,
+            user=user,
+            description=lock_msg,
+            metadata={"reason": "account_locked"},
+            request=request
+        )
+        raise HTTPException(status_code=403, detail=lock_msg)
     
-    if role == "police":
-        redirect_path = "/lspd"
-    elif role == "ems":
-        redirect_path = "/ems"
-    elif role == "dispatch":
-        redirect_path = "/dispatch"
-    else:
-        redirect_path = "/lspd"
+    # Verifica password
+    if not pwd_context.verify(login_data.password, user.password_hash):
+        await security_service.record_login_attempt(
+            db, login_data.email, ip_address, success=False, user_agent=user_agent
+        )
+        await security_service.handle_failed_login(db, user)
+        await audit_service.log(
+            db,
+            action=AuditAction.LOGIN_FAILED,
+            user=user,
+            description="Password errata",
+            metadata={"attempts": user.failed_login_attempts},
+            request=request
+        )
+        raise HTTPException(status_code=401, detail="Credenziali non valide")
     
-    await log_audit(
-        db, user.id, "fivem_login", "user", user.id,
-        {"identifier": request.identifier, "job": request.job},
-        req.client.host if req.client else None
+    # Login riuscito
+    await security_service.record_login_attempt(
+        db, login_data.email, ip_address, success=True, user_agent=user_agent
+    )
+    await security_service.handle_successful_login(db, user)
+    
+    # Crea token
+    access_token = create_access_token(user.id, user.sector.value)
+    refresh_token = create_refresh_token(user.id)
+    
+    # Audit log
+    await audit_service.log(
+        db,
+        action=AuditAction.LOGIN_SUCCESS,
+        user=user,
+        description="Login effettuato",
+        request=request
     )
     
-    return FiveMTokenResponse(
+    return LoginResponse(
         access_token=access_token,
-        role=user.role,
-        redirect_path=redirect_path
+        refresh_token=refresh_token,
+        user_id=user.id,
+        name=user.game_name or user.email.split("@")[0],
+        email=user.email,
+        sector=user.sector.value,
+        grade=user.grade,
+        hierarchy_level=user.hierarchy_level,
+        game_name=user.game_name,
+        needs_game_name=user.needs_game_name
     )
 
 
-@router.post("/register", response_model=UserResponse)
-async def register(
-    request: UserCreate,
-    db: AsyncSession = Depends(get_db)
-):
-    """Registra nuovo utente (solo per setup iniziale/admin)"""
-    result = await db.execute(select(User).where(User.email == request.email))
-    if result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email già registrata")
-    
-    if request.badge_number:
-        result = await db.execute(select(User).where(User.badge_number == request.badge_number))
-        if result.scalar_one_or_none():
-            raise HTTPException(status_code=400, detail="Numero distintivo già in uso")
-    
-    user = User(
-        email=request.email,
-        password_hash=hash_password(request.password),
-        name=request.name,
-        badge_number=request.badge_number,
-        role=request.role,
-        department=request.department,
-        phone_number=request.phone_number
-    )
-    
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-    
-    return user
-
-
-@router.get("/me", response_model=UserResponse)
-async def get_me(current_user: User = Depends(get_current_user)):
-    """Ottieni dati utente corrente"""
-    return current_user
-
-
-@router.put("/me/settings", response_model=UserResponse)
-async def update_settings(
-    sound_enabled: Optional[bool] = None,
+@router.post("/logout")
+async def logout(
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Aggiorna impostazioni utente"""
-    if sound_enabled is not None:
-        current_user.sound_enabled = sound_enabled
+    """Logout con audit"""
+    # Aggiorna presenza
+    current_user.presence = "offline"
+    current_user.last_seen = datetime.now(timezone.utc)
+    await db.commit()
+    
+    await audit_service.log(
+        db,
+        action=AuditAction.LOGOUT,
+        user=current_user,
+        description="Logout effettuato",
+        request=request
+    )
+    
+    return {"message": "Logout effettuato"}
+
+
+@router.post("/set-game-name")
+async def set_game_name(
+    request: Request,
+    data: SetGameNameRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Imposta il nome in game (obbligatorio al primo accesso).
+    """
+    if not data.game_name or len(data.game_name.strip()) < 3:
+        raise HTTPException(
+            status_code=400, 
+            detail="Il nome in game deve avere almeno 3 caratteri"
+        )
+    
+    if len(data.game_name) > 50:
+        raise HTTPException(
+            status_code=400, 
+            detail="Il nome in game non può superare i 50 caratteri"
+        )
+    
+    old_name = current_user.game_name
+    current_user.game_name = data.game_name.strip()
+    await db.commit()
+    
+    await audit_service.log(
+        db,
+        action=AuditAction.GAME_NAME_SET,
+        user=current_user,
+        description=f"Nome in game impostato: {data.game_name}",
+        metadata={"old_name": old_name, "new_name": data.game_name},
+        request=request
+    )
+    
+    return {
+        "message": "Nome in game impostato con successo",
+        "game_name": current_user.game_name
+    }
+
+
+@router.post("/change-password")
+async def change_password(
+    request: Request,
+    data: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Cambio password con validazione policy"""
+    # Verifica password attuale
+    if not pwd_context.verify(data.current_password, current_user.password_hash):
+        raise HTTPException(status_code=401, detail="Password attuale non corretta")
+    
+    # Valida nuova password
+    is_valid, error_msg = security_service.validate_password(data.new_password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Aggiorna password
+    current_user.password_hash = pwd_context.hash(data.new_password)
+    await db.commit()
+    
+    await audit_service.log(
+        db,
+        action=AuditAction.PASSWORD_CHANGE,
+        user=current_user,
+        description="Password modificata",
+        request=request
+    )
+    
+    return {"message": "Password modificata con successo"}
+
+
+@router.get("/me", response_model=UserProfileResponse)
+async def get_profile(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Ottiene il profilo utente corrente"""
+    from services.permission_service import permission_service
+    
+    permissions = permission_service.get_user_permissions(current_user)
+    
+    return UserProfileResponse(
+        id=current_user.id,
+        email=current_user.email,
+        name=current_user.game_name or current_user.email.split("@")[0],
+        game_name=current_user.game_name,
+        sector=current_user.sector.value,
+        grade=current_user.grade,
+        hierarchy_level=current_user.hierarchy_level,
+        badge_number=current_user.badge_number,
+        department=current_user.department,
+        presence=current_user.presence.value if current_user.presence else "offline",
+        needs_game_name=current_user.needs_game_name,
+        permissions=[p.value for p in permissions]
+    )
+
+
+@router.post("/refresh")
+async def refresh_token(
+    refresh_token: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Rinnova access token usando refresh token"""
+    from auth import verify_refresh_token
+    
+    user_id = verify_refresh_token(refresh_token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Refresh token non valido")
+    
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="Utente non trovato o disabilitato")
+    
+    new_access_token = create_access_token(user.id, user.sector.value)
+    
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer"
+    }
+
+
+# ==========================================
+# BOOTSTRAP ADMIN (Solo primo avvio)
+# ==========================================
+
+@router.post("/bootstrap")
+async def bootstrap_admin(
+    request: Request,
+    bootstrap_key: str,
+    email: EmailStr,
+    password: str,
+    game_name: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Crea il primo admin del sistema.
+    Funziona SOLO se non esistono admin e la key è corretta.
+    """
+    import os
+    
+    expected_key = os.environ.get("ADMIN_BOOTSTRAP_KEY", "")
+    if not expected_key or bootstrap_key != expected_key:
+        raise HTTPException(status_code=403, detail="Chiave bootstrap non valida")
+    
+    # Verifica che non esistano già admin
+    result = await db.execute(
+        select(User).where(User.sector == Sector.ADMIN)
+    )
+    existing_admin = result.scalar_one_or_none()
+    
+    if existing_admin:
+        raise HTTPException(
+            status_code=400, 
+            detail="Bootstrap già completato. Esiste già un amministratore."
+        )
+    
+    # Valida password
+    is_valid, error_msg = security_service.validate_password(password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Crea admin
+    admin = User(
+        email=email,
+        password_hash=pwd_context.hash(password),
+        game_name=game_name,
+        sector=Sector.ADMIN,
+        grade="Super Admin",
+        hierarchy_level=10,
+        is_active=True
+    )
+    db.add(admin)
+    
+    # Segna bootstrap come completato
+    config = SystemConfig(key="bootstrap_completed", value="true")
+    db.add(config)
     
     await db.commit()
-    await db.refresh(current_user)
     
-    return current_user
+    await audit_service.log(
+        db,
+        action=AuditAction.SYSTEM_BOOTSTRAP,
+        user=admin,
+        description="Bootstrap sistema completato",
+        metadata={"admin_email": email},
+        request=request
+    )
+    
+    logger.info(f"Bootstrap completato: admin {email} creato")
+    
+    return {
+        "message": "Bootstrap completato. Admin creato.",
+        "email": email
+    }
+
+
+def _get_client_ip(request: Request) -> str:
+    """Estrae l'IP del client"""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
