@@ -132,8 +132,45 @@ def _message_to_response(msg: ChatMessage) -> MessageResponse:
         message_type=msg.message_type,
         is_pinned=msg.is_pinned,
         is_deleted=msg.is_deleted,
-        created_at=msg.created_at.isoformat() if msg.created_at else ""
+        created_at=msg.created_at.isoformat() if msg.created_at else "",
+        mentions=msg.mentions or []
     )
+
+
+async def parse_mentions(content: str, db: AsyncSession, channel: ChatChannel) -> List[int]:
+    """
+    Parsa le menzioni @NomeInGame dal contenuto e restituisce lista di user_id.
+    Solo utenti che hanno accesso al canale possono essere menzionati.
+    """
+    # Pattern per menzioni: @NomeInGame (con spazi o senza)
+    mention_pattern = r'@([A-Za-zÀ-ÿ0-9_\s]+?)(?=\s*[@\n\r,;.!?\)]|$)'
+    matches = re.findall(mention_pattern, content)
+    
+    if not matches:
+        return []
+    
+    mentioned_user_ids = []
+    
+    for name in matches:
+        name = name.strip()
+        if not name:
+            continue
+            
+        # Cerca utente per game_name (case insensitive)
+        result = await db.execute(
+            select(User).where(
+                func.lower(User.game_name) == func.lower(name),
+                User.is_active == True
+            )
+        )
+        user = result.scalar_one_or_none()
+        
+        if user and user.id not in mentioned_user_ids:
+            # Verifica che l'utente possa accedere al canale
+            if can_access_channel(user, channel):
+                mentioned_user_ids.append(user.id)
+    
+    return mentioned_user_ids
 
 
 # ==========================================
