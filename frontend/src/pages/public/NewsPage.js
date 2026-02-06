@@ -123,6 +123,12 @@ export const NewsPage = () => {
           )}
 
           <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-plos-text-muted">
+            {selectedArticle.author_game_name && (
+              <span className="flex items-center gap-1">
+                <User size={14} />
+                {selectedArticle.author_game_name}
+              </span>
+            )}
             <span className="flex items-center gap-1">
               <Calendar size={14} />
               {formatDate(selectedArticle.published_at)}
