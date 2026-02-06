@@ -300,6 +300,11 @@ async def update_user(
     if data.department is not None:
         target_user.department = data.department
     
+    if data.is_sector_chief is not None:
+        # Solo admin può cambiare is_sector_chief
+        if current_user.sector == Sector.ADMIN:
+            target_user.is_sector_chief = data.is_sector_chief
+    
     if data.is_active is not None:
         target_user.is_active = data.is_active
         action = AuditAction.USER_REACTIVATE if data.is_active else AuditAction.USER_DEACTIVATE
