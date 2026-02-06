@@ -205,7 +205,9 @@ export const NewsPage = () => {
             >
               <option value="">Tutte le categorie</option>
               {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat.value || cat} value={cat.value || cat}>
+                  {cat.label || cat}
+                </option>
               ))}
             </select>
           </div>
