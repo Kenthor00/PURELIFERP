@@ -4,6 +4,7 @@ JWT + FiveM SSO con rotazione chiavi
 """
 import os
 import jwt
+from enum import Enum
 from datetime import datetime, timezone, timedelta
 from passlib.context import CryptContext
 from fastapi import HTTPException, Depends, Header, Request
@@ -30,6 +31,38 @@ FIVEM_SECRET_PREVIOUS = os.environ.get('FIVEM_SECRET_PREVIOUS', '')
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
+
+
+# ==========================================
+# LEGACY COMPATIBILITY: UserRole -> Sector mapping
+# ==========================================
+class UserRole(str, Enum):
+    """Legacy UserRole enum - maps to Sector"""
+    ADMIN = "admin"
+    POLICE = "police"
+    EMS = "ems"
+    DISPATCH = "dispatch"
+    GOVERNMENT = "government"
+    JUDGE = "judge"
+    LAWYER = "lawyer"
+    PROSECUTOR = "prosecutor"
+    WEAZEL = "weazel"
+    CIVILIAN = "civilian"
+
+
+# Mapping UserRole -> Sector
+ROLE_TO_SECTOR = {
+    UserRole.ADMIN: Sector.ADMIN,
+    UserRole.POLICE: Sector.LSPD,
+    UserRole.EMS: Sector.EMS,
+    UserRole.DISPATCH: Sector.DISPATCH,
+    UserRole.GOVERNMENT: Sector.GOV,
+    UserRole.JUDGE: Sector.GOV,
+    UserRole.LAWYER: Sector.GOV,
+    UserRole.PROSECUTOR: Sector.GOV,
+    UserRole.WEAZEL: Sector.NEWS,
+    UserRole.CIVILIAN: Sector.CIVIL,
+}
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
