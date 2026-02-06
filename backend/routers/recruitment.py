@@ -90,15 +90,15 @@ async def create_application(
     
     # Crea candidatura
     application = RecruitmentApplication(
-        target_sector=target_sector,
+        target_sector=target_sector.value,
         user_id=current_user.id,
         game_name=current_user.game_name or current_user.email,
-        user_sector=current_user.sector,
+        user_sector=current_user.sector.value,
         motivation=data.motivation,
         experience=data.experience,
         availability=data.availability,
         additional_info=data.additional_info,
-        status=ApplicationStatus.PENDING
+        status=ApplicationStatus.PENDING.value
     )
     
     db.add(application)
