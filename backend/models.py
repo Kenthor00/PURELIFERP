@@ -1168,7 +1168,3 @@ class Notification(Base):
         Index('ix_notifications_user_unread', 'user_id', 'is_read'),
         Index('ix_notifications_sector_unread', 'target_sector', 'is_read'),
     )
-
-    owner = relationship("User", foreign_keys=[owner_id])
-    approver = relationship("User", foreign_keys=[approver_id])
-
