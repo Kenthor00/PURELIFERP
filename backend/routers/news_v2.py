@@ -752,6 +752,17 @@ async def toggle_breaking(
             entity_type="article",
             entity_id=article.id
         )
+        
+        # Invia push notification globale
+        await send_push_notification(
+            db=db,
+            is_global=True,
+            notification_type="breaking",
+            title="⚡ BREAKING NEWS - Weazel News",
+            body=article.title,
+            url=f"/city/news/{article.id}",
+            tag=f"breaking-{article.id}"
+        )
     
     return _article_to_response(article)
 
