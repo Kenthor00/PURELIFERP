@@ -34,6 +34,7 @@ class CreateUserRequest(BaseModel):
     sector: str
     grade: str
     hierarchy_level: int
+    is_sector_chief: bool = False
     badge_number: Optional[str] = None
     department: Optional[str] = None
 
@@ -42,9 +43,14 @@ class UpdateUserRequest(BaseModel):
     game_name: Optional[str] = None
     grade: Optional[str] = None
     hierarchy_level: Optional[int] = None
+    is_sector_chief: Optional[bool] = None
     badge_number: Optional[str] = None
     department: Optional[str] = None
     is_active: Optional[bool] = None
+
+
+class ResetPasswordRequest(BaseModel):
+    new_password: str
 
 
 class UserResponse(BaseModel):
@@ -54,6 +60,7 @@ class UserResponse(BaseModel):
     sector: str
     grade: str
     hierarchy_level: int
+    is_sector_chief: bool
     badge_number: Optional[str]
     department: Optional[str]
     is_active: bool
