@@ -449,7 +449,7 @@ class AuditLog(Base):
     
     # Dettagli
     description = Column(Text, nullable=True)
-    metadata = Column(JSON, nullable=True)  # Dati aggiuntivi, diff, ecc.
+    extra_data = Column(JSON, nullable=True)  # Dati aggiuntivi, diff, ecc.
     
     # Info connessione
     ip_address = Column(String(45), nullable=True)
