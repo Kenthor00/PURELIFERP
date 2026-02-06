@@ -325,6 +325,38 @@ async def handle_appointment(
         request=request
     )
     
+    # Notifica al richiedente
+    notification_map = {
+        AppointmentStatus.ACCEPTED: (
+            NotificationType.APPOINTMENT_ACCEPTED.value,
+            "Appuntamento Confermato",
+            f"Il tuo appuntamento con {appointment.target_sector} è stato accettato"
+        ),
+        AppointmentStatus.REJECTED: (
+            NotificationType.APPOINTMENT_REJECTED.value,
+            "Appuntamento Rifiutato",
+            f"Il tuo appuntamento con {appointment.target_sector} non è stato accettato"
+        ),
+        AppointmentStatus.COMPLETED: (
+            NotificationType.APPOINTMENT_COMPLETED.value,
+            "Appuntamento Completato",
+            f"Il tuo appuntamento con {appointment.target_sector} è stato completato"
+        )
+    }
+    
+    if new_status in notification_map:
+        notif_type, notif_title, notif_message = notification_map[new_status]
+        await notify_user(
+            db=db,
+            user_id=appointment.requester_id,
+            notification_type=notif_type,
+            title=notif_title,
+            message=notif_message,
+            sender=current_user,
+            entity_type="appointment",
+            entity_id=appointment.id
+        )
+    
     return _appointment_to_response(appointment)
 
 
