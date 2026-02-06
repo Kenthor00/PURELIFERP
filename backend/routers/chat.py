@@ -143,8 +143,9 @@ async def parse_mentions(content: str, db: AsyncSession, channel: ChatChannel) -
     Parsa le menzioni @NomeInGame dal contenuto e restituisce lista di user_id.
     Solo utenti che hanno accesso al canale possono essere menzionati.
     """
-    # Pattern per menzioni: @NomeInGame (con spazi o senza)
-    mention_pattern = r'@([A-Za-zÀ-ÿ0-9_\s]+?)(?=\s*[@\n\r,;.!?\)]|$)'
+    # Pattern per menzioni: @NomeInGame (supporta nomi con spazi tipo "Marco Rossi")
+    # Cerca @seguito da parole (lettere, numeri, underscore) fino a 2 parole
+    mention_pattern = r'@([A-Za-zÀ-ÿ0-9_]+(?:\s+[A-Za-zÀ-ÿ0-9_]+)?)'
     matches = re.findall(mention_pattern, content)
     
     if not matches:
@@ -157,7 +158,7 @@ async def parse_mentions(content: str, db: AsyncSession, channel: ChatChannel) -
         if not name:
             continue
             
-        # Cerca utente per game_name (case insensitive)
+        # Cerca utente per game_name (case insensitive, match esatto o parziale)
         result = await db.execute(
             select(User).where(
                 func.lower(User.game_name) == func.lower(name),
