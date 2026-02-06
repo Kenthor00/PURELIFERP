@@ -56,6 +56,7 @@ PURE LIFE OS è un sistema operativo web completo per gestire un server RP (role
 - 6 canali: LSPD, EMS, GOV, DISPATCH, WEAZEL, STAFF
 - Sistema presenza utenti (Online, In Servizio, Fuori Servizio)
 - Quick Actions per navigazione rapida
+- **Sistema Mention @NomeInGame** con autocomplete e notifiche
 - Moderazione con permessi gerarchici
 
 #### Push Notifications
