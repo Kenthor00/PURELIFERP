@@ -336,8 +336,8 @@ async def get_sector_calendar(
     # Query appuntamenti accettati con data schedulata
     result = await db.execute(
         select(Appointment)
-        .where(Appointment.target_sector == target_sector)
-        .where(Appointment.status == AppointmentStatus.ACCEPTED)
+        .where(Appointment.target_sector == target_sector.value)
+        .where(Appointment.status == AppointmentStatus.ACCEPTED.value)
         .where(Appointment.scheduled_date != None)
         .order_by(Appointment.scheduled_date)
     )
