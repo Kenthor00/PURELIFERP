@@ -14,7 +14,7 @@ import logging
 import os
 
 from database import get_db
-from models import User, UserRole
+from models import User, Sector
 from auth import create_access_token, create_refresh_token
 
 router = APIRouter(prefix="/fivem", tags=["FiveM SSO"])
