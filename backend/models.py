@@ -829,7 +829,7 @@ class TimelineEvent(Base):
     entity_type = Column(String(50), nullable=True)
     entity_id = Column(Integer, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    metadata = Column(JSON, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
