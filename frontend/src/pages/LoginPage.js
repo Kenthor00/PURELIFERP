@@ -191,16 +191,6 @@ export const LoginPage = () => {
             </p>
           </div>
         </div>
-
-        {/* Demo Credentials */}
-        <div className="mt-4 p-3 bg-plos-surface/50 border border-plos-border text-xs">
-          <p className="text-plos-text-secondary mb-2 font-heading tracking-wider">CREDENZIALI DEMO:</p>
-          <div className="space-y-1 mono text-plos-text-muted">
-            <p>LSPD: lspd@purelife.rp / demo123</p>
-            <p>EMS: ems@purelife.rp / demo123</p>
-            <p>Dispatch: dispatch@purelife.rp / demo123</p>
-          </div>
-        </div>
       </div>
     </div>
   );
