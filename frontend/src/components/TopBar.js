@@ -478,6 +478,7 @@ function getLocationLabel(pathname) {
     '/admin/audit': 'Audit Log',
     '/sector-management': 'Gestione Settore',
     '/chat': 'Service Chat',
+    '/news/editor': 'Redazione News',
   };
   
   // Match esatto o pattern parziale
