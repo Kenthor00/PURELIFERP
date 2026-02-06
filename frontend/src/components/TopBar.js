@@ -142,6 +142,14 @@ export const TopBar = () => {
         case 'ad_slot':
           navigate('/city/advertising');
           break;
+        case 'article':
+          // Se è NEWS user, vai alla redazione, altrimenti alla news pubblica
+          if (user?.sector === 'NEWS' || user?.sector === 'ADMIN') {
+            navigate('/news/editor');
+          } else {
+            navigate(`/city/news/${notif.entity_id}`);
+          }
+          break;
         default:
           break;
       }
