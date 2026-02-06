@@ -39,7 +39,7 @@ export const NewsPage = () => {
       if (filterCategory) params.append('category', filterCategory);
       params.append('limit', '20');
       
-      const res = await axios.get(`${API_URL}/api/news/?${params.toString()}`);
+      const res = await axios.get(`${API_URL}/api/v2/news/published?${params.toString()}`);
       setArticles(res.data);
     } catch (error) {
       console.error('Errore fetch news:', error);
@@ -51,7 +51,7 @@ export const NewsPage = () => {
   const fetchArticle = async (id) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/news/${id}`);
+      const res = await axios.get(`${API_URL}/api/v2/news/article/${id}`);
       setSelectedArticle(res.data);
     } catch (error) {
       console.error('Errore fetch article:', error);
@@ -63,7 +63,7 @@ export const NewsPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/news/categories/list`);
+      const res = await axios.get(`${API_URL}/api/v2/news/categories`);
       setCategories(res.data.categories || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
