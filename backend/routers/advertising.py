@@ -408,13 +408,13 @@ async def get_all_ad_stats(
     
     # Conta per stato
     pending = await db.execute(
-        select(AdvertisingSlot).where(AdvertisingSlot.status == AdSlotStatus.PENDING)
+        select(AdvertisingSlot).where(AdvertisingSlot.status == AdSlotStatus.PENDING.value)
     )
     active = await db.execute(
-        select(AdvertisingSlot).where(AdvertisingSlot.status == AdSlotStatus.ACTIVE)
+        select(AdvertisingSlot).where(AdvertisingSlot.status == AdSlotStatus.ACTIVE.value)
     )
     expired = await db.execute(
-        select(AdvertisingSlot).where(AdvertisingSlot.status == AdSlotStatus.EXPIRED)
+        select(AdvertisingSlot).where(AdvertisingSlot.status == AdSlotStatus.EXPIRED.value)
     )
     
     # Stats totali
