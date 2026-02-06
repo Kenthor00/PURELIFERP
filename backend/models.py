@@ -379,8 +379,8 @@ class User(Base):
     
     # Relationships
     cases = relationship("Case", back_populates="officer", foreign_keys="Case.officer_id")
-    warrants = relationship("Warrant", back_populates="issued_by_user")
-    fines = relationship("Fine", back_populates="issued_by_user")
+    warrants = relationship("Warrant", back_populates="issued_by_user", foreign_keys="Warrant.issued_by")
+    fines = relationship("Fine", back_populates="issued_by_user", foreign_keys="Fine.issued_by")
     medical_reports = relationship("MedicalReport", back_populates="doctor")
     news_articles = relationship("NewsArticle", back_populates="author")
     chat_messages = relationship("ChatMessage", back_populates="sender")
