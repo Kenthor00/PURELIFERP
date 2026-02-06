@@ -31,11 +31,18 @@ def build_database_url() -> str:
     database_url = os.environ.get('DATABASE_URL')
     
     if database_url:
-        # Verifica se è un URL di Railway interno (non raggiungibile da preview)
+        # Se è un URL interno Railway, prova a usare MYSQL_PUBLIC_URL
         if 'railway.internal' in database_url:
-            logger.warning("DATABASE_URL punta a Railway internal - non raggiungibile, uso SQLite locale")
-            # Continua al fallback SQLite
-        else:
+            public_url = os.environ.get('MYSQL_PUBLIC_URL')
+            if public_url:
+                logger.info("Usando MYSQL_PUBLIC_URL (URL pubblico Railway)")
+                database_url = public_url
+            else:
+                logger.warning("DATABASE_URL punta a Railway internal senza MYSQL_PUBLIC_URL - uso SQLite locale")
+                # Continua al fallback SQLite
+                database_url = None
+        
+        if database_url:
             # Railway fornisce mysql:// ma SQLAlchemy async richiede mysql+aiomysql://
             if database_url.startswith('mysql://'):
                 database_url = database_url.replace('mysql://', 'mysql+aiomysql://', 1)
@@ -44,7 +51,7 @@ def build_database_url() -> str:
             elif not database_url.startswith('mysql+aiomysql://') and 'mysql' in database_url:
                 database_url = re.sub(r'^mysql(\+\w+)?://', 'mysql+aiomysql://', database_url)
             
-            logger.info("Usando DATABASE_URL da ambiente")
+            logger.info("Usando DATABASE_URL MySQL")
             return database_url
     
     # Fallback a variabili separate (legacy/local dev)
