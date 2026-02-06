@@ -28,7 +28,7 @@ Un ecosistema unico per browser desktop, tablet di reparto e WebView lb-phone.
 - [x] Pagina `/set-game-name` per impostare il nome in game
 - [x] Rate limiting su login (5 tentativi in 15 minuti)
 - [x] Account locking dopo troppi tentativi
-- [x] **NUOVO**: `is_sector_chief` per identificare i capi settore
+- [x] `is_sector_chief` per identificare i capi settore
 
 ### 2. Gerarchia e Permessi Multi-livello ✅
 - [x] Enum `Sector`: LSPD, EMS, GOV, NEWS, DISPATCH, CIVIL, ADMIN
@@ -37,53 +37,77 @@ Un ecosistema unico per browser desktop, tablet di reparto e WebView lb-phone.
 - [x] Admin ha override totale
 - [x] Capi settore possono gestire solo utenti del proprio reparto
 
-### 3. Admin System Completo ✅ (PRIORITÀ 1)
-- [x] **Redirect automatico** admin a `/admin` dopo login
-- [x] **Dashboard Admin** (`/admin`) con statistiche
-- [x] **Gestione Utenti** (`/admin/users`) completa:
-  - [x] Lista tutti gli utenti con filtri per settore
-  - [x] Form creazione utente con TUTTI i campi:
-    - sector, grade, hierarchy_level, is_sector_chief
-    - game_name, badge_number, department
-  - [x] Modifica utente
-  - [x] Disattiva/Riattiva utente
-  - [x] Reset password
-  - [x] Storico accessi utente
-  - [x] Log azioni utente
-- [x] **Audit Dashboard** (`/admin/audit`) avanzata:
-  - [x] Filtri: settore, azione, intervallo date, ID utente
-  - [x] Vista "attività ultime 24h"
-  - [x] Vista "attività utente"
-  - [x] Statistiche real-time
-  - [x] Distribuzione azioni
-  - [x] Export CSV
+### 3. Admin System Completo ✅
+- [x] Dashboard Admin (`/admin`) con statistiche
+- [x] Gestione Utenti (`/admin/users`) completa con CRUD
+- [x] Audit Dashboard (`/admin/audit`) avanzata con filtri ed export CSV
+- [x] Reset password, storico accessi, log azioni utente
 
-### 4. Gestione Reparto per Capi Settore ✅ (PRIORITÀ 2)
+### 4. Gestione Reparto per Capi Settore ✅
 - [x] Pagina `/sector-management` per capi settore
 - [x] Campo `is_sector_chief` nel modello User
-- [x] Pannello con:
-  - [x] Lista utenti del proprio settore
-  - [x] Creazione login per i propri agenti
-  - [x] Modifica gradi (solo livelli inferiori)
-  - [x] Disattivazione account del proprio settore
-  - [x] Audit del proprio settore
-- [x] **NON può vedere altri settori**
+- [x] Gestione utenti del proprio settore
 
-### 5. Login & Identità RP ✅ (PRIORITÀ 3)
+### 5. Login & Identità RP ✅
 - [x] `game_name` obbligatorio al primo login
 - [x] `game_name` salvato in audit log per ogni azione
-- [x] `game_name` mostrato in TopBar vicino all'email
+- [x] `game_name` mostrato in TopBar
 
-### 6. Blocco Definitivo Demo ✅ (PRIORITÀ 4)
-- [x] Nessuna scritta "credenziali demo" nella pagina login
+### 6. Blocco Definitivo Demo ✅
+- [x] Nessuna scritta "credenziali demo"
 - [x] Nessun seed pubblico
-- [x] Solo bootstrap admin iniziale con chiave sicura
+- [x] Solo bootstrap admin con chiave sicura
 
-### 7. Sicurezza ✅
-- [x] Rate limiting per login
-- [x] Password policy (8+ caratteri, maiuscola, minuscola, numero, speciale)
-- [x] Bootstrap sicuro per primo admin (`ADMIN_BOOTSTRAP_KEY`)
-- [x] Account locking dopo troppi tentativi falliti
+---
+
+## FASE 2 - City Hub ✅ COMPLETATA (2026-02-06)
+
+### 1. Modulo Reclutamento ✅
+- [x] API `/api/recruitment/*` complete
+- [x] Frontend `/city/recruitment` con 3 tab:
+  - Candidati: form per inviare candidatura
+  - Le mie candidature: storico personale
+  - Gestisci: dashboard per capi settore/admin
+- [x] Workflow: PENDING → REVIEWING → ACCEPTED/REJECTED
+- [x] Solo capi settore livello 7+ possono revisionare
+- [x] Candidature visibili solo al settore di competenza
+- [x] Audit logging completo
+
+### 2. Sistema Appuntamenti ✅
+- [x] API `/api/appointments/*` complete
+- [x] Frontend `/city/appointments` con 4 tab:
+  - Richiedi: form per richiedere appuntamento
+  - Le mie richieste: storico personale
+  - Gestisci: dashboard per operatori settore
+  - Calendario: vista appuntamenti confermati
+- [x] Workflow: PENDING → ACCEPTED → COMPLETED/CANCELLED
+- [x] Urgenza: low, normal, high
+- [x] Data preferita e schedulata
+- [x] Audit logging completo
+
+### 3. Bacheca Annunci ✅
+- [x] API `/api/announcements/*` complete
+- [x] Frontend `/city/announcements` con 4 tab:
+  - Sfoglia: bacheca pubblica (NO AUTH REQUIRED)
+  - Pubblica: form creazione annuncio
+  - I miei annunci: gestione personale
+  - Moderazione: per GOV livello 3+ e Admin
+- [x] Categorie: lavoro, vendita, affitti, servizi, eventi
+- [x] Workflow: PENDING → APPROVED/REJECTED
+- [x] Scadenza automatica annunci
+- [x] Contatore visualizzazioni
+- [x] Audit logging completo
+
+### 4. Slot Pubblicitari ✅
+- [x] API `/api/advertising/*` complete
+- [x] Frontend `/city/advertising` con 3 tab:
+  - Richiedi Slot: form per richiedere pubblicità
+  - I miei slot: dashboard con statistiche
+  - Gestione: approvazione per GOV livello 4+ e Admin
+- [x] Posizioni: homepage_banner, sidebar, footer, popup
+- [x] Workflow: PENDING → APPROVED → ACTIVE → EXPIRED
+- [x] Tracking: views, clicks, CTR
+- [x] Audit logging completo
 
 ---
 
@@ -105,14 +129,11 @@ Un ecosistema unico per browser desktop, tablet di reparto e WebView lb-phone.
 - [x] Deep linking per lb-phone
 
 ### lb-phone Integration ✅
-- [x] Rimozione X-Frame-Options per embedding
-- [x] CSP frame-ancestors *
-- [x] Modalità phone-webview (reduced motion)
+- [x] Modalità phone-webview
 - [x] SSO FiveM con token monouso
 
 ### Stabilizzazione ✅
-- [x] Endpoint /api/health con JSON strutturato
-- [x] App si avvia anche senza DB (stato degradato)
+- [x] Endpoint /api/health
 - [x] Banner errore UI quando DB down
 - [x] Auto-migrations all'avvio
 - [x] SQLite fallback per development
@@ -120,6 +141,26 @@ Un ecosistema unico per browser desktop, tablet di reparto e WebView lb-phone.
 ---
 
 ## PROSSIMI TASK (P1)
+
+### Weazel News 2.0
+- [ ] Portale per la creazione di articoli
+- [ ] Workflow approvazione: DRAFT → SUBMITTED → REVIEW → PUBLISHED
+- [ ] Permessi di pubblicazione per gradi NEWS
+- [ ] Breaking News management
+
+### Service Chat 2.0
+- [ ] Chat interna per i dipartimenti
+- [ ] Stato presenza utenti (online, in_service, off_duty, offline)
+- [ ] Canali per settore
+- [ ] Notifiche real-time
+
+### TopBar Globale
+- [ ] Navigazione sempre visibile e funzionante
+- [ ] Menu contestuale basato su settore/permessi
+
+---
+
+## BACKLOG (P2)
 
 ### Miglioramenti UX Admin
 - [ ] Link diretto a `/admin` nel menu laterale per admin
@@ -133,23 +174,6 @@ Un ecosistema unico per browser desktop, tablet di reparto e WebView lb-phone.
 
 ---
 
-## BACKLOG (P2 - Fase 2)
-
-### City Hub 2.0
-- [ ] Nuovo sistema permessi per annunci
-- [ ] Moderazione eventi da parte GOV
-
-### Weazel News 2.0
-- [ ] Permessi di pubblicazione per gradi NEWS
-- [ ] Workflow approvazione articoli
-
-### Service Chat 2.0
-- [ ] Stato presenza utenti
-- [ ] Notifiche push
-- [ ] Canali per settore
-
----
-
 ## Credenziali Test
 
 **Admin (Super Admin):**
@@ -159,40 +183,34 @@ Password: Admin@2026!
 Bootstrap Key: plos-bootstrap-admin-key-2026
 ```
 
-**Capo Settore LSPD (per test):**
-```
-Email: chief.lspd@purelife.rp
-Password: ChiefPass@123!
-```
-
 ---
 
 ## File Principali
 
 ### Backend
 - `/app/backend/server.py` - Entry point FastAPI
-- `/app/backend/models.py` - Modelli SQLAlchemy con `is_sector_chief`
-- `/app/backend/database.py` - Configurazione DB con SQLite fallback
-- `/app/backend/auth.py` - Autenticazione JWT con UserRole legacy compatibility
-- `/app/backend/services/` - Business logic (audit, permission, security)
-- `/app/backend/routers/auth.py` - Login con is_sector_chief
-- `/app/backend/routers/users.py` - CRUD completo + reset-password, access-history, activity-log
-- `/app/backend/routers/audit.py` - Audit con filtri avanzati
+- `/app/backend/models.py` - Modelli SQLAlchemy completi
+- `/app/backend/database.py` - Configurazione DB
+- `/app/backend/auth.py` - Autenticazione JWT
+- `/app/backend/services/audit_service.py` - Servizio audit
+- `/app/backend/routers/recruitment.py` - API Reclutamento
+- `/app/backend/routers/appointments.py` - API Appuntamenti
+- `/app/backend/routers/announcements.py` - API Annunci
+- `/app/backend/routers/advertising.py` - API Pubblicità
 
 ### Frontend
-- `/app/frontend/src/App.js` - Routing con redirect admin
-- `/app/frontend/src/components/TopBar.js` - Navigazione con game_name
-- `/app/frontend/src/context/AuthContext.js` - Login con sector/is_sector_chief
-- `/app/frontend/src/pages/LoginPage.js` - Senza credenziali demo
-- `/app/frontend/src/pages/admin/AdminDashboard.js` - Dashboard admin
-- `/app/frontend/src/pages/admin/UserManagement.js` - Gestione utenti completa
-- `/app/frontend/src/pages/admin/AuditDashboard.js` - Audit con filtri
-- `/app/frontend/src/pages/SectorManagement.js` - Pannello capi settore
-- `/app/frontend/src/pages/SetGameNamePage.js` - Setup game name
+- `/app/frontend/src/App.js` - Routing principale
+- `/app/frontend/src/components/TopBar.js` - Navigazione
+- `/app/frontend/src/context/AuthContext.js` - Stato autenticazione
+- `/app/frontend/src/pages/cityhub/RecruitmentPage.js` - Reclutamento
+- `/app/frontend/src/pages/cityhub/AppointmentsPage.js` - Appuntamenti
+- `/app/frontend/src/pages/cityhub/AnnouncementsPage.js` - Annunci
+- `/app/frontend/src/pages/cityhub/AdvertisingPage.js` - Pubblicità
+- `/app/frontend/src/pages/public/CityHubPage.js` - Homepage City Hub
 
 ### Test
-- `/app/backend/tests/test_admin_system.py` - Test API admin system
-- `/app/test_reports/iteration_3.json` - Report test FASE 1
+- `/app/backend/tests/test_cityhub_apis.py` - Test API City Hub
+- `/app/test_reports/iteration_4.json` - Report test FASE 2
 
 ---
 
@@ -203,10 +221,21 @@ Password: ChiefPass@123!
 - Fallback automatico a SQLite per development
 - Auto-migrations all'avvio
 
-### Compatibilità Legacy
-- `UserRole` enum mantenuto per compatibilità con router esistenti
-- Mapping automatico `UserRole` → `Sector` in `auth.py`
+### City Hub Enum Classes
+- Le enum del City Hub (`ApplicationStatus`, `AppointmentStatus`, `AnnouncementStatus`, `AdSlotStatus`, `AdSlotPosition`) ereditano da `enum.Enum` (Python), non da SQLAlchemy Enum
+- I campi database usano `String(50)` per i valori enum
 
-### Testing
-- Backend: 100% (19/19 test passati)
-- Frontend: 100% (tutti i test UI passati)
+### Permessi Moderazione
+- **Annunci**: GOV livello 3+ o Admin
+- **Pubblicità**: GOV livello 4+ o Admin
+- **Reclutamento**: Capi settore livello 7+ per il proprio settore, Admin per tutti
+
+---
+
+## Changelog
+
+### 2026-02-06
+- ✅ Completata FASE 2 - City Hub
+- ✅ Implementati 4 moduli: Reclutamento, Appuntamenti, Annunci, Pubblicità
+- ✅ 31/31 test backend passati (100%)
+- ✅ Frontend completamente funzionante
