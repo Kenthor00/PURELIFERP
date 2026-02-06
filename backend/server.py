@@ -223,6 +223,12 @@ api_router.include_router(justice.router)
 api_router.include_router(chat.router)
 api_router.include_router(fivem_sso.router)
 
+# City Hub routers
+api_router.include_router(recruitment.router)
+api_router.include_router(appointments.router)
+api_router.include_router(announcements.router)
+api_router.include_router(advertising.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
