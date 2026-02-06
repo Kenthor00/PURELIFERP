@@ -237,7 +237,7 @@ async def get_my_ad_stats(
     result = await db.execute(
         select(AdvertisingSlot)
         .where(AdvertisingSlot.owner_id == current_user.id)
-        .where(AdvertisingSlot.status == AdSlotStatus.ACTIVE)
+        .where(AdvertisingSlot.status == AdSlotStatus.ACTIVE.value)
     )
     ads = result.scalars().all()
     
