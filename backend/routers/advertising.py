@@ -80,7 +80,7 @@ async def get_active_ads(
     now = datetime.now(timezone.utc)
     
     query = select(AdvertisingSlot).where(
-        AdvertisingSlot.status == AdSlotStatus.ACTIVE
+        AdvertisingSlot.status == AdSlotStatus.ACTIVE.value
     ).where(
         (AdvertisingSlot.expires_at == None) | (AdvertisingSlot.expires_at > now)
     )
