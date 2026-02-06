@@ -123,21 +123,31 @@ def require_sector(*sectors: Sector):
 
 async def log_audit(
     db: AsyncSession,
-    user_id: Optional[int],
-    action: str,
-    resource_type: Optional[str] = None,
-    resource_id: Optional[int] = None,
-    details: Optional[dict] = None,
+    action: AuditAction,
+    user: Optional[User] = None,
+    entity_type: Optional[str] = None,
+    entity_id: Optional[int] = None,
+    description: Optional[str] = None,
+    metadata: Optional[dict] = None,
     ip_address: Optional[str] = None
 ):
     """Registra azione nel log di audit"""
     audit = AuditLog(
-        user_id=user_id,
         action=action,
-        resource_type=resource_type,
-        resource_id=resource_id,
-        details=details,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        description=description,
+        metadata=metadata,
         ip_address=ip_address
     )
+    
+    if user:
+        audit.user_id = user.id
+        audit.user_email = user.email
+        audit.game_name = user.game_name
+        audit.sector = user.sector
+        audit.grade = user.grade
+        audit.hierarchy_level = user.hierarchy_level
+    
     db.add(audit)
     await db.commit()
