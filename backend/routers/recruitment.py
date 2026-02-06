@@ -337,6 +337,9 @@ async def get_recruitment_stats(
     reviewing = await db.execute(
         base_query.where(RecruitmentApplication.status == ApplicationStatus.REVIEWING.value)
     )
+    interview = await db.execute(
+        base_query.where(RecruitmentApplication.status == ApplicationStatus.INTERVIEW.value)
+    )
     accepted = await db.execute(
         base_query.where(RecruitmentApplication.status == ApplicationStatus.ACCEPTED.value)
     )
@@ -347,6 +350,7 @@ async def get_recruitment_stats(
     return {
         "pending": len(pending.scalars().all()),
         "reviewing": len(reviewing.scalars().all()),
+        "interview": len(interview.scalars().all()),
         "accepted": len(accepted.scalars().all()),
         "rejected": len(rejected.scalars().all())
     }
