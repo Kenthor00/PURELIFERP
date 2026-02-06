@@ -13,7 +13,7 @@ from typing import Optional
 
 from database import get_db, run_auto_migrations
 from models import (
-    User, UserRole, UserPresence,
+    User, Sector, UserPresence,
     Case, CaseStatus, Warrant, Fine, Evidence,
     Patient, MedicalReport,
     DispatchCall, CallPriority, CallStatus,
@@ -24,7 +24,7 @@ from models import (
     ChatChannel, ChatMessage,
     TimelineEvent
 )
-from auth import get_current_user, require_roles, UserRole
+from auth import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 logger = logging.getLogger(__name__)
