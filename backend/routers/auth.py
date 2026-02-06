@@ -43,6 +43,7 @@ class LoginResponse(BaseModel):
     sector: str
     grade: str
     hierarchy_level: int
+    is_sector_chief: bool
     game_name: Optional[str]
     needs_game_name: bool
 
@@ -64,6 +65,7 @@ class UserProfileResponse(BaseModel):
     sector: str
     grade: str
     hierarchy_level: int
+    is_sector_chief: bool
     badge_number: Optional[str]
     department: Optional[str]
     presence: str
