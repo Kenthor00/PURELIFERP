@@ -221,8 +221,12 @@ const DeepLinkHandler = () => {
   return null;
 };
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+// ==========================================
+// Protected Route with game_name check
+// ==========================================
+const ProtectedRoute = ({ children, allowedSectors }) => {
   const { isAuthenticated, user, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -238,20 +242,26 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user?.role) && user?.role !== 'admin') {
-    switch (user?.role) {
-      case 'police':
+  // Check if user needs to set game_name
+  if (user?.needs_game_name) {
+    return <Navigate to="/set-game-name" replace />;
+  }
+
+  // Check sector access
+  const userSector = user?.sector?.toUpperCase();
+  
+  if (allowedSectors && !allowedSectors.includes(userSector) && userSector !== 'ADMIN') {
+    // Redirect to appropriate dashboard based on sector
+    switch (userSector) {
+      case 'LSPD':
         return <Navigate to="/lspd" replace />;
-      case 'ems':
+      case 'EMS':
         return <Navigate to="/ems" replace />;
-      case 'dispatch':
+      case 'DISPATCH':
         return <Navigate to="/dispatch" replace />;
-      case 'government':
-      case 'judge':
-      case 'lawyer':
-      case 'prosecutor':
+      case 'GOV':
         return <Navigate to="/justice" replace />;
-      case 'weazel':
+      case 'NEWS':
         return <Navigate to="/city/news" replace />;
       default:
         return <Navigate to="/city" replace />;
@@ -266,18 +276,28 @@ const AppRoutes = () => {
 
   const getDefaultRoute = () => {
     if (!isAuthenticated) return '/city';
-    switch (user?.role) {
-      case 'police':
+    
+    // Check game_name first
+    if (user?.needs_game_name) return '/set-game-name';
+    
+    const sector = user?.sector?.toUpperCase();
+    switch (sector) {
+      case 'LSPD':
         return '/lspd';
-      case 'ems':
+      case 'EMS':
         return '/ems';
-      case 'dispatch':
+      case 'DISPATCH':
         return '/dispatch';
-      case 'government':
-      case 'judge':
-      case 'lawyer':
-      case 'prosecutor':
+      case 'GOV':
         return '/justice';
+      case 'NEWS':
+        return '/city/news';
+      case 'ADMIN':
+        return '/admin';
+      default:
+        return '/city';
+    }
+  };
       case 'weazel':
         return '/city/news';
       default:
