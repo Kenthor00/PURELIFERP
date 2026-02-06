@@ -915,6 +915,12 @@ class RecruitmentApplication(Base):
     reviewer_game_name = Column(String(100), nullable=True)
     reviewer_notes = Column(Text, nullable=True)
     
+    # Colloquio
+    interview_assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
+    interview_assigned_name = Column(String(100), nullable=True)
+    interview_notes = Column(Text, nullable=True)
+    interview_scheduled_at = Column(DateTime, nullable=True)
+    
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     reviewed_at = Column(DateTime, nullable=True)
