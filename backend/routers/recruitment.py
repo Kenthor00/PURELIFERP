@@ -242,7 +242,7 @@ async def review_application(
         user=current_user,
         entity_type="recruitment_application",
         entity_id=application.id,
-        description=f"Candidatura {new_status.value}: {application.game_name} per {application.target_sector.value}",
+        description=f"Candidatura {new_status.value}: {application.game_name} per {application.target_sector}",
         request=request
     )
     
