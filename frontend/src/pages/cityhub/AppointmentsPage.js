@@ -8,24 +8,31 @@ import {
   Send,
   CheckCircle,
   XCircle,
-  AlertCircle,
   FileText,
   Building2,
   User,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  List,
+  Grid3X3,
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const AppointmentsPage = () => {
   const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState('request'); // 'request' | 'my-requests' | 'manage' | 'calendar'
+  const [activeTab, setActiveTab] = useState('request');
+  const [calendarView, setCalendarView] = useState('list'); // 'list' | 'week' | 'month'
   const [myRequests, setMyRequests] = useState([]);
   const [sectorAppointments, setSectorAppointments] = useState([]);
   const [calendarAppointments, setCalendarAppointments] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Calendar state
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   // Form state
   const [formData, setFormData] = useState({
@@ -165,6 +172,7 @@ const AppointmentsPage = () => {
       setScheduledDate('');
       fetchSectorAppointments();
       fetchStats();
+      if (activeTab === 'calendar') fetchCalendar();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Errore nella gestione');
     }
@@ -200,13 +208,24 @@ const AppointmentsPage = () => {
     );
   };
 
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'border-l-yellow-500 bg-yellow-500/5',
+      accepted: 'border-l-green-500 bg-green-500/5',
+      rejected: 'border-l-red-500 bg-red-500/5',
+      completed: 'border-l-blue-500 bg-blue-500/5',
+      cancelled: 'border-l-gray-500 bg-gray-500/5',
+    };
+    return colors[status] || colors.pending;
+  };
+
   const getUrgencyBadge = (urgency) => {
     const badges = {
-      low: 'text-green-400',
-      normal: 'text-yellow-400',
-      high: 'text-red-400',
+      low: 'text-green-400 bg-green-500/10',
+      normal: 'text-yellow-400 bg-yellow-500/10',
+      high: 'text-red-400 bg-red-500/10',
     };
-    return <span className={`text-xs ${badges[urgency] || badges.normal}`}>{urgency?.toUpperCase()}</span>;
+    return <span className={`text-xs px-2 py-0.5 ${badges[urgency] || badges.normal}`}>{urgency?.toUpperCase()}</span>;
   };
 
   const formatDate = (dateStr) => {
@@ -220,8 +239,49 @@ const AppointmentsPage = () => {
     });
   };
 
+  // Calendar helpers
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const days = [];
+    
+    // Add empty slots for days before first day of month
+    for (let i = 0; i < firstDay.getDay(); i++) {
+      days.push(null);
+    }
+    
+    // Add all days of month
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+      days.push(new Date(year, month, i));
+    }
+    
+    return days;
+  };
+
+  const getAppointmentsForDay = (day) => {
+    if (!day) return [];
+    return calendarAppointments.filter(apt => {
+      const aptDate = new Date(apt.scheduled_date);
+      return aptDate.toDateString() === day.toDateString();
+    });
+  };
+
+  const navigateMonth = (direction) => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + direction);
+      return newDate;
+    });
+  };
+
+  const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 
+                      'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+
   return (
-    <div className="min-h-screen tactical-bg p-6" data-testid="appointments-page">
+    <div className="min-h-screen tactical-bg p-6 pt-16" data-testid="appointments-page">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -230,7 +290,7 @@ const AppointmentsPage = () => {
           </div>
           <div>
             <h1 className="font-heading text-2xl tracking-wider">APPUNTAMENTI</h1>
-            <p className="text-plos-text-secondary text-sm">Richiedi un incontro con i dipartimenti governativi</p>
+            <p className="text-plos-text-secondary text-sm">Sistema di prenotazione appuntamenti governativi</p>
           </div>
         </div>
 
@@ -428,7 +488,7 @@ const AppointmentsPage = () => {
               </div>
             ) : (
               myRequests.map((apt) => (
-                <div key={apt.id} className="card-tactical p-4" data-testid={`request-${apt.id}`}>
+                <div key={apt.id} className={`card-tactical p-4 border-l-4 ${getStatusColor(apt.status)}`} data-testid={`request-${apt.id}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -506,7 +566,7 @@ const AppointmentsPage = () => {
                 </div>
               ) : (
                 sectorAppointments.map((apt) => (
-                  <div key={apt.id} className="card-tactical p-4" data-testid={`manage-apt-${apt.id}`}>
+                  <div key={apt.id} className={`card-tactical p-4 border-l-4 ${getStatusColor(apt.status)}`} data-testid={`manage-apt-${apt.id}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -568,43 +628,137 @@ const AppointmentsPage = () => {
         {/* Calendar Tab */}
         {activeTab === 'calendar' && canManage && (
           <div className="space-y-4">
-            <h3 className="font-heading text-lg flex items-center gap-2">
-              <CalendarDays className="text-plos-primary" />
-              APPUNTAMENTI CONFERMATI
-            </h3>
-            {loading ? (
-              <div className="text-center py-8 text-plos-text-muted">Caricamento...</div>
-            ) : calendarAppointments.length === 0 ? (
-              <div className="card-tactical p-8 text-center">
-                <Calendar className="mx-auto text-plos-text-muted mb-4" size={48} />
-                <p className="text-plos-text-muted">Nessun appuntamento in calendario</p>
+            {/* Calendar Controls */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCalendarView('list')}
+                  className={`p-2 ${calendarView === 'list' ? 'bg-plos-primary text-black' : 'border border-plos-border'}`}
+                  title="Vista lista"
+                >
+                  <List size={16} />
+                </button>
+                <button
+                  onClick={() => setCalendarView('month')}
+                  className={`p-2 ${calendarView === 'month' ? 'bg-plos-primary text-black' : 'border border-plos-border'}`}
+                  title="Vista mensile"
+                >
+                  <Grid3X3 size={16} />
+                </button>
               </div>
-            ) : (
-              <div className="grid gap-4">
-                {calendarAppointments.map((apt) => (
-                  <div key={apt.id} className="card-tactical p-4 border-l-4 border-green-500">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <CalendarDays size={16} className="text-green-400" />
-                          <span className="font-heading text-green-400">
-                            {formatDate(apt.scheduled_date)}
-                          </span>
-                        </div>
-                        <h3 className="font-medium">{apt.subject}</h3>
-                        <p className="text-sm text-plos-text-secondary">
-                          Con: {apt.requester_game_name} ({apt.requester_sector})
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => setHandleModal({ apt, action: 'completed' })}
-                        className="btn-tactical text-sm"
-                      >
-                        Completa
-                      </button>
-                    </div>
+              
+              {calendarView === 'month' && (
+                <div className="flex items-center gap-4">
+                  <button onClick={() => navigateMonth(-1)} className="p-2 hover:bg-plos-primary/10">
+                    <ChevronLeft size={20} />
+                  </button>
+                  <span className="font-heading text-lg">
+                    {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                  </span>
+                  <button onClick={() => navigateMonth(1)} className="p-2 hover:bg-plos-primary/10">
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* List View */}
+            {calendarView === 'list' && (
+              <div className="space-y-4">
+                <h3 className="font-heading text-lg flex items-center gap-2">
+                  <CalendarDays className="text-plos-primary" />
+                  APPUNTAMENTI CONFERMATI
+                </h3>
+                {loading ? (
+                  <div className="text-center py-8 text-plos-text-muted">Caricamento...</div>
+                ) : calendarAppointments.length === 0 ? (
+                  <div className="card-tactical p-8 text-center">
+                    <Calendar className="mx-auto text-plos-text-muted mb-4" size={48} />
+                    <p className="text-plos-text-muted">Nessun appuntamento in calendario</p>
                   </div>
-                ))}
+                ) : (
+                  <div className="grid gap-4">
+                    {calendarAppointments.map((apt) => (
+                      <div key={apt.id} className="card-tactical p-4 border-l-4 border-green-500">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <CalendarDays size={16} className="text-green-400" />
+                              <span className="font-heading text-green-400">
+                                {formatDate(apt.scheduled_date)}
+                              </span>
+                            </div>
+                            <h3 className="font-medium">{apt.subject}</h3>
+                            <p className="text-sm text-plos-text-secondary">
+                              Con: {apt.requester_game_name} ({apt.requester_sector})
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setHandleModal({ apt, action: 'completed' })}
+                            className="btn-tactical text-sm"
+                          >
+                            Completa
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Month View */}
+            {calendarView === 'month' && (
+              <div className="card-tactical p-4">
+                {/* Day Headers */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {dayNames.map(day => (
+                    <div key={day} className="text-center text-xs text-plos-text-muted py-2 font-heading">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-1">
+                  {getDaysInMonth(currentDate).map((day, idx) => {
+                    const dayAppointments = getAppointmentsForDay(day);
+                    const isToday = day && day.toDateString() === new Date().toDateString();
+                    
+                    return (
+                      <div 
+                        key={idx} 
+                        className={`min-h-[80px] p-1 border ${
+                          day ? 'border-plos-border' : 'border-transparent'
+                        } ${isToday ? 'bg-plos-primary/10' : ''}`}
+                      >
+                        {day && (
+                          <>
+                            <div className={`text-sm ${isToday ? 'text-plos-primary font-bold' : 'text-plos-text-muted'}`}>
+                              {day.getDate()}
+                            </div>
+                            <div className="space-y-1 mt-1">
+                              {dayAppointments.slice(0, 2).map(apt => (
+                                <div 
+                                  key={apt.id}
+                                  className="text-[10px] p-1 bg-green-500/20 text-green-400 truncate"
+                                  title={`${apt.subject} - ${apt.requester_game_name}`}
+                                >
+                                  {new Date(apt.scheduled_date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              ))}
+                              {dayAppointments.length > 2 && (
+                                <div className="text-[10px] text-plos-text-muted">
+                                  +{dayAppointments.length - 2} altri
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
@@ -627,7 +781,7 @@ const AppointmentsPage = () => {
             {handleModal.action === 'accepted' && (
               <div className="mb-4">
                 <label className="block text-sm text-plos-text-secondary mb-2">
-                  Data e ora appuntamento
+                  Data e ora appuntamento *
                 </label>
                 <input
                   type="datetime-local"
@@ -642,7 +796,7 @@ const AppointmentsPage = () => {
               value={handleNotes}
               onChange={(e) => setHandleNotes(e.target.value)}
               rows={3}
-              placeholder="Note (opzionale)..."
+              placeholder={handleModal.action === 'rejected' ? 'Motivo del rifiuto...' : 'Note (opzionale)...'}
               className="w-full bg-plos-background border border-plos-border p-3 focus:border-plos-primary outline-none resize-none mb-4"
             />
             <div className="flex gap-2">
@@ -658,7 +812,8 @@ const AppointmentsPage = () => {
               </button>
               <button
                 onClick={() => handleAppointment(handleModal.apt.id, handleModal.action)}
-                className={`flex-1 px-4 py-2 ${
+                disabled={handleModal.action === 'accepted' && !scheduledDate}
+                className={`flex-1 px-4 py-2 disabled:opacity-50 ${
                   handleModal.action === 'accepted' || handleModal.action === 'completed' ? 'bg-green-600' : 'bg-red-600'
                 }`}
               >
