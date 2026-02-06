@@ -201,6 +201,76 @@ async def ensure_default_channels(db: AsyncSession):
 
 
 # ==========================================
+# AUTOCOMPLETE UTENTI PER MENZIONI
+# ==========================================
+
+class UserAutocomplete(BaseModel):
+    id: int
+    game_name: str
+    sector: str
+    grade: Optional[str]
+
+
+@router.get("/channels/{channel_name}/users", response_model=List[UserAutocomplete])
+async def get_channel_users_for_mention(
+    channel_name: str,
+    q: str = Query("", description="Filtro per nome"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Ottiene la lista degli utenti che possono essere menzionati nel canale.
+    Usato per l'autocomplete delle menzioni @.
+    """
+    # Trova canale
+    result = await db.execute(
+        select(ChatChannel).where(ChatChannel.name == channel_name)
+    )
+    channel = result.scalar_one_or_none()
+    
+    if not channel:
+        raise HTTPException(status_code=404, detail="Canale non trovato")
+    
+    if not can_access_channel(current_user, channel):
+        raise HTTPException(status_code=403, detail="Non hai accesso a questo canale")
+    
+    # Query base per utenti attivi con game_name
+    query = select(User).where(
+        User.is_active == True,
+        User.game_name.isnot(None),
+        User.game_name != ""
+    )
+    
+    # Filtra per settore del canale (se non è admin)
+    if channel.sector and current_user.sector != Sector.ADMIN:
+        # Mostra solo utenti del settore del canale
+        query = query.where(User.sector == Sector(channel.sector))
+    
+    # Filtra per query di ricerca
+    if q:
+        query = query.where(User.game_name.ilike(f"%{q}%"))
+    
+    # Ordina per nome e limita risultati
+    query = query.order_by(User.game_name).limit(20)
+    
+    result = await db.execute(query)
+    users = result.scalars().all()
+    
+    # Filtra ulteriormente: solo utenti che possono accedere al canale
+    mentionable_users = []
+    for user in users:
+        if user.id != current_user.id and can_access_channel(user, channel):
+            mentionable_users.append(UserAutocomplete(
+                id=user.id,
+                game_name=user.game_name,
+                sector=user.sector.value if user.sector else "CIVIL",
+                grade=user.grade
+            ))
+    
+    return mentionable_users
+
+
+# ==========================================
 # API CANALI
 # ==========================================
 
