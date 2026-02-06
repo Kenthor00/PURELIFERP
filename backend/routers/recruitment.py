@@ -261,23 +261,23 @@ async def get_recruitment_stats(
         base_query = select(RecruitmentApplication)
     elif current_user.is_sector_chief:
         base_query = select(RecruitmentApplication).where(
-            RecruitmentApplication.target_sector == current_user.sector
+            RecruitmentApplication.target_sector == current_user.sector.value
         )
     else:
         raise HTTPException(status_code=403, detail="Non hai i permessi")
     
     # Conta per stato
     pending = await db.execute(
-        base_query.where(RecruitmentApplication.status == ApplicationStatus.PENDING)
+        base_query.where(RecruitmentApplication.status == ApplicationStatus.PENDING.value)
     )
     reviewing = await db.execute(
-        base_query.where(RecruitmentApplication.status == ApplicationStatus.REVIEWING)
+        base_query.where(RecruitmentApplication.status == ApplicationStatus.REVIEWING.value)
     )
     accepted = await db.execute(
-        base_query.where(RecruitmentApplication.status == ApplicationStatus.ACCEPTED)
+        base_query.where(RecruitmentApplication.status == ApplicationStatus.ACCEPTED.value)
     )
     rejected = await db.execute(
-        base_query.where(RecruitmentApplication.status == ApplicationStatus.REJECTED)
+        base_query.where(RecruitmentApplication.status == ApplicationStatus.REJECTED.value)
     )
     
     return {
