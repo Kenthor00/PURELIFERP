@@ -265,7 +265,7 @@ async def get_pending_announcements(
     
     result = await db.execute(
         select(Announcement)
-        .where(Announcement.status == AnnouncementStatus.PENDING)
+        .where(Announcement.status == AnnouncementStatus.PENDING.value)
         .order_by(Announcement.created_at)
     )
     announcements = result.scalars().all()
