@@ -212,6 +212,8 @@ export const TopBar = () => {
     if (type.includes('appointment')) return Calendar;
     if (type.includes('announcement')) return Megaphone;
     if (type.includes('ad_slot')) return Tv;
+    if (type.includes('article') || type.includes('breaking')) return Newspaper;
+    if (type.includes('chat')) return MessageSquare;
     return Bell;
   };
 
