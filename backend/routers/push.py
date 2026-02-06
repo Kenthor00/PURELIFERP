@@ -262,6 +262,14 @@ async def toggle_subscription(
 # HELPER PER INVIO NOTIFICHE PUSH
 # ==========================================
 
+try:
+    from pywebpush import webpush, WebPushException
+    WEBPUSH_AVAILABLE = True
+except ImportError:
+    WEBPUSH_AVAILABLE = False
+    print("[PUSH] pywebpush non disponibile - notifiche push disabilitate")
+
+
 async def send_push_notification(
     db: AsyncSession,
     user_id: int = None,
@@ -275,10 +283,23 @@ async def send_push_notification(
 ):
     """
     Invia notifica push agli utenti.
-    Questa è una funzione helper che può essere chiamata da altri moduli.
+    Questa funzione può essere chiamata da altri moduli per inviare push.
     
-    Per ora logga solo l'intento - l'implementazione completa richiede pywebpush.
+    Args:
+        db: Sessione database
+        user_id: ID specifico utente (opzionale)
+        sector: Settore target (opzionale)
+        is_global: Se True, invia a tutti
+        notification_type: Tipo di notifica per filtrare preferenze
+        title: Titolo della notifica
+        body: Corpo del messaggio
+        url: URL da aprire al click
+        tag: Tag per raggruppamento notifiche
     """
+    if not WEBPUSH_AVAILABLE or not VAPID_PRIVATE_KEY:
+        print(f"[PUSH] Skipping - {'pywebpush not available' if not WEBPUSH_AVAILABLE else 'VAPID_PRIVATE_KEY not set'}")
+        return 0
+        
     # Determina i destinatari
     query = select(PushSubscription).where(PushSubscription.is_active == True)
     
@@ -307,16 +328,58 @@ async def send_push_notification(
     result = await db.execute(query)
     subscriptions = result.scalars().all()
     
-    # Per ora loggiamo - l'invio vero richiede pywebpush
-    if subscriptions:
-        print(f"[PUSH] Would send to {len(subscriptions)} devices: {title}")
-        
-        # Aggiorna last_used_at
-        for sub in subscriptions:
-            sub.last_used_at = datetime.now(timezone.utc)
-        await db.commit()
+    if not subscriptions:
+        return 0
     
-    return len(subscriptions)
+    # Prepara payload
+    payload = json.dumps({
+        "title": title,
+        "body": body,
+        "icon": "/icon-192.png",
+        "badge": "/badge-72.png",
+        "url": url or "/",
+        "tag": tag or notification_type,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
+    sent_count = 0
+    failed_endpoints = []
+    
+    for sub in subscriptions:
+        try:
+            subscription_info = {
+                "endpoint": sub.endpoint,
+                "keys": {
+                    "p256dh": sub.p256dh_key,
+                    "auth": sub.auth_key
+                }
+            }
+            
+            webpush(
+                subscription_info=subscription_info,
+                data=payload,
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims={"sub": VAPID_CONTACT}
+            )
+            
+            sub.last_used_at = datetime.now(timezone.utc)
+            sent_count += 1
+            
+        except WebPushException as e:
+            print(f"[PUSH] Failed to send to {sub.endpoint[:50]}...: {e}")
+            if e.response and e.response.status_code in [404, 410]:
+                # Subscription non più valida
+                failed_endpoints.append(sub.endpoint)
+                sub.is_active = False
+        except Exception as e:
+            print(f"[PUSH] Error sending push: {e}")
+    
+    await db.commit()
+    
+    if sent_count > 0:
+        print(f"[PUSH] Sent '{title}' to {sent_count}/{len(subscriptions)} devices")
+    
+    return sent_count
 
 
 def _subscription_to_response(sub: PushSubscription) -> PushSubscriptionResponse:
