@@ -191,7 +191,7 @@ async def log_audit(
         entity_type=entity_type,
         entity_id=entity_id,
         description=description,
-        metadata=metadata,
+        extra_data=metadata,  # Mapped to extra_data column
         ip_address=ip_address
     )
     
