@@ -74,7 +74,7 @@ async def get_public_announcements(
 ):
     """Ottieni annunci pubblici approvati"""
     query = select(Announcement).where(
-        Announcement.status == AnnouncementStatus.APPROVED
+        Announcement.status == AnnouncementStatus.APPROVED.value
     )
     
     # Filtra per categoria
