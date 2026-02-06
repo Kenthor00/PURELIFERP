@@ -9,7 +9,9 @@ import axios from 'axios';
 
 import Layout from './components/Layout';
 import HealthBanner from './components/HealthBanner';
+import TopBar from './components/TopBar';
 import LoginPage from './pages/LoginPage';
+import SetGameNamePage from './pages/SetGameNamePage';
 import FiveMAuthPage from './pages/FiveMAuthPage';
 
 // LSPD
@@ -29,6 +31,11 @@ import TimelinePage from './pages/TimelinePage';
 import SettingsPage from './pages/SettingsPage';
 import ChatPage from './pages/ChatPage';
 import JusticePage from './pages/JusticePage';
+
+// Admin
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import AuditDashboard from './pages/admin/AuditDashboard';
 
 // Public
 import CityHubPage from './pages/public/CityHubPage';
@@ -50,7 +57,6 @@ const PhoneProvider = ({ children }) => {
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    // Detect phone mode via URL param or user agent
     const params = new URLSearchParams(window.location.search);
     const phoneParam = params.get('phone') === '1';
     const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -60,13 +66,11 @@ const PhoneProvider = ({ children }) => {
     setIsPhoneMode(phoneMode);
     setReducedMotion(phoneMode);
 
-    // Add class to body for CSS targeting
     if (phoneMode) {
       document.body.classList.add('phone-webview');
       document.body.classList.add('reduced-motion');
     }
 
-    // Also check prefers-reduced-motion
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mediaQuery.matches) {
       setReducedMotion(true);
