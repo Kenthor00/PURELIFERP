@@ -400,7 +400,7 @@ const AppRoutes = () => {
           path="/lspd/warrants"
           element={
             <ProtectedRoute allowedRoles={['police', 'dispatch']}>
-              <CasesListPage />
+              <WarrantsListPage />
             </ProtectedRoute>
           }
         />
@@ -408,7 +408,7 @@ const AppRoutes = () => {
           path="/lspd/fines"
           element={
             <ProtectedRoute allowedRoles={['police', 'dispatch']}>
-              <CasesListPage />
+              <FinesListPage />
             </ProtectedRoute>
           }
         />
