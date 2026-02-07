@@ -207,8 +207,8 @@ async def update_article(
             category="news",
             title=f"Nuovo articolo: {article.title}",
             description=article.subtitle,
-            reference_id=article.id,
-            reference_type="news",
+            entity_id=article.id,
+            entity_type="news",
             user_id=current_user.id
         )
         db.add(timeline_event)
@@ -249,8 +249,8 @@ async def publish_article(
         event_type="news_published",
         category="news",
         title=f"Pubblicato: {article.title}",
-        reference_id=article.id,
-        reference_type="news",
+        entity_id=article.id,
+        entity_type="news",
         user_id=current_user.id
     )
     db.add(timeline_event)

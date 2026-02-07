@@ -113,8 +113,8 @@ async def create_call(
         category="dispatch",
         title=f"Chiamata {call.priority.value}: {call.call_type}",
         description=f"Posizione: {call.location}",
-        reference_id=call.id,
-        reference_type="call",
+        entity_id=call.id,
+        entity_type="call",
         user_id=current_user.id,
         metadata_json={"priority": call.priority.value}
     )
@@ -167,8 +167,8 @@ async def update_call(
             category="dispatch",
             title=f"Stato chiamata: {call.status.value}",
             description=f"Aggiornato da {current_user.game_name or current_user.email}",
-            reference_id=call.id,
-            reference_type="call",
+            entity_id=call.id,
+            entity_type="call",
             user_id=current_user.id,
             metadata_json={"old_status": old_status.value, "new_status": call.status.value}
         )
@@ -209,8 +209,8 @@ async def assign_units(
         event_type="units_assigned",
         category="dispatch",
         title=f"Unità assegnate: {', '.join(units)}",
-        reference_id=call.id,
-        reference_type="call",
+        entity_id=call.id,
+        entity_type="call",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -244,8 +244,8 @@ async def complete_call(
         event_type="call_completed",
         category="dispatch",
         title=f"Chiamata completata: {call.call_number}",
-        reference_id=call.id,
-        reference_type="call",
+        entity_id=call.id,
+        entity_type="call",
         user_id=current_user.id
     )
     db.add(timeline_event)

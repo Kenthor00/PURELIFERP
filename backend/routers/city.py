@@ -188,8 +188,8 @@ async def create_business(
         event_type="business_created",
         category="city",
         title=f"Nuova azienda: {business.name}",
-        reference_id=business.id,
-        reference_type="business",
+        entity_id=business.id,
+        entity_type="business",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -253,8 +253,8 @@ async def create_event(
         event_type="event_created",
         category="city",
         title=f"Nuovo evento: {event.title}",
-        reference_id=event.id,
-        reference_type="event",
+        entity_id=event.id,
+        entity_type="event",
         user_id=current_user.id
     )
     db.add(timeline_event)

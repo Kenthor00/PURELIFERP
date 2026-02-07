@@ -106,8 +106,8 @@ async def create_legal_case(
         category="justice",
         title=f"Pratica aperta: {case.case_number}",
         description=f"Cliente: {case.client_name}",
-        reference_id=case.id,
-        reference_type="legal_case",
+        entity_id=case.id,
+        entity_type="legal_case",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -144,8 +144,8 @@ async def update_legal_case(
             event_type="legal_case_status_changed",
             category="justice",
             title=f"Stato pratica: {case.status.value}",
-            reference_id=case.id,
-            reference_type="legal_case",
+            entity_id=case.id,
+            entity_type="legal_case",
             user_id=current_user.id,
             metadata_json={"old_status": old_status.value, "new_status": case.status.value}
         )
@@ -177,8 +177,8 @@ async def submit_legal_case(
         event_type="legal_case_submitted",
         category="justice",
         title=f"Pratica sottomessa: {case.case_number}",
-        reference_id=case.id,
-        reference_type="legal_case",
+        entity_id=case.id,
+        entity_type="legal_case",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -302,8 +302,8 @@ async def create_hearing(
         category="justice",
         title=f"Udienza programmata: {hearing.title}",
         description=f"Data: {hearing.scheduled_date.strftime('%d/%m/%Y %H:%M')}",
-        reference_id=hearing.id,
-        reference_type="hearing",
+        entity_id=hearing.id,
+        entity_type="hearing",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -346,8 +346,8 @@ async def update_hearing(
             event_type="verdict_issued",
             category="justice",
             title=f"Verdetto emesso: {hearing.hearing_number}",
-            reference_id=hearing.id,
-            reference_type="hearing",
+            entity_id=hearing.id,
+            entity_type="hearing",
             user_id=current_user.id
         )
         db.add(timeline_event)

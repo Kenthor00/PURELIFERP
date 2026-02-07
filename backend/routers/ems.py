@@ -69,7 +69,7 @@ async def get_patient(
     
     timeline_result = await db.execute(
         select(TimelineEvent)
-        .where(TimelineEvent.reference_type == "patient", TimelineEvent.reference_id == patient_id)
+        .where(TimelineEvent.entity_type == "patient", TimelineEvent.entity_id == patient_id)
         .order_by(desc(TimelineEvent.created_at))
     )
     
@@ -108,8 +108,8 @@ async def create_patient(
         category="ems",
         title=f"Paziente registrato: {patient.name}",
         description=f"Registrato da {current_user.game_name or current_user.email}",
-        reference_id=patient.id,
-        reference_type="patient",
+        entity_id=patient.id,
+        entity_type="patient",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -202,8 +202,8 @@ async def create_report(
         category="ems",
         title=f"Referto medico: {report.report_number}",
         description=f"Diagnosi: {report.diagnosis[:100]}...",
-        reference_id=patient.id,
-        reference_type="patient",
+        entity_id=patient.id,
+        entity_type="patient",
         user_id=current_user.id,
         metadata_json={"report_id": report.id}
     )
