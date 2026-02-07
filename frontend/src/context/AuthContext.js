@@ -108,8 +108,12 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${storedToken}` }
       });
       
-      // Token valido - imposta utente
-      setUser(res.data);
+      // Token valido - imposta utente con role mappato da sector
+      const userData = {
+        ...res.data,
+        role: res.data.sector?.toLowerCase(), // Legacy compatibility
+      };
+      setUser(userData);
       setToken(storedToken);
       
       // Recupera presenza
