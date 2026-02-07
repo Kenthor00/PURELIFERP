@@ -292,7 +292,7 @@ async def get_hearing(
 @router.post("/hearings", response_model=CourtHearingResponse)
 async def create_hearing(
     request: CourtHearingCreate,
-    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.GOVERNMENT)),
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.GOVERNMENT, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """Crea udienza (giudice/governo)"""
