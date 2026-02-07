@@ -451,7 +451,7 @@ const AppRoutes = () => {
           path="/ems/reports"
           element={
             <ProtectedRoute allowedRoles={['ems']}>
-              <PatientsListPage />
+              <ReportsListPage />
             </ProtectedRoute>
           }
         />
