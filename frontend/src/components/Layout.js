@@ -75,7 +75,7 @@ const getNavItems = (role) => {
 };
 
 export const Layout = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, presence } = useAuth();
   const { play, enabled: soundEnabled, toggle: toggleSound } = useSound();
   const { connected } = useSSE();
   const navigate = useNavigate();
