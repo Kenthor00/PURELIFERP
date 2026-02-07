@@ -824,6 +824,7 @@ class CourtHearing(Base):
     courtroom = Column(String(50), nullable=True)
     status = Column(Enum(HearingStatus), default=HearingStatus.SCHEDULED, index=True)
     verdict = Column(Text, nullable=True)
+    verdict_date = Column(DateTime, nullable=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
