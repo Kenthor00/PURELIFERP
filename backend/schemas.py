@@ -401,9 +401,11 @@ class DispatchCallResponse(DispatchCallBase):
     call_number: str
     status: CallStatus
     assigned_units: Optional[List[str]] = None
-    dispatcher_id: Optional[int] = None
+    created_by: Optional[int] = None
+    assigned_by: Optional[int] = None
     created_at: datetime
-    updated_at: datetime
+    assigned_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
 
 
 # ==========================================
