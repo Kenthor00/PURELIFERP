@@ -49,7 +49,7 @@ const PRESENCE_LABELS = {
 export const TopBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, user, token } = useAuth();
+  const { isAuthenticated, user, token, presence } = useAuth();
   
   // State
   const [notifications, setNotifications] = useState([]);
