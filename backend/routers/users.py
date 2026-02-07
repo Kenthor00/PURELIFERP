@@ -220,9 +220,18 @@ async def create_user(
     # Verifica grado valido
     valid_grades = SECTOR_GRADES.get(target_sector, {})
     if data.hierarchy_level not in valid_grades:
+        valid_levels = list(valid_grades.keys())
         raise HTTPException(
-            status_code=400, 
-            detail=f"Livello non valido per {target_sector.value}"
+            status_code=422, 
+            detail=f"Livello {data.hierarchy_level} non valido per {target_sector.value}. Livelli validi: {valid_levels}"
+        )
+    
+    # Verifica coerenza grade/level
+    expected_grade = valid_grades.get(data.hierarchy_level, "")
+    if data.grade and data.grade != expected_grade:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Incoerenza: livello {data.hierarchy_level} per {target_sector.value} richiede grado '{expected_grade}', non '{data.grade}'"
         )
     
     # Crea utente
