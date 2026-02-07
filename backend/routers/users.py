@@ -196,7 +196,21 @@ async def create_user(
     # Verifica email unica
     existing = await db.execute(select(User).where(User.email == data.email))
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email già registrata")
+        raise HTTPException(
+            status_code=409, 
+            detail="Email già registrata nel sistema"
+        )
+    
+    # Verifica badge_number unico (se fornito)
+    if data.badge_number:
+        existing_badge = await db.execute(
+            select(User).where(User.badge_number == data.badge_number)
+        )
+        if existing_badge.scalar_one_or_none():
+            raise HTTPException(
+                status_code=409, 
+                detail="Matricola già in uso da un altro utente"
+            )
     
     # Valida password
     is_valid, error_msg = security_service.validate_password(data.password)
