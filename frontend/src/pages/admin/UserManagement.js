@@ -603,6 +603,16 @@ const UserManagement = () => {
                         >
                           {u.is_active ? <XCircle size={16} /> : <CheckCircle size={16} />}
                         </button>
+                        {/* Pulsante Elimina Definitivamente (solo per admin level 10) */}
+                        {user?.hierarchy_level >= 10 && u.id !== user?.id && (
+                          <button
+                            onClick={() => openDeleteModal(u)}
+                            className="p-1.5 rounded hover:bg-red-600/30 transition-colors text-red-500"
+                            title="Elimina Definitivamente"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
