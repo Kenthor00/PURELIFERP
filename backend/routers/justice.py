@@ -82,30 +82,42 @@ async def get_legal_case(
 @router.post("/cases", response_model=LegalCaseResponse)
 async def create_legal_case(
     request: LegalCaseCreate,
-    current_user: User = Depends(require_roles(UserRole.LAWYER, UserRole.PROSECUTOR)),
+    current_user: User = Depends(require_roles(UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.JUDGE, UserRole.GOVERNMENT, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """Crea pratica legale"""
+    case_data = request.model_dump(exclude_none=True)
+    
     case = LegalCase(
         case_number=generate_legal_case_number(),
-        **request.model_dump(),
+        title=case_data.get('title'),
+        police_case_id=case_data.get('police_case_id'),
+        plaintiff_name=case_data.get('plaintiff_name'),
+        defendant_name=case_data.get('defendant_name'),
+        client_name=case_data.get('client_name') or case_data.get('plaintiff_name'),
+        client_identifier=case_data.get('client_identifier'),
+        case_type=case_data.get('case_type'),
+        description=case_data.get('description'),
         status=LegalCaseStatus.DRAFT
     )
     
-    if current_user.role == UserRole.LAWYER:
-        case.lawyer_id = current_user.id
-    elif current_user.role == UserRole.PROSECUTOR:
-        case.prosecutor_id = current_user.id
+    if hasattr(current_user, 'role'):
+        if current_user.role == UserRole.LAWYER:
+            case.lawyer_id = current_user.id
+        elif current_user.role == UserRole.PROSECUTOR:
+            case.prosecutor_id = current_user.id
     
     db.add(case)
     await db.commit()
     await db.refresh(case)
     
+    case_title = case.title or case.client_name or "N/A"
+    
     timeline_event = TimelineEvent(
         event_type="legal_case_created",
         category="justice",
         title=f"Pratica aperta: {case.case_number}",
-        description=f"Cliente: {case.client_name}",
+        description=f"Titolo: {case_title}",
         entity_id=case.id,
         entity_type="legal_case",
         user_id=current_user.id
