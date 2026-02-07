@@ -91,7 +91,7 @@ export const Layout = ({ children }) => {
     navigate(path);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     play('click');
     await logout();
     navigate('/login');
