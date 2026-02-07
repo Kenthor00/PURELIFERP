@@ -1019,6 +1019,90 @@ const UserManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedUser && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="glass-card rounded-xl p-6 w-full max-w-md border-2 border-red-500/50">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-500/20 rounded-full">
+                <AlertTriangle className="text-red-500" size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-heading font-semibold text-red-400">
+                  ELIMINAZIONE DEFINITIVA
+                </h2>
+                <p className="text-plos-text-secondary text-sm">
+                  Questa azione è irreversibile
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+              <p className="text-white text-sm mb-2">
+                Stai per eliminare definitivamente:
+              </p>
+              <div className="space-y-1">
+                <p className="text-red-400 font-semibold">
+                  {selectedUser.game_name || 'N/A'}
+                </p>
+                <p className="text-plos-text-secondary text-xs">
+                  {selectedUser.email}
+                </p>
+                <p className="text-plos-text-secondary text-xs">
+                  {selectedUser.sector} - {selectedUser.grade}
+                </p>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-plos-text-secondary text-sm mb-2">
+                Scrivi <span className="text-red-400 font-bold">DELETE</span> per confermare:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                className="w-full px-3 py-2 bg-plos-surface border border-red-500/50 rounded-lg text-white focus:border-red-500 focus:outline-none font-mono"
+                placeholder="DELETE"
+                autoComplete="off"
+              />
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmation('');
+                }}
+                className="flex-1 px-4 py-2 bg-plos-surface text-white rounded-lg hover:bg-plos-surface/80 transition-colors"
+                disabled={deleting}
+              >
+                Annulla
+              </button>
+              <button
+                type="button"
+                onClick={handleHardDelete}
+                disabled={deleteConfirmation !== 'DELETE' || deleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    Eliminazione...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} />
+                    Elimina Definitivamente
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
