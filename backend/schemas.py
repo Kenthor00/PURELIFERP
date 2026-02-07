@@ -255,11 +255,12 @@ class WarrantResponse(WarrantBase):
 # ==========================================
 
 class FineBase(BaseModel):
-    subject_name: str
-    subject_identifier: Optional[str] = None
-    amount: int
+    citizen_name: str
+    citizen_identifier: Optional[str] = None
+    amount: float
     reason: str
     case_id: Optional[int] = None
+    due_date: Optional[datetime] = None
 
 
 class FineCreate(FineBase):
@@ -273,6 +274,7 @@ class FineResponse(FineBase):
     fine_number: str
     is_paid: bool
     issued_by: int
+    paid_at: Optional[datetime] = None
     created_at: datetime
 
 
