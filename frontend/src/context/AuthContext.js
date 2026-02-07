@@ -152,10 +152,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Aggiorna presenza a offline prima di logout
+    if (token) {
+      axios.put(`${API_URL}/api/chat/presence`, 
+        { status: 'offline' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      ).catch(() => {});
+    }
     localStorage.removeItem('plos_token');
     localStorage.removeItem('plos_refresh_token');
     setToken(null);
     setUser(null);
+    setPresence('offline');
   };
 
   const refreshUser = async () => {
