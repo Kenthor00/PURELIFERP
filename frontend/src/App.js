@@ -474,8 +474,24 @@ const AppRoutes = () => {
         <Route
           path="/justice"
           element={
-            <ProtectedRoute allowedRoles={['government', 'judge', 'lawyer', 'prosecutor']}>
-              <JusticePage />
+            <ProtectedRoute allowedRoles={['government', 'judge', 'lawyer', 'prosecutor', 'admin']}>
+              <JusticeDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/justice/cases/new"
+          element={
+            <ProtectedRoute allowedRoles={['government', 'judge', 'lawyer', 'prosecutor', 'admin']}>
+              <JusticeNewCasePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/justice/hearings/new"
+          element={
+            <ProtectedRoute allowedRoles={['government', 'judge', 'admin']}>
+              <JusticeNewHearingPage />
             </ProtectedRoute>
           }
         />
