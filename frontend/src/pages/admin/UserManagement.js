@@ -98,6 +98,17 @@ const UserManagement = () => {
 
   const sectors = ['LSPD', 'EMS', 'GOV', 'NEWS', 'DISPATCH', 'CIVIL', 'ADMIN'];
 
+  // Auto-completa il grado quando cambiano settore o livello
+  useEffect(() => {
+    const grades = SECTOR_GRADES[formData.sector];
+    if (grades && grades[formData.hierarchy_level]) {
+      setFormData(prev => ({
+        ...prev,
+        grade: grades[formData.hierarchy_level]
+      }));
+    }
+  }, [formData.sector, formData.hierarchy_level]);
+
   useEffect(() => {
     fetchUsers();
   }, []);
