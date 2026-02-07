@@ -91,7 +91,6 @@ async def create_patient(
         patient_number=generate_patient_number(),
         name=request.name,
         identifier=request.identifier,
-        date_of_birth=request.date_of_birth,
         blood_type=request.blood_type,
         allergies=request.allergies,
         medical_history=request.medical_history,
