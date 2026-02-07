@@ -201,6 +201,20 @@ export const LoginPage = () => {
                 'ACCEDI'
               )}
             </button>
+
+            {/* Link Registrazione */}
+            <div className="mt-4 text-center">
+              <p className="text-plos-text-secondary text-sm">
+                Non hai un account?{' '}
+                <Link 
+                  to="/register" 
+                  className="text-plos-primary hover:underline font-medium"
+                  data-testid="register-link"
+                >
+                  Registrati come Cittadino
+                </Link>
+              </p>
+            </div>
           </form>
 
           <div className="mt-6 pt-4 border-t border-plos-border">
