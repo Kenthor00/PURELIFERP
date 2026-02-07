@@ -21,7 +21,16 @@ import {
   Scale,
   Building2,
   Newspaper,
+  Circle,
 } from 'lucide-react';
+
+// Mapping stati presenza
+const PRESENCE_CONFIG = {
+  online: { color: 'text-green-500', bg: 'bg-green-500', label: 'ONLINE' },
+  in_service: { color: 'text-blue-500', bg: 'bg-blue-500', label: 'IN SERVIZIO' },
+  busy: { color: 'text-yellow-500', bg: 'bg-yellow-500', label: 'OCCUPATO' },
+  offline: { color: 'text-gray-500', bg: 'bg-gray-500', label: 'OFFLINE' }
+};
 
 const getNavItems = (role) => {
   const items = [];
