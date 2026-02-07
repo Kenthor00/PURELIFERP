@@ -128,8 +128,16 @@ export const Layout = ({ children }) => {
           </button>
           
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-plos-primary/20 border border-plos-primary flex items-center justify-center">
-              <span className="text-plos-primary font-heading font-bold text-sm">PL</span>
+            <div className="w-8 h-8 bg-plos-primary/20 border border-plos-primary flex items-center justify-center overflow-hidden">
+              <img 
+                src="/logo.png" 
+                alt="PL" 
+                className="w-full h-full object-contain"
+                onError={(e) => { 
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<span class="text-plos-primary font-heading font-bold text-sm">PL</span>';
+                }}
+              />
             </div>
             <span className="font-heading text-lg tracking-wider hidden sm:block">
               PURE LIFE <span className="text-plos-primary">OS</span>
