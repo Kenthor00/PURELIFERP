@@ -799,6 +799,7 @@ class LegalCase(Base):
     case_number = Column(String(50), unique=True, nullable=False)
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
+    case_type = Column(String(50), default="CIVIL")
     status = Column(Enum(LegalCaseStatus), default=LegalCaseStatus.DRAFT, index=True)
     plaintiff_name = Column(String(100), nullable=True)
     defendant_name = Column(String(100), nullable=True)
