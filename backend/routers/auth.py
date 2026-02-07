@@ -52,6 +52,13 @@ class SetGameNameRequest(BaseModel):
     game_name: str
 
 
+class PublicRegisterRequest(BaseModel):
+    """Registrazione pubblica per cittadini"""
+    email: EmailStr
+    password: str
+    game_name: str  # Nome in game obbligatorio
+
+
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
