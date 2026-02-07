@@ -314,9 +314,14 @@ export const TopBar = () => {
           {/* User info (desktop) */}
           {isAuthenticated && user && (
             <div className="hidden md:flex items-center gap-2 text-xs text-plos-text-secondary mr-2">
-              <span className="text-plos-primary font-medium">
-                {user.game_name || user.name}
-              </span>
+              {/* Indicatore presenza */}
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${PRESENCE_COLORS[presence] || PRESENCE_COLORS.offline}`} 
+                      title={PRESENCE_LABELS[presence] || 'Offline'} />
+                <span className="text-plos-primary font-medium">
+                  {user.game_name || user.name}
+                </span>
+              </div>
               <span className="text-plos-text-muted">|</span>
               <span>{user.grade}</span>
             </div>
