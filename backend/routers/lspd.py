@@ -207,9 +207,8 @@ async def create_warrant(
     warrant = Warrant(
         warrant_number=generate_warrant_number(),
         case_id=request.case_id,
-        subject_name=request.suspect_name,
-        subject_identifier=request.subject_identifier,
-        reason=request.reason,
+        suspect_name=request.suspect_name,
+        suspect_identifier=request.suspect_identifier,
         reason=request.reason,
         issued_by=current_user.id,
         expires_at=request.expires_at
