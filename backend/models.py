@@ -691,6 +691,7 @@ class DispatchCall(Base):
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     assigned_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     assigned_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
 
