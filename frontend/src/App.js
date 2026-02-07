@@ -20,6 +20,8 @@ import LSPDDashboard from './pages/lspd/LSPDDashboard';
 import CasesListPage from './pages/lspd/CasesListPage';
 import CaseDetailPage from './pages/lspd/CaseDetailPage';
 import NewCasePage from './pages/lspd/NewCasePage';
+import WarrantsListPage from './pages/lspd/WarrantsListPage';
+import FinesListPage from './pages/lspd/FinesListPage';
 
 // EMS
 import EMSDashboard from './pages/ems/EMSDashboard';
