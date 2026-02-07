@@ -94,7 +94,7 @@ async def create_case(
     case = Case(
         case_number=generate_case_number(),
         title=request.title,
-        description=request.description,
+        reason=request.reason,
         priority=request.priority,
         suspect_name=request.suspect_name,
         suspect_identifier=request.suspect_identifier,
@@ -189,7 +189,7 @@ async def get_warrants(
     if search:
         search_filter = f"%{search}%"
         query = query.where(
-            (Warrant.subject_name.ilike(search_filter)) |
+            (Warrant.suspect_name.ilike(search_filter)) |
             (Warrant.warrant_number.ilike(search_filter))
         )
     
@@ -207,10 +207,10 @@ async def create_warrant(
     warrant = Warrant(
         warrant_number=generate_warrant_number(),
         case_id=request.case_id,
-        subject_name=request.subject_name,
+        subject_name=request.suspect_name,
         subject_identifier=request.subject_identifier,
-        warrant_type=request.warrant_type,
-        description=request.description,
+        reason=request.reason,
+        reason=request.reason,
         issued_by=current_user.id,
         expires_at=request.expires_at
     )
@@ -222,8 +222,8 @@ async def create_warrant(
     timeline_event = TimelineEvent(
         event_type="warrant_issued",
         category="lspd",
-        title=f"Mandato emesso: {warrant.warrant_type}",
-        description=f"Soggetto: {warrant.subject_name}",
+        title=f"Mandato emesso: {warrant.reason}",
+        description=f"Soggetto: {warrant.suspect_name}",
         entity_id=warrant.id,
         entity_type="warrant",
         user_id=current_user.id
@@ -246,7 +246,7 @@ async def create_warrant(
     await sse_manager.broadcast("warrant_issued", {
         "warrant_id": warrant.id,
         "warrant_number": warrant.warrant_number,
-        "subject_name": warrant.subject_name
+        "subject_name": warrant.suspect_name
     }, roles={"police", "dispatch", "admin"})
     
     return warrant
@@ -310,7 +310,7 @@ async def create_fine(
     fine = Fine(
         fine_number=generate_fine_number(),
         case_id=request.case_id,
-        subject_name=request.subject_name,
+        subject_name=request.suspect_name,
         subject_identifier=request.subject_identifier,
         amount=request.amount,
         reason=request.reason,
@@ -388,7 +388,7 @@ async def add_evidence(
         case_id=request.case_id,
         evidence_type=request.evidence_type,
         title=request.title,
-        description=request.description,
+        reason=request.reason,
         file_url=request.file_url,
         metadata_json=request.metadata_json
     )
