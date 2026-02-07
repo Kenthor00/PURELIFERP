@@ -54,6 +54,10 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 
+class HardDeleteRequest(BaseModel):
+    confirmation: str  # Deve essere "DELETE"
+
+
 class UserResponse(BaseModel):
     id: int
     email: str
@@ -66,6 +70,7 @@ class UserResponse(BaseModel):
     department: Optional[str]
     is_active: bool
     is_locked: bool
+    is_deleted: bool = False
     presence: str
     last_login: Optional[str]
     created_at: str
