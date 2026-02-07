@@ -142,6 +142,13 @@ export const CityHubPage = () => {
               >
                 ACCEDI
               </button>
+              <button
+                onClick={() => navigate('/register')}
+                className="px-3 py-1.5 border border-plos-primary text-plos-primary hover:bg-plos-primary/10 text-sm font-heading transition-colors"
+                data-testid="cityhub-register-btn"
+              >
+                REGISTRATI
+              </button>
             </nav>
           </div>
         </div>
