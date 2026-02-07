@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { useHealth } from '../context/HealthContext';
-import { Shield, AlertCircle, Loader2, Database, Server, Zap } from 'lucide-react';
+import { Shield, AlertCircle, Loader2, Database, Server, Zap, ChevronLeft } from 'lucide-react';
 
 export const LoginPage = () => {
   const { login } = useAuth();
