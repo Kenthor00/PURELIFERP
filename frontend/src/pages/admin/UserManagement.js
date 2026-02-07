@@ -127,6 +127,27 @@ const UserManagement = () => {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    
+    // Validazione password lato client
+    if (formData.password.length < 8) {
+      toast.error('Password troppo corta: minimo 8 caratteri');
+      return;
+    }
+    if (!/[0-9]/.test(formData.password)) {
+      toast.error('Password non valida: deve contenere almeno un numero');
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+      toast.error('Password non valida: deve contenere almeno un carattere speciale');
+      return;
+    }
+    
+    // Validazione badge_number
+    if (formData.badge_number && !/^\d+$/.test(formData.badge_number)) {
+      toast.error('Matricola non valida: deve contenere solo numeri');
+      return;
+    }
+    
     try {
       const token = localStorage.getItem('plos_token');
       await axios.post(`${API_URL}/api/users/create`, formData, {
@@ -137,7 +158,25 @@ const UserManagement = () => {
       resetForm();
       fetchUsers();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Errore nella creazione');
+      const status = error.response?.status;
+      const detail = error.response?.data?.detail;
+      
+      // Messaggi specifici in base al codice di errore
+      if (status === 409) {
+        if (detail?.includes('Email')) {
+          toast.error('❌ Email già registrata nel sistema');
+        } else if (detail?.includes('Matricola') || detail?.includes('badge')) {
+          toast.error('❌ Matricola già in uso da un altro utente');
+        } else {
+          toast.error(`❌ Conflitto: ${detail}`);
+        }
+      } else if (status === 422) {
+        toast.error(`⚠️ ${detail || 'Dati non validi'}`);
+      } else if (status === 403) {
+        toast.error(`🔒 ${detail || 'Non hai i permessi'}`);
+      } else {
+        toast.error(detail || 'Errore nella creazione utente');
+      }
     }
   };
 
