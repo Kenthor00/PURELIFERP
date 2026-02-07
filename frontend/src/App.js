@@ -34,7 +34,11 @@ import DispatchPage from './pages/DispatchPage';
 import TimelinePage from './pages/TimelinePage';
 import SettingsPage from './pages/SettingsPage';
 import ChatPage from './pages/ChatPage';
-import JusticePage from './pages/JusticePage';
+
+// Justice
+import JusticeDashboard from './pages/justice/JusticeDashboard';
+import JusticeNewCasePage from './pages/justice/NewCasePage';
+import JusticeNewHearingPage from './pages/justice/NewHearingPage';
 
 // Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
