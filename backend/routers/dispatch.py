@@ -166,7 +166,7 @@ async def update_call(
             event_type="call_status_changed",
             category="dispatch",
             title=f"Stato chiamata: {call.status.value}",
-            description=f"Aggiornato da {current_user.name}",
+            description=f"Aggiornato da {current_user.game_name or current_user.email}",
             reference_id=call.id,
             reference_type="call",
             user_id=current_user.id,

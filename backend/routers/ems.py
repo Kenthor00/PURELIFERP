@@ -107,7 +107,7 @@ async def create_patient(
         event_type="patient_registered",
         category="ems",
         title=f"Paziente registrato: {patient.name}",
-        description=f"Registrato da {current_user.name}",
+        description=f"Registrato da {current_user.game_name or current_user.email}",
         reference_id=patient.id,
         reference_type="patient",
         user_id=current_user.id
@@ -260,7 +260,7 @@ async def fill_template_endpoint(
     if not template_data:
         raise HTTPException(status_code=404, detail="Template non trovato")
     
-    data["medico"] = current_user.name
+    data["medico"] = current_user.game_name or current_user.email
     data["data"] = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M")
     
     filled = fill_template(template_data["template"], data)
