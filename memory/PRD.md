@@ -183,6 +183,7 @@ Non ci sono altre fasi definite. I prossimi sviluppi dipenderanno dal feedback u
 
 | Data | Versione | Modifiche |
 |------|----------|-----------|
+| 2026-02-07 | 4.1 | Bug Fix: Lista utenti vuota, Stato presenza OFFLINE. Nuovo: Logo PURE LIFE, Pulsante "Torna Indietro" Login |
 | 2026-02-06 | 4.0 | FASE 4 completata: News 2.0, Chat 2.0, Push Notifications |
 | 2026-02-05 | 3.0 | FASE 3 completata: Notifiche SSE, Calendario, TopBar |
 | 2026-02-04 | 2.0 | FASE 2 completata: City Hub base |
@@ -190,4 +191,23 @@ Non ci sono altre fasi definite. I prossimi sviluppi dipenderanno dal feedback u
 
 ---
 
-*Ultimo aggiornamento: 2026-02-06*
+## 🐛 Bug Fix v4.1 (2026-02-07)
+
+### Risolti:
+1. **Lista utenti vuota su /admin/users** - Il campo `grade` poteva essere `None`, causando un errore Pydantic. Fix: `grade or ""` in `_user_to_response()`
+2. **Stato presenza sempre OFFLINE** - Lo stato presenza non veniva salvato nel context. Fix: Aggiunto state `presence` in `AuthContext` e collegato a `Layout.js`
+3. **Logo PURE LIFE** - Implementato su Login, TopBar, Sidebar e Favicon
+4. **Pulsante "Torna Indietro" Login** - Aggiunto sopra il form, naviga a `/city`
+
+### File modificati:
+- `/app/backend/routers/users.py` - Fix grade None
+- `/app/frontend/src/context/AuthContext.js` - Gestione stato presenza
+- `/app/frontend/src/components/Layout.js` - Visualizzazione presenza utente
+- `/app/frontend/src/components/TopBar.js` - Logo e indicatore presenza
+- `/app/frontend/src/pages/LoginPage.js` - Pulsante indietro e logo
+- `/app/frontend/public/logo.png` - Logo scaricato
+- `/app/frontend/public/index.html` - Favicon
+
+---
+
+*Ultimo aggiornamento: 2026-02-07*
