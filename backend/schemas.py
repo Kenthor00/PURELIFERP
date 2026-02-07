@@ -553,8 +553,11 @@ class NewsArticleResponse(NewsArticleBase):
 # ==========================================
 
 class LegalCaseBase(BaseModel):
+    title: Optional[str] = None
     police_case_id: Optional[int] = None
-    client_name: str
+    plaintiff_name: Optional[str] = None  # Attore
+    defendant_name: Optional[str] = None  # Convenuto
+    client_name: Optional[str] = None  # For backward compatibility
     client_identifier: Optional[str] = None
     case_type: str
     description: Optional[str] = None
