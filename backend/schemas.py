@@ -228,10 +228,9 @@ class CaseDetailResponse(CaseResponse):
 # ==========================================
 
 class WarrantBase(BaseModel):
-    subject_name: str
-    subject_identifier: Optional[str] = None
-    warrant_type: str
-    description: Optional[str] = None
+    suspect_name: str
+    suspect_identifier: Optional[str] = None
+    reason: str
     case_id: Optional[int] = None
 
 
@@ -245,6 +244,7 @@ class WarrantResponse(WarrantBase):
     id: int
     warrant_number: str
     is_active: bool
+    executed: bool = False
     issued_by: int
     expires_at: Optional[datetime] = None
     created_at: datetime
