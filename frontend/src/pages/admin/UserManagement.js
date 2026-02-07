@@ -78,9 +78,12 @@ const UserManagement = () => {
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [showAccessHistoryModal, setShowAccessHistoryModal] = useState(false);
   const [showActivityLogModal, setShowActivityLogModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [accessHistory, setAccessHistory] = useState([]);
   const [activityLog, setActivityLog] = useState([]);
+  const [deleting, setDeleting] = useState(false);
   
   // Form state per creazione/modifica
   const [formData, setFormData] = useState({
