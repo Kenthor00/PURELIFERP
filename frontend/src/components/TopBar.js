@@ -281,7 +281,7 @@ export const TopBar = () => {
       data-testid="top-bar"
     >
       <div className="h-full max-w-7xl mx-auto px-2 flex items-center justify-between">
-        {/* Left: Back + Home */}
+        {/* Left: Back + Home + Logo */}
         <div className="flex items-center gap-1">
           <button
             onClick={handleBack}
@@ -300,6 +300,19 @@ export const TopBar = () => {
             <Home size={18} />
             <span className="text-xs font-heading hidden sm:inline">HOME</span>
           </button>
+
+          {/* Logo */}
+          <div className="hidden sm:flex items-center ml-2 pl-2 border-l border-plos-border">
+            <img 
+              src="/logo.png" 
+              alt="PLOS" 
+              className="h-6 w-6 object-contain"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            <span className="ml-1.5 text-xs font-heading text-plos-text-secondary">
+              PURE LIFE <span className="text-plos-primary">OS</span>
+            </span>
+          </div>
         </div>
 
         {/* Center: Current location indicator */}
