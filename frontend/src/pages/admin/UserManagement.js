@@ -313,6 +313,37 @@ const UserManagement = () => {
     setShowResetPasswordModal(true);
   };
 
+  const openDeleteModal = (u) => {
+    setSelectedUser(u);
+    setDeleteConfirmation('');
+    setShowDeleteModal(true);
+  };
+
+  const handleHardDelete = async () => {
+    if (deleteConfirmation !== 'DELETE') {
+      toast.error('Scrivi "DELETE" per confermare l\'eliminazione');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem('plos_token');
+      await axios.delete(`${API_URL}/api/users/${selectedUser.id}/hard-delete`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { confirmation: 'DELETE' }
+      });
+      toast.success(`Utente ${selectedUser.game_name || selectedUser.email} eliminato definitivamente`);
+      setShowDeleteModal(false);
+      setDeleteConfirmation('');
+      fetchUsers();
+    } catch (error) {
+      const detail = error.response?.data?.detail;
+      toast.error(detail || 'Errore durante l\'eliminazione');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       email: '',
