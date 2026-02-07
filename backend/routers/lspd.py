@@ -292,7 +292,7 @@ async def get_fines(
     if search:
         search_filter = f"%{search}%"
         query = query.where(
-            (Fine.subject_name.ilike(search_filter)) |
+            (Fine.citizen_name.ilike(search_filter)) |
             (Fine.fine_number.ilike(search_filter))
         )
     
@@ -325,7 +325,7 @@ async def create_fine(
         event_type="fine_created",
         payload={
             "fine_number": fine.fine_number,
-            "subject_name": fine.subject_name,
+            "subject_name": fine.citizen_name,
             "subject_identifier": fine.subject_identifier,
             "amount": fine.amount,
             "reason": fine.reason
@@ -338,7 +338,7 @@ async def create_fine(
         event_type="fine_issued",
         category="lspd",
         title=f"Multa emessa: €{fine.amount}",
-        description=f"Soggetto: {fine.subject_name} - {fine.reason}",
+        description=f"Soggetto: {fine.citizen_name} - {fine.reason}",
         entity_id=fine.id,
         entity_type="fine",
         user_id=current_user.id
