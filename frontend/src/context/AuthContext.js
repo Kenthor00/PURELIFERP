@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -13,11 +13,19 @@ export const useAuth = () => {
   return context;
 };
 
+// Funzione per pulire completamente lo storage
+const clearAuthStorage = () => {
+  localStorage.removeItem('plos_token');
+  localStorage.removeItem('plos_refresh_token');
+  localStorage.removeItem('plos_user'); // Legacy cleanup
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('plos_token'));
+  const [token, setToken] = useState(null); // NON inizializzare da localStorage
   const [loading, setLoading] = useState(true);
-  const [presence, setPresence] = useState('offline'); // Stato presenza utente
+  const [presence, setPresence] = useState('offline');
+  const validationRef = useRef(false); // Prevent double validation
 
   const api = axios.create({
     baseURL: `${API_URL}/api`,
