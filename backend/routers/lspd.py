@@ -309,8 +309,8 @@ async def create_fine(
     fine = Fine(
         fine_number=generate_fine_number(),
         case_id=request.case_id,
-        subject_name=request.suspect_name,
-        subject_identifier=request.subject_identifier,
+        citizen_name=request.citizen_name,
+        citizen_identifier=request.citizen_identifier,
         amount=request.amount,
         reason=request.reason,
         issued_by=current_user.id
@@ -324,8 +324,8 @@ async def create_fine(
         event_type="fine_created",
         payload={
             "fine_number": fine.fine_number,
-            "subject_name": fine.citizen_name,
-            "subject_identifier": fine.subject_identifier,
+            "citizen_name": fine.citizen_name,
+            "citizen_identifier": fine.citizen_identifier,
             "amount": fine.amount,
             "reason": fine.reason
         },
