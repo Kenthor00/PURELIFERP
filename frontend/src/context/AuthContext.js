@@ -240,16 +240,32 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
-  const logout = () => {
-    // Aggiorna presenza a offline prima di logout
-    if (token) {
-      axios.put(`${API_URL}/api/chat/presence`, 
-        { status: 'offline' },
-        { headers: { Authorization: `Bearer ${token}` } }
-      ).catch(() => {});
+  const logout = async () => {
+    const currentToken = token || localStorage.getItem('plos_token');
+    
+    // Aggiorna presenza a offline
+    if (currentToken) {
+      try {
+        await axios.put(`${API_URL}/api/chat/presence`, 
+          { status: 'offline' },
+          { headers: { Authorization: `Bearer ${currentToken}` } }
+        );
+      } catch {}
+      
+      // Revoca/blacklist refresh token sul server (se implementato)
+      try {
+        const refreshToken = localStorage.getItem('plos_refresh_token');
+        if (refreshToken) {
+          await axios.post(`${API_URL}/api/auth/logout`, 
+            { refresh_token: refreshToken },
+            { headers: { Authorization: `Bearer ${currentToken}` } }
+          );
+        }
+      } catch {}
     }
-    localStorage.removeItem('plos_token');
-    localStorage.removeItem('plos_refresh_token');
+    
+    // Pulisci tutto
+    clearAuthStorage();
     setToken(null);
     setUser(null);
     setPresence('offline');
