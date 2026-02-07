@@ -8,7 +8,8 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { 
   Users, UserPlus, Search, Filter, MoreVertical, 
-  Lock, Unlock, Key, History, Activity, Edit, XCircle, CheckCircle
+  Lock, Unlock, Key, History, Activity, Edit, XCircle, CheckCircle,
+  Trash2, AlertTriangle
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
