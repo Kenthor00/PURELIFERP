@@ -187,6 +187,17 @@ export const Layout = ({ children }) => {
               </span>
             </div>
           </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 transition-colors text-sm font-heading"
+            data-testid="logout-btn"
+            title="Esci dal sistema"
+          >
+            <LogOut size={16} />
+            <span className="hidden sm:inline">ESCI</span>
+          </button>
         </div>
       </header>
 
