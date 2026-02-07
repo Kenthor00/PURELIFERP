@@ -101,6 +101,16 @@ export const AuthProvider = ({ children }) => {
     };
     setUser(userData);
     
+    // Aggiorna presenza a ONLINE dopo il login
+    try {
+      await axios.put(`${API_URL}/api/chat/presence`, 
+        { status: 'online' },
+        { headers: { Authorization: `Bearer ${res.data.access_token}` } }
+      );
+    } catch (e) {
+      console.log('Presence update skipped:', e.message);
+    }
+    
     return { ...res.data, ...userData };
   };
 
