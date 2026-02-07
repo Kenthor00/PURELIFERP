@@ -94,7 +94,7 @@ async def create_case(
     case = Case(
         case_number=generate_case_number(),
         title=request.title,
-        reason=request.reason,
+        description=request.description,
         priority=request.priority,
         suspect_name=request.suspect_name,
         suspect_identifier=request.suspect_identifier,
