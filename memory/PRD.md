@@ -191,6 +191,35 @@ Non ci sono altre fasi definite. I prossimi sviluppi dipenderanno dal feedback u
 
 ---
 
+## 🔒 Security Fix v4.2 (2026-02-07)
+
+### Bug CRITICO Risolto:
+**Sessione Admin "sempre attiva"** - L'utente appariva loggato anche senza token valido.
+
+### Fix Implementati:
+1. **Token Validation via /api/auth/me** - Unica fonte di verità per autenticazione
+2. **Vista Guest Sicura** - Senza token valido, nessuna info utente visibile
+3. **Auto-Logout** - Token scaduto/invalido → purge localStorage + redirect /login
+4. **Pulsante ESCI** - Visibile in rosso nella header, logout completo
+5. **Eliminazione Definitiva Account** - Soft-delete con anonimizzazione
+
+### Eliminazione Definitiva - Regole:
+- Solo ADMIN level 10
+- Conferma doppia: scrivere "DELETE"
+- Audit obbligatorio (`USER_DELETE_HARD`)
+- Protezione auto-eliminazione
+- Protezione ultimo admin
+- Anonimizzazione: `email → deleted_uuid@purelife.rp`, `game_name → DELETED`
+
+### File modificati:
+- `/app/frontend/src/context/AuthContext.js` - validateAndFetchUser(), forceLogout()
+- `/app/frontend/src/components/Layout.js` - Pulsante ESCI
+- `/app/backend/routers/users.py` - hard_delete_user endpoint
+- `/app/backend/models.py` - is_deleted, deleted_at, deleted_by columns
+- `/app/frontend/src/pages/admin/UserManagement.js` - Modal eliminazione
+
+---
+
 ## 🐛 Bug Fix v4.1 (2026-02-07)
 
 ### Risolti:
