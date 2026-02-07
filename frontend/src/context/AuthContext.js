@@ -147,7 +147,11 @@ export const AuthProvider = ({ children }) => {
               headers: { Authorization: `Bearer ${refreshRes.data.access_token}` }
             });
             
-            setUser(userRes.data);
+            const refreshedUserData = {
+              ...userRes.data,
+              role: userRes.data.sector?.toLowerCase(), // Legacy compatibility
+            };
+            setUser(refreshedUserData);
             setToken(refreshRes.data.access_token);
             setPresence('offline');
             setLoading(false);
