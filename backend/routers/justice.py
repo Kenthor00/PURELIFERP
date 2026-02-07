@@ -91,6 +91,7 @@ async def create_legal_case(
     case = LegalCase(
         case_number=generate_legal_case_number(),
         title=case_data.get('title') or case_data.get('client_name', 'Nuova pratica'),
+        case_type=case_data.get('case_type', 'CIVIL'),
         plaintiff_name=case_data.get('plaintiff_name'),
         defendant_name=case_data.get('defendant_name'),
         description=case_data.get('description'),
