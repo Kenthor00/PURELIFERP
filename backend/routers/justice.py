@@ -90,14 +90,11 @@ async def create_legal_case(
     
     case = LegalCase(
         case_number=generate_legal_case_number(),
-        title=case_data.get('title'),
-        police_case_id=case_data.get('police_case_id'),
+        title=case_data.get('title') or case_data.get('client_name', 'Nuova pratica'),
         plaintiff_name=case_data.get('plaintiff_name'),
         defendant_name=case_data.get('defendant_name'),
-        client_name=case_data.get('client_name') or case_data.get('plaintiff_name'),
-        client_identifier=case_data.get('client_identifier'),
-        case_type=case_data.get('case_type'),
         description=case_data.get('description'),
+        related_case_id=case_data.get('police_case_id'),
         status=LegalCaseStatus.DRAFT
     )
     
@@ -111,7 +108,7 @@ async def create_legal_case(
     await db.commit()
     await db.refresh(case)
     
-    case_title = case.title or case.client_name or "N/A"
+    case_title = case.title or "N/A"
     
     timeline_event = TimelineEvent(
         event_type="legal_case_created",
