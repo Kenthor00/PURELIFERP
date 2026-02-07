@@ -100,7 +100,7 @@ async def create_call(
         description=request.description,
         caller_name=request.caller_name,
         caller_phone=request.caller_phone,
-        dispatcher_id=current_user.id,
+        created_by=current_user.id,
         status=CallStatus.PENDING
     )
     
