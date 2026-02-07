@@ -417,6 +417,99 @@ async def bootstrap_admin(
     }
 
 
+# ==========================================
+# REGISTRAZIONE PUBBLICA CITTADINI
+# ==========================================
+
+@router.post("/register/citizen")
+async def register_citizen(
+    request: Request,
+    data: PublicRegisterRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Registrazione pubblica per cittadini.
+    Crea automaticamente un account CIVIL (Cittadino) con hierarchy_level=1.
+    
+    - Email deve essere unica
+    - Password deve rispettare i requisiti di sicurezza
+    - game_name è obbligatorio
+    """
+    # Verifica email non già esistente
+    result = await db.execute(
+        select(User).where(User.email == data.email.lower())
+    )
+    existing_user = result.scalar_one_or_none()
+    
+    if existing_user:
+        raise HTTPException(
+            status_code=409, 
+            detail="Questa email è già registrata. Prova ad accedere."
+        )
+    
+    # Verifica game_name non vuoto
+    if not data.game_name or len(data.game_name.strip()) < 3:
+        raise HTTPException(
+            status_code=400,
+            detail="Il nome in game deve essere di almeno 3 caratteri"
+        )
+    
+    # Valida password
+    is_valid, error_msg = security_service.validate_password(data.password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+    
+    # Crea utente CIVIL
+    citizen = User(
+        email=data.email.lower(),
+        password_hash=pwd_context.hash(data.password),
+        game_name=data.game_name.strip(),
+        sector=Sector.CIVIL,
+        grade="Cittadino",
+        hierarchy_level=1,
+        is_active=True,
+        is_sector_chief=False
+    )
+    db.add(citizen)
+    await db.commit()
+    await db.refresh(citizen)
+    
+    # Audit log
+    await audit_service.log(
+        db,
+        action=AuditAction.USER_CREATE,
+        user=citizen,
+        entity_type="user",
+        entity_id=citizen.id,
+        description=f"Registrazione pubblica cittadino: {data.game_name}",
+        metadata={
+            "email": citizen.email,
+            "game_name": citizen.game_name,
+            "registration_type": "public_citizen"
+        },
+        request=request
+    )
+    
+    logger.info(f"Nuovo cittadino registrato: {data.email} ({data.game_name})")
+    
+    # Genera token per login automatico
+    access_token = create_access_token(citizen.id, citizen.sector.value)
+    refresh_token = create_refresh_token(citizen.id)
+    
+    return {
+        "message": "Registrazione completata! Benvenuto a Pure Life.",
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user_id": citizen.id,
+        "name": citizen.game_name,
+        "email": citizen.email,
+        "sector": citizen.sector.value,
+        "grade": citizen.grade,
+        "game_name": citizen.game_name
+    }
+
+
 def _get_client_ip(request: Request) -> str:
     """Estrae l'IP del client"""
     forwarded = request.headers.get("x-forwarded-for")
