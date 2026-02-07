@@ -55,38 +55,119 @@ export const AuthProvider = ({ children }) => {
             });
             localStorage.setItem('plos_token', res.data.access_token);
             localStorage.setItem('plos_refresh_token', res.data.refresh_token);
+            setToken(res.data.access_token);
             error.config.headers.Authorization = `Bearer ${res.data.access_token}`;
             return api(error.config);
           } catch (refreshError) {
-            logout();
+            // Refresh failed - full logout
+            console.warn('Token refresh failed, forcing logout');
+            forceLogout();
           }
         } else {
-          logout();
+          // No refresh token or already retried - logout
+          console.warn('Unauthorized request, forcing logout');
+          forceLogout();
         }
       }
       return Promise.reject(error);
     }
   );
 
-  const fetchUser = useCallback(async () => {
-    if (!token) {
+  // Logout forzato senza chiamate API (per quando il token è invalido)
+  const forceLogout = useCallback(() => {
+    clearAuthStorage();
+    setToken(null);
+    setUser(null);
+    setPresence('offline');
+    // Redirect to login if not already there
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/city') {
+      window.location.href = '/login';
+    }
+  }, []);
+
+  // Validazione token all'avvio - UNICA FONTE DI VERITÀ
+  const validateAndFetchUser = useCallback(async () => {
+    if (validationRef.current) return; // Prevent double execution
+    validationRef.current = true;
+    
+    const storedToken = localStorage.getItem('plos_token');
+    
+    if (!storedToken) {
+      // Nessun token - utente guest
+      clearAuthStorage();
+      setUser(null);
+      setToken(null);
+      setPresence('offline');
       setLoading(false);
       return;
     }
+
     try {
-      const res = await api.get('/auth/me');
+      // VALIDAZIONE CON /api/auth/me - unica fonte di verità
+      const res = await axios.get(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${storedToken}` }
+      });
+      
+      // Token valido - imposta utente
       setUser(res.data);
+      setToken(storedToken);
+      
+      // Recupera presenza
+      try {
+        const presenceRes = await axios.get(`${API_URL}/api/chat/presence/me`, {
+          headers: { Authorization: `Bearer ${storedToken}` }
+        });
+        setPresence(presenceRes.data?.status || 'offline');
+      } catch {
+        setPresence('offline');
+      }
+      
     } catch (error) {
-      console.error('Errore fetch user:', error);
-      logout();
+      console.warn('Token validation failed:', error.response?.status);
+      
+      // Se 401, prova refresh token
+      if (error.response?.status === 401) {
+        const refreshToken = localStorage.getItem('plos_refresh_token');
+        if (refreshToken) {
+          try {
+            const refreshRes = await axios.post(`${API_URL}/api/auth/refresh`, {
+              refresh_token: refreshToken,
+            });
+            
+            // Refresh riuscito
+            localStorage.setItem('plos_token', refreshRes.data.access_token);
+            localStorage.setItem('plos_refresh_token', refreshRes.data.refresh_token);
+            
+            // Ri-valida con nuovo token
+            const userRes = await axios.get(`${API_URL}/api/auth/me`, {
+              headers: { Authorization: `Bearer ${refreshRes.data.access_token}` }
+            });
+            
+            setUser(userRes.data);
+            setToken(refreshRes.data.access_token);
+            setPresence('offline');
+            setLoading(false);
+            return;
+          } catch (refreshError) {
+            console.warn('Refresh token failed');
+          }
+        }
+      }
+      
+      // Token non valido - pulisci tutto
+      clearAuthStorage();
+      setUser(null);
+      setToken(null);
+      setPresence('offline');
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
+  // Esegui validazione all'avvio
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    validateAndFetchUser();
+  }, [validateAndFetchUser]);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
