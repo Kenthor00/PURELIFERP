@@ -71,7 +71,7 @@ async def get_case(
     evidence_result = await db.execute(select(Evidence).where(Evidence.case_id == case_id))
     timeline_result = await db.execute(
         select(TimelineEvent)
-        .where(TimelineEvent.reference_type == "case", TimelineEvent.reference_id == case_id)
+        .where(TimelineEvent.entity_type == "case", TimelineEvent.entity_id == case_id)
         .order_by(desc(TimelineEvent.created_at))
     )
     
@@ -112,8 +112,8 @@ async def create_case(
         category="lspd",
         title=f"Caso aperto: {case.title}",
         description=f"Nuovo caso creato da {current_user.game_name or current_user.email}",
-        reference_id=case.id,
-        reference_type="case",
+        entity_id=case.id,
+        entity_type="case",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -157,8 +157,8 @@ async def update_case(
             category="lspd",
             title=f"Stato caso aggiornato: {case.status.value}",
             description=f"Aggiornato da {current_user.game_name or current_user.email}",
-            reference_id=case.id,
-            reference_type="case",
+            entity_id=case.id,
+            entity_type="case",
             user_id=current_user.id,
             metadata_json={"old_status": old_status.value, "new_status": case.status.value}
         )
@@ -224,8 +224,8 @@ async def create_warrant(
         category="lspd",
         title=f"Mandato emesso: {warrant.warrant_type}",
         description=f"Soggetto: {warrant.subject_name}",
-        reference_id=warrant.id,
-        reference_type="warrant",
+        entity_id=warrant.id,
+        entity_type="warrant",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -235,8 +235,8 @@ async def create_warrant(
             event_type="warrant_linked",
             category="lspd",
             title=f"Mandato collegato: {warrant.warrant_number}",
-            reference_id=request.case_id,
-            reference_type="case",
+            entity_id=request.case_id,
+            entity_type="case",
             user_id=current_user.id
         )
         db.add(case_timeline)
@@ -339,8 +339,8 @@ async def create_fine(
         category="lspd",
         title=f"Multa emessa: €{fine.amount}",
         description=f"Soggetto: {fine.subject_name} - {fine.reason}",
-        reference_id=fine.id,
-        reference_type="fine",
+        entity_id=fine.id,
+        entity_type="fine",
         user_id=current_user.id
     )
     db.add(timeline_event)
@@ -402,8 +402,8 @@ async def add_evidence(
         category="lspd",
         title=f"Prova aggiunta: {evidence.title}",
         description=f"Tipo: {evidence.evidence_type}",
-        reference_id=request.case_id,
-        reference_type="case",
+        entity_id=request.case_id,
+        entity_type="case",
         user_id=current_user.id
     )
     db.add(timeline_event)
