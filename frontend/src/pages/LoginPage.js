@@ -83,10 +83,28 @@ export const LoginPage = () => {
       </div>
 
       <div className="w-full max-w-md relative">
+        {/* Pulsante Torna Indietro */}
+        <button
+          onClick={() => navigate('/city')}
+          className="absolute -top-12 left-0 flex items-center gap-1 text-plos-text-secondary hover:text-plos-primary transition-colors text-sm"
+          data-testid="login-back-btn"
+        >
+          <ChevronLeft size={18} />
+          <span className="font-heading tracking-wider">TORNA INDIETRO</span>
+        </button>
+
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 border-2 border-plos-primary bg-plos-surface mb-4 animate-pulse-glow">
-            <Shield className="w-10 h-10 text-plos-primary" />
+          <div className="inline-flex items-center justify-center w-20 h-20 border-2 border-plos-primary bg-plos-surface mb-4 animate-pulse-glow overflow-hidden">
+            <img 
+              src="/logo.png" 
+              alt="PURE LIFE OS" 
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<svg class="w-10 h-10 text-plos-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+              }}
+            />
           </div>
           <h1 className="font-heading text-3xl tracking-widest">
             PURE LIFE <span className="text-plos-primary">OS</span>
