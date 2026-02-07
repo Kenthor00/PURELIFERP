@@ -558,6 +558,7 @@ class Case(Base):
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     status = Column(Enum(CaseStatus), default=CaseStatus.OPEN, index=True)
+    priority = Column(String(20), default="MEDIUM")
     officer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     suspect_name = Column(String(100), nullable=True)
     suspect_identifier = Column(String(100), nullable=True)
