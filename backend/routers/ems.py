@@ -188,8 +188,7 @@ async def create_report(
         diagnosis=request.diagnosis,
         treatment=request.treatment,
         prescription=request.prescription,
-        notes=request.notes,
-        template_used=request.template_used
+        notes=request.notes
     )
     
     db.add(report)
