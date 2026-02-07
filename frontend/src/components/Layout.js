@@ -93,7 +93,7 @@ export const Layout = ({ children }) => {
 
   const handleLogout = () => {
     play('click');
-    logout();
+    await logout();
     navigate('/login');
   };
 
