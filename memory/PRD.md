@@ -191,6 +191,37 @@ Non ci sono altre fasi definite. I prossimi sviluppi dipenderanno dal feedback u
 
 ---
 
+## 👤 Registrazione Cittadini v4.3 (2026-02-07)
+
+### Nuova Funzionalità:
+**Registrazione pubblica per cittadini** - I cittadini possono creare il proprio account autonomamente.
+
+### Implementazione:
+1. **Endpoint `POST /api/auth/register/citizen`** - Crea utente CIVIL level 1
+2. **Pagina `/register`** - Form con Nome in Game, Email, Password
+3. **Auto-login** - Dopo registrazione, utente autenticato automaticamente
+4. **Pulsante REGISTRATI** su City Hub
+5. **Link "Registrati come Cittadino"** su pagina Login
+
+### Regole:
+- Solo settore CIVIL (Cittadino)
+- Nome in game obbligatorio (min 3 caratteri)
+- Password min 8 caratteri
+- Email unica (errore 409 se duplicata)
+- Audit log automatico
+
+### Fix DB:
+- Aggiunte colonne mancanti: `video_embed_type`, `price_ingame`
+
+### File creati/modificati:
+- `/app/backend/routers/auth.py` - Endpoint register_citizen
+- `/app/frontend/src/pages/RegisterPage.js` - Nuova pagina
+- `/app/frontend/src/pages/public/CityHubPage.js` - Pulsante REGISTRATI
+- `/app/frontend/src/pages/LoginPage.js` - Link registrazione
+- `/app/frontend/src/App.js` - Route /register
+
+---
+
 ## 🔒 Security Fix v4.2 (2026-02-07)
 
 ### Bug CRITICO Risolto:
