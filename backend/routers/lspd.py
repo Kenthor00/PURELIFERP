@@ -111,7 +111,7 @@ async def create_case(
         event_type="case_created",
         category="lspd",
         title=f"Caso aperto: {case.title}",
-        description=f"Nuovo caso creato da {current_user.name}",
+        description=f"Nuovo caso creato da {current_user.game_name or current_user.email}",
         reference_id=case.id,
         reference_type="case",
         user_id=current_user.id
@@ -156,7 +156,7 @@ async def update_case(
             event_type="case_status_changed",
             category="lspd",
             title=f"Stato caso aggiornato: {case.status.value}",
-            description=f"Aggiornato da {current_user.name}",
+            description=f"Aggiornato da {current_user.game_name or current_user.email}",
             reference_id=case.id,
             reference_type="case",
             user_id=current_user.id,
