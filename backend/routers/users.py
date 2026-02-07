@@ -10,6 +10,7 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 from passlib.context import CryptContext
 import logging
+import uuid
 
 from database import get_db
 from models import User, Sector, AuditAction, SECTOR_GRADES
