@@ -498,6 +498,7 @@ def _user_to_response(user: User) -> UserResponse:
         department=user.department,
         is_active=user.is_active,
         is_locked=user.is_locked or False,
+        is_deleted=user.is_deleted or False,
         presence=user.presence.value if user.presence else "offline",
         last_login=user.last_login.isoformat() if user.last_login else None,
         created_at=user.created_at.isoformat() if user.created_at else ""
