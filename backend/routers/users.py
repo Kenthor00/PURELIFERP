@@ -32,7 +32,7 @@ class CreateUserRequest(BaseModel):
     password: str
     game_name: str
     sector: str
-    grade: str
+    grade: Optional[str] = None  # Opzionale - derivato da hierarchy_level se non fornito
     hierarchy_level: int
     is_sector_chief: bool = False
     badge_number: Optional[str] = None
