@@ -204,6 +204,7 @@ class AuditAction(str, enum.Enum):
     USER_UPDATE = "user_update"
     USER_DEACTIVATE = "user_deactivate"
     USER_REACTIVATE = "user_reactivate"
+    USER_DELETE_HARD = "user_delete_hard"  # Eliminazione definitiva
     GRADE_CHANGE = "grade_change"
     
     # Chat
