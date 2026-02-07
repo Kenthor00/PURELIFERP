@@ -365,7 +365,9 @@ class MedicalReportResponse(MedicalReportBase):
     id: int
     report_number: str
     doctor_id: int
+    is_confidential: bool = False
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
 
 # ==========================================
