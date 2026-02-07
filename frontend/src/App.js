@@ -11,6 +11,7 @@ import Layout from './components/Layout';
 import HealthBanner from './components/HealthBanner';
 import TopBar from './components/TopBar';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import SetGameNamePage from './pages/SetGameNamePage';
 import FiveMAuthPage from './pages/FiveMAuthPage';
 
