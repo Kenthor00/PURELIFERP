@@ -485,7 +485,7 @@ def _user_to_response(user: User) -> UserResponse:
         email=user.email,
         game_name=user.game_name,
         sector=user.sector.value,
-        grade=user.grade,
+        grade=user.grade or "",  # Fix: gestisce None
         hierarchy_level=user.hierarchy_level,
         is_sector_chief=user.is_sector_chief or False,
         badge_number=user.badge_number,
