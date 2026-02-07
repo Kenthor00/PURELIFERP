@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('plos_token'));
   const [loading, setLoading] = useState(true);
+  const [presence, setPresence] = useState('offline'); // Stato presenza utente
 
   const api = axios.create({
     baseURL: `${API_URL}/api`,
