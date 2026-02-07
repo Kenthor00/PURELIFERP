@@ -387,7 +387,7 @@ async def add_evidence(
         case_id=request.case_id,
         evidence_type=request.evidence_type,
         title=request.title,
-        reason=request.reason,
+        description=request.description,
         file_url=request.file_url,
         metadata_json=request.metadata_json
     )
