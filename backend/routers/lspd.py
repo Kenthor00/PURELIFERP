@@ -160,7 +160,7 @@ async def update_case(
             entity_id=case.id,
             entity_type="case",
             user_id=current_user.id,
-            metadata_json={"old_status": old_status.value, "new_status": case.status.value}
+            extra_data={"old_status": old_status.value, "new_status": case.status.value}
         )
         db.add(timeline_event)
         await db.commit()
@@ -389,7 +389,7 @@ async def add_evidence(
         title=request.title,
         description=request.description,
         file_url=request.file_url,
-        metadata_json=request.metadata_json
+        extra_data=request.metadata_json
     )
     
     db.add(evidence)

@@ -147,7 +147,7 @@ async def update_legal_case(
             entity_id=case.id,
             entity_type="legal_case",
             user_id=current_user.id,
-            metadata_json={"old_status": old_status.value, "new_status": case.status.value}
+            extra_data={"old_status": old_status.value, "new_status": case.status.value}
         )
         db.add(timeline_event)
         await db.commit()

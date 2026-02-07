@@ -203,7 +203,7 @@ async def create_report(
         entity_id=patient.id,
         entity_type="patient",
         user_id=current_user.id,
-        metadata_json={"report_id": report.id}
+        extra_data={"report_id": report.id}
     )
     db.add(timeline_event)
     await db.commit()

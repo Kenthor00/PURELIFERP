@@ -116,7 +116,7 @@ async def create_call(
         entity_id=call.id,
         entity_type="call",
         user_id=current_user.id,
-        metadata_json={"priority": call.priority.value}
+        extra_data={"priority": call.priority.value}
     )
     db.add(timeline_event)
     await db.commit()
@@ -170,7 +170,7 @@ async def update_call(
             entity_id=call.id,
             entity_type="call",
             user_id=current_user.id,
-            metadata_json={"old_status": old_status.value, "new_status": call.status.value}
+            extra_data={"old_status": old_status.value, "new_status": call.status.value}
         )
         db.add(timeline_event)
         await db.commit()
