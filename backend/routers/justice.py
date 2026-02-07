@@ -214,7 +214,7 @@ async def get_hearings(
     status: Optional[HearingStatus] = None,
     upcoming_only: bool = True,
     limit: int = Query(50, le=100),
-    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
+    current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """Lista udienze"""
