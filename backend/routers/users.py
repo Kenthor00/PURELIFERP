@@ -697,3 +697,160 @@ async def get_all_users(
     
     return [_user_to_response(u) for u in users]
 
+
+
+# ==========================================
+# ELIMINAZIONE DEFINITIVA UTENTE (SOLO ADMIN LEVEL 10)
+# ==========================================
+
+@router.delete("/{user_id}/hard-delete")
+async def hard_delete_user(
+    user_id: int,
+    request: Request,
+    data: HardDeleteRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Eliminazione definitiva di un utente (soft-delete con anonimizzazione).
+    
+    REGOLE:
+    - Solo ADMIN con hierarchy_level >= 10
+    - Richiede conferma con stringa "DELETE"
+    - Non può eliminare l'ultimo admin rimasto
+    - Non può eliminare se stesso
+    - Anonimizza i dati ma mantiene le relazioni (audit_logs, chat_messages, etc.)
+    """
+    # Verifica permessi: solo ADMIN level 10
+    if current_user.sector != Sector.ADMIN or current_user.hierarchy_level < 10:
+        raise HTTPException(
+            status_code=403, 
+            detail="Solo gli Admin di livello 10 possono eliminare definitivamente gli utenti"
+        )
+    
+    # Verifica conferma
+    if data.confirmation != "DELETE":
+        raise HTTPException(
+            status_code=400, 
+            detail="Conferma non valida. Scrivi 'DELETE' per confermare l'eliminazione"
+        )
+    
+    # Trova utente da eliminare
+    result = await db.execute(select(User).where(User.id == user_id))
+    target_user = result.scalar_one_or_none()
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # Non può eliminare se stesso
+    if target_user.id == current_user.id:
+        raise HTTPException(
+            status_code=403, 
+            detail="Non puoi eliminare il tuo stesso account"
+        )
+    
+    # Verifica che non sia già eliminato
+    if target_user.is_deleted:
+        raise HTTPException(
+            status_code=400, 
+            detail="Questo utente è già stato eliminato"
+        )
+    
+    # Se è un admin, verifica che non sia l'ultimo
+    if target_user.sector == Sector.ADMIN:
+        admin_count = await db.execute(
+            select(func.count(User.id))
+            .where(User.sector == Sector.ADMIN)
+            .where(User.is_active == True)
+            .where(User.is_deleted == False)
+        )
+        count = admin_count.scalar()
+        
+        if count <= 1:
+            raise HTTPException(
+                status_code=403, 
+                detail="Impossibile eliminare l'ultimo admin del sistema"
+            )
+    
+    # Salva dati originali per audit
+    original_data = {
+        "email": target_user.email,
+        "game_name": target_user.game_name,
+        "sector": target_user.sector.value,
+        "hierarchy_level": target_user.hierarchy_level,
+        "grade": target_user.grade,
+        "badge_number": target_user.badge_number
+    }
+    
+    # Soft-delete con anonimizzazione
+    random_id = str(uuid.uuid4())[:8]
+    target_user.is_deleted = True
+    target_user.deleted_at = datetime.now(timezone.utc)
+    target_user.deleted_by = current_user.id
+    target_user.is_active = False
+    target_user.email = f"deleted_{random_id}@purelife.rp"
+    target_user.game_name = "DELETED"
+    target_user.password_hash = ""  # Invalida la password
+    target_user.badge_number = None
+    
+    await db.commit()
+    
+    # Audit log
+    await audit_service.log(
+        db,
+        action=AuditAction.USER_DELETE_HARD,
+        user=current_user,
+        entity_type="user",
+        entity_id=user_id,
+        description=f"Eliminazione definitiva utente (ex: {original_data['email']})",
+        metadata={
+            "original_email": original_data["email"],
+            "original_game_name": original_data["game_name"],
+            "original_sector": original_data["sector"],
+            "original_hierarchy_level": original_data["hierarchy_level"],
+            "original_grade": original_data["grade"],
+            "original_badge": original_data["badge_number"],
+            "deleted_by_user_id": current_user.id,
+            "deleted_by_email": current_user.email
+        },
+        request=request
+    )
+    
+    logger.warning(f"USER HARD DELETE: {original_data['email']} by {current_user.email}")
+    
+    return {
+        "message": "Utente eliminato definitivamente",
+        "user_id": user_id,
+        "original_email": original_data["email"]
+    }
+
+
+@router.get("/deleted/list")
+async def get_deleted_users(
+    limit: int = 50,
+    offset: int = 0,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Lista utenti eliminati (solo admin)"""
+    if current_user.sector != Sector.ADMIN:
+        raise HTTPException(status_code=403, detail="Solo admin può vedere gli utenti eliminati")
+    
+    result = await db.execute(
+        select(User)
+        .where(User.is_deleted == True)
+        .order_by(User.deleted_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    users = result.scalars().all()
+    
+    return [
+        {
+            "id": u.id,
+            "original_email": "anonymized",
+            "deleted_at": u.deleted_at.isoformat() if u.deleted_at else None,
+            "deleted_by": u.deleted_by
+        }
+        for u in users
+    ]
