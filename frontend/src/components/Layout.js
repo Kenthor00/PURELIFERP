@@ -150,15 +150,11 @@ export const Layout = ({ children }) => {
             <span>City</span>
           </button>
 
-          {/* Connection Status */}
+          {/* User Presence Status */}
           <div className="flex items-center gap-2 text-sm">
-            {connected ? (
-              <Wifi size={16} className="text-plos-primary" />
-            ) : (
-              <WifiOff size={16} className="text-plos-alert" />
-            )}
-            <span className={`mono text-xs ${connected ? 'text-plos-primary' : 'text-plos-alert'}`}>
-              {connected ? 'ONLINE' : 'OFFLINE'}
+            <Circle size={8} className={`fill-current ${(PRESENCE_CONFIG[presence] || PRESENCE_CONFIG.offline).color}`} />
+            <span className={`mono text-xs ${(PRESENCE_CONFIG[presence] || PRESENCE_CONFIG.offline).color}`}>
+              {(PRESENCE_CONFIG[presence] || PRESENCE_CONFIG.offline).label}
             </span>
           </div>
 
