@@ -669,6 +669,7 @@ async def get_user_activity_log(
 async def get_all_users(
     sector: Optional[str] = None,
     is_active: Optional[bool] = None,
+    include_deleted: bool = False,
     limit: int = 100,
     offset: int = 0,
     current_user: User = Depends(get_current_user),
@@ -679,6 +680,10 @@ async def get_all_users(
         raise HTTPException(status_code=403, detail="Solo gli admin possono visualizzare tutti gli utenti")
     
     query = select(User)
+    
+    # Escludi utenti eliminati di default
+    if not include_deleted:
+        query = query.where((User.is_deleted == False) | (User.is_deleted == None))
     
     if sector:
         try:
