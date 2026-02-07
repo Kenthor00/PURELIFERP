@@ -27,6 +27,21 @@ import {
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Colori per stati presenza
+const PRESENCE_COLORS = {
+  online: 'bg-green-500',
+  in_service: 'bg-blue-500',
+  busy: 'bg-yellow-500',
+  offline: 'bg-gray-500'
+};
+
+const PRESENCE_LABELS = {
+  online: 'Online',
+  in_service: 'In Servizio',
+  busy: 'Occupato',
+  offline: 'Offline'
+};
+
 /**
  * TopBar Globale - Sistema Operativo Governativo
  * Con notifiche real-time e navigazione rapida
