@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useSound } from '../context/SoundContext';
+import { useAuth } from '../../context/AuthContext';
+import { useSound } from '../../context/SoundContext';
 import { useNavigate } from 'react-router-dom';
 import {
   Scale,
