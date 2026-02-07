@@ -176,17 +176,30 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
+  const updatePresence = async (newStatus) => {
+    try {
+      const res = await api.put('/chat/presence', { status: newStatus });
+      setPresence(res.data.status);
+      return res.data;
+    } catch (error) {
+      console.error('Errore aggiornamento presenza:', error);
+      return null;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         token,
         loading,
+        presence,
         login,
         fivemLogin,
         logout,
         refreshUser,
         updateSettings,
+        updatePresence,
         api,
         isAuthenticated: !!token && !!user,
       }}
