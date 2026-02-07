@@ -13,66 +13,55 @@ import {
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Gradi predefiniti per ogni settore
+// Gradi predefiniti per ogni settore - ALLINEATI AL BACKEND
 const SECTOR_GRADES = {
   LSPD: {
-    1: "Cadetto",
-    2: "Agente",
-    3: "Agente Scelto",
-    4: "Assistente Capo",
-    5: "Vice Ispettore",
-    6: "Ispettore",
-    7: "Vice Commissario",
-    8: "Commissario",
-    9: "Vice Questore",
-    10: "Questore"
+    1: "Agente",
+    2: "Agente Senior",
+    3: "Sergente",
+    4: "Sottotenente",
+    5: "Tenente",
+    6: "Capitano",
+    7: "Vice Comandante",
+    8: "Comandante",
+    9: "Vice Capo della Polizia",
+    10: "Capo della Polizia"
   },
   EMS: {
     1: "Tirocinante",
     2: "Paramedico",
     3: "Paramedico Senior",
-    4: "Infermiere",
-    5: "Infermiere Capo",
-    6: "Medico",
-    7: "Medico Specialista",
-    8: "Primario",
-    9: "Vice Direttore",
-    10: "Direttore Sanitario"
+    4: "Primario",
+    5: "Dirigente Sanitario",
+    6: "Direttore Sanitario"
   },
   GOV: {
     1: "Impiegato",
     2: "Funzionario",
     3: "Funzionario Senior",
-    4: "Avvocato Junior",
-    5: "Avvocato",
-    6: "Procuratore",
-    7: "Giudice",
-    8: "Assessore",
-    9: "Vice Sindaco",
-    10: "Sindaco"
+    4: "Responsabile Ufficio",
+    5: "Direttore",
+    6: "Vice Sindaco",
+    7: "Sindaco"
   },
   NEWS: {
-    1: "Stagista",
-    2: "Reporter",
-    3: "Giornalista",
-    4: "Inviato",
-    5: "Caporedattore",
-    6: "Vice Direttore",
-    7: "Direttore"
+    1: "Giornalista",
+    2: "Giornalista Senior",
+    3: "Caporedattore",
+    4: "Direttore del Giornale"
   },
   DISPATCH: {
-    1: "Operatore Base",
-    2: "Operatore",
-    3: "Operatore Senior",
-    4: "Supervisore",
-    5: "Capo Sala",
-    6: "Vice Direttore",
-    7: "Direttore Operativo"
+    1: "Operatore",
+    2: "Operatore Senior",
+    3: "Supervisore",
+    4: "Coordinatore",
+    5: "Capo Centrale"
   },
   CIVIL: {
     1: "Cittadino"
   },
   ADMIN: {
+    9: "Admin Staff",
     10: "Super Admin"
   }
 };
