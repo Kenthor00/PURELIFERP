@@ -416,6 +416,11 @@ class User(Base):
     last_seen = Column(DateTime, nullable=True)
     last_login = Column(DateTime, nullable=True)
     
+    # Soft Delete (eliminazione definitiva)
+    is_deleted = Column(Boolean, default=False)
+    deleted_at = Column(DateTime, nullable=True)
+    deleted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
