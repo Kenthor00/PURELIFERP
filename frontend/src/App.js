@@ -358,6 +358,7 @@ const AppRoutes = () => {
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/auth/fivem" element={<FiveMAuthPage />} />
 
         {/* LSPD Routes */}
