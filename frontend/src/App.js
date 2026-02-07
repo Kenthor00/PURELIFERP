@@ -27,6 +27,7 @@ import FinesListPage from './pages/lspd/FinesListPage';
 import EMSDashboard from './pages/ems/EMSDashboard';
 import PatientsListPage from './pages/ems/PatientsListPage';
 import NewPatientPage from './pages/ems/NewPatientPage';
+import ReportsListPage from './pages/ems/ReportsListPage';
 
 // Core
 import DispatchPage from './pages/DispatchPage';
