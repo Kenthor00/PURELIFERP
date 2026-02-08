@@ -762,9 +762,6 @@ export const CityHubPage = () => {
         </footer>
       </main>
       </div>
-
-      {/* Premium Custom Scrollbar per FiveM CEF */}
-      <PremiumScrollbar containerRef={scrollContainerRef} />
     </div>
   );
 };
