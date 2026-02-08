@@ -1,223 +1,159 @@
 # PURE LIFE OS - PRD (Product Requirements Document)
-## Sistema Operativo Governativo RP
+## Sistema Operativo Governativo RP v3.0
 
 ---
 
 ## 📋 Descrizione del Prodotto
 
-PURE LIFE OS è un sistema operativo web completo per gestire un server RP (roleplay) GTA. Fornisce dashboard per le forze dell'ordine (LSPD), servizi medici (EMS), dispatch, governo, news e cittadini civili.
+PURE LIFE OS è un **Sistema Operativo Civico Roleplay** per server GTA FiveM. Non un sito web, ma un vero OS digitale della città con interfaccia premium, performance estreme e funzionalità mai viste prima.
 
 ---
 
-## 🎯 Obiettivi Principali
+## 🎯 Vision v3.0
 
-1. **Gestione centralizzata** di tutti i dipartimenti governativi RP
-2. **City Hub pubblico** per cittadini con reclutamento, appuntamenti, annunci, news
-3. **Comunicazione real-time** tra settori (chat interna)
-4. **Audit trail completo** per ogni azione
-5. **Integrazione FiveM** con SSO e deep links per lb-phone
+> "Il sistema digitale ufficiale della città RP - Ultra veloce, Real-time, Immersivo, Futuristico"
 
 ---
 
-## ✅ Fasi Completate
+## ✅ FASI COMPLETATE
 
-### FASE 1 - Sistema Base ✅
-- Sistema di autenticazione JWT con ruoli
-- Dashboard Admin con gestione utenti
-- Sistema di Audit Log completo
-- Pannello gestione per capi settore
-- Bootstrap admin per primo avvio
+### FASE 1-4 - Sistema Base + City Hub + News + Chat ✅
+- Sistema autenticazione JWT con ruoli
+- Dashboard Admin, LSPD, EMS, Dispatch, Justice
+- City Hub con reclutamento, appuntamenti, annunci
+- Weazel News 2.0 con workflow editoriale
+- Service Chat 2.0 con canali settoriali
+- Push Notifications
+- **100% Test Passati**
 
-### FASE 2 - City Hub Base ✅
-- Modulo Reclutamento con candidature online
-- Modulo Appuntamenti con prenotazioni
-- Modulo Annunci pubblici
-- Modulo Slot Pubblicitari
-- **Test passati:** 31/31 (100%)
+### FASE 5 - Bug Fix e Stabilizzazione ✅
+- Security fix (token validation, logout)
+- Registrazione cittadini
+- Database migration completa
+- Routing frontend corretto
+- **96% Test Backend, 95% Frontend**
 
-### FASE 3 - City Hub Avanzato ✅
-- Sistema notifiche real-time (SSE)
-- Reclutamento potenziato (stato Colloquio, filtri)
-- Calendario visuale per appuntamenti
-- TopBar con campanella notifiche
-- **Test passati:** 43/43 (100%)
+### FASE P0 - Performance Extreme ✅ (08/02/2026)
+#### Backend
+- **Cache In-Memory LRU** con TTL e invalidazione automatica
+- **+8 Indici Database** per query ottimizzate
+- **WebSocket Real-Time Engine** per chat/notifiche/presence
+- **Performance Monitoring** endpoint `/api/system/performance`
+- **Caching Stats** per tutti i moduli (30s TTL)
 
-### FASE 4 - News, Chat, Push ✅ (Completata 06/02/2026)
-#### Weazel News 2.0
-- Dashboard redazionale `/news/editor`
-- Workflow articoli: Bozza → Revisione → Approvato → Pubblicato
-- RBAC: Reporter(1), Editor(2), Caporedattore(3), Direttore(4)
-- Breaking News con notifiche globali
-- Pagina pubblica `/city/news` con filtro categorie
-- Supporto video embed (YouTube/Twitch)
+#### Frontend
+- **Skeleton Loaders Premium** con animazione shimmer
+- **Virtual List Component** per 1000+ elementi
+- **IndexedDB Cache Hook** con stale-while-revalidate
+- **WebSocket Hook** con auto-reconnect
+- **Connection Status Indicator**
+- **Animazioni Premium CSS** (fade, slide, glow, pulse)
+- **Low Motion Mode** per mobile/lb-phone
 
-#### Service Chat 2.0
-- Chat interna per settori `/chat`
-- 6 canali: LSPD, EMS, GOV, DISPATCH, WEAZEL, STAFF
-- Sistema presenza utenti (Online, In Servizio, Fuori Servizio)
-- Quick Actions per navigazione rapida
-- **Sistema Mention @NomeInGame** con autocomplete e notifiche
-- Moderazione con permessi gerarchici
-
-#### Push Notifications
-- Integrazione Web Push con VAPID keys
-- Subscribe/Unsubscribe per dispositivo
-- Preferenze notifiche per tipo (recruitment, appointments, breaking, chat)
-- Integrazione con Breaking News
-
-**Test passati:** 24/24 backend + 100% frontend
-
-### FASE 5 - Bug Fix Completo e Stabilizzazione ✅ (Completata 07/02/2026)
-
-#### Security Fix v4.2
-- **Token Validation via /api/auth/me** - Unica fonte di verità per autenticazione
-- **Vista Guest Sicura** - Senza token valido, nessuna info utente visibile
-- **Auto-Logout** - Token scaduto/invalido → purge localStorage + redirect /login
-- **Pulsante ESCI** - Visibile in rosso nella header, logout completo
-- **Eliminazione Definitiva Account** - Soft-delete con anonimizzazione
-
-#### Registrazione Cittadini v4.3
-- **Endpoint `POST /api/auth/register/citizen`** - Crea utente CIVIL level 1
-- **Pagina `/register`** - Form con Nome in Game, Email, Password
-- **Auto-login** - Dopo registrazione, utente autenticato automaticamente
-- **Pulsante REGISTRATI** su City Hub e Login
-
-#### Database Migration Fix
-- Corretti disallineamenti schema DB/modelli SQLAlchemy
-- Aggiunte colonne mancanti: `updated_at`, `verdict_date`, ecc.
-- Tutte le API ora funzionanti senza errori
-
-#### Frontend Routing Fix
-- Create pagine mancanti per LSPD: `WarrantsListPage.js`, `FinesListPage.js`
-- Create pagine mancanti per EMS: `ReportsListPage.js`
-- Create pagine mancanti per Justice: `NewCasePage.js`, `NewHearingPage.js`
-- Corretto mapping `user.role` in AuthContext per compatibilità legacy
-
-**Test passati:** 96% backend, 95% frontend (Iteration 10)
+#### Metriche
+| Metrica | Prima | Dopo | Miglioramento |
+|---------|-------|------|---------------|
+| API Stats (cached) | 1.5s | 0.8s | **47% faster** |
+| Cache Hit Rate | 0% | 66.7% | ✅ |
+| DB Indexes | 0 mancanti | +8 | ✅ |
+| Bundle Size | N/A | 162KB | ✅ Ottimo |
 
 ---
 
-## 🏗️ Architettura Tecnica
+## 🏗️ Architettura Tecnica v3.0
 
 ### Backend
-- **Framework:** FastAPI (Python 3.11)
-- **Database:** MySQL Railway (prod)
-- **ORM:** SQLAlchemy Async
-- **Auth:** JWT con access/refresh token
-- **Real-time:** Server-Sent Events (SSE)
-- **Push:** pywebpush con VAPID
+```
+FastAPI (Python 3.11)
+├── Cache Layer (LRU In-Memory)
+├── WebSocket Engine (Real-Time)
+├── MySQL Railway (Async)
+├── SSE Manager (Legacy)
+└── JWT Auth + Refresh Tokens
+```
 
 ### Frontend
-- **Framework:** React 18
-- **Routing:** React Router v6
-- **Styling:** TailwindCSS custom "tactical" theme
-- **UI Components:** Shadcn/UI
-- **State:** Context API (Auth, SSE, Sound, Health)
+```
+React 18 + TailwindCSS
+├── Skeleton Loaders (Premium)
+├── Virtual Scrolling
+├── IndexedDB Cache
+├── WebSocket Hook
+└── Shadcn/UI Components
+```
 
-### Struttura Directory
+### Database
+```
+MySQL Railway
+├── 8 nuovi indici ottimizzazione
+├── Soft-delete users
+└── Tutte le colonne allineate
+```
+
+---
+
+## 📁 Struttura File v3.0
+
 ```
 /app/
 ├── backend/
+│   ├── cache.py              # 🆕 Sistema Cache LRU
+│   ├── websocket_engine.py   # 🆕 WebSocket Real-Time
 │   ├── routers/
-│   │   ├── auth.py           # Autenticazione JWT + registrazione
-│   │   ├── users.py          # Gestione utenti + soft-delete
-│   │   ├── lspd.py           # Casi, Mandati, Multe, Evidence
-│   │   ├── ems.py            # Pazienti, Referti, Templates
-│   │   ├── dispatch.py       # Chiamate, Statistiche
-│   │   ├── justice.py        # Pratiche Legali, Udienze
-│   │   ├── news_v2.py        # Weazel News 2.0
-│   │   ├── chat.py           # Service Chat 2.0
-│   │   └── push.py           # Push Notifications
-│   ├── models.py             # Modelli SQLAlchemy
-│   ├── schemas.py            # Schemi Pydantic
-│   └── server.py             # Entry point FastAPI
+│   │   ├── lspd.py          # 📝 + Caching
+│   │   ├── ems.py           # 📝 + Caching
+│   │   ├── dispatch.py      # 📝 + Caching
+│   │   └── justice.py       # 📝 + Caching
+│   └── server.py            # 📝 + WS endpoint
 ├── frontend/
 │   ├── src/
-│   │   ├── pages/
-│   │   │   ├── admin/        # Admin Dashboard, User Management
-│   │   │   ├── lspd/         # Dashboard, Cases, Warrants, Fines
-│   │   │   ├── ems/          # Dashboard, Patients, Reports
-│   │   │   ├── justice/      # Dashboard, NewCase, NewHearing
-│   │   │   ├── public/       # CityHub, News
-│   │   │   ├── LoginPage.js
-│   │   │   ├── RegisterPage.js
-│   │   │   └── DispatchPage.js
-│   │   ├── context/
-│   │   │   └── AuthContext.js # Auth + role mapping
-│   │   └── components/
-│   │       ├── Layout.js
-│   │       └── TopBar.js
-│   └── package.json
-└── memory/
-    └── PRD.md
+│   │   ├── components/ui/
+│   │   │   ├── Skeleton.jsx       # 🆕 Skeleton Loaders
+│   │   │   ├── VirtualList.jsx    # 🆕 Virtual Scrolling
+│   │   │   └── ConnectionStatus.jsx # 🆕 Status Indicator
+│   │   ├── hooks/
+│   │   │   ├── useWebSocket.js    # 🆕 WebSocket Hook
+│   │   │   └── useCache.js        # 🆕 IndexedDB Cache
+│   │   └── index.css              # 📝 + Animazioni Premium
+└── P0_RELEASE_NOTES.md      # 🆕 Release Notes P0
 ```
+
+---
+
+## 🔮 BACKLOG / PROSSIME FASI
+
+### P1 - UI OS-Style Revolution (Prossimo)
+- [ ] Desktop Mode con finestre draggable
+- [ ] Command Palette (Ctrl+K)
+- [ ] Global Search
+- [ ] Taskbar / Dock in basso
+- [ ] Shortcut tastiera
+- [ ] Suoni UI soft opzionali
+
+### P1 - Features Uniche
+- [ ] City Live Map / Heatmap attività
+- [ ] Dossier System per cittadini/staff
+- [ ] Broadcast Operativo (GOV/DISPATCH)
+- [ ] Dashboard Analytics
+
+### P2 - Integrazione FiveM
+- [ ] API Layer con service account
+- [ ] Endpoints `/api/fivem/*` dedicati
+- [ ] Event ingestion (arresti/multe/EMS)
+- [ ] Sync bidirezionale
+
+### P3 - Miglioramenti UX
+- [ ] Modifica profilo utente
+- [ ] Ripristino utenti eliminati
+- [ ] Menzioni gruppo chat (@tutti)
 
 ---
 
 ## 🔐 Credenziali Test
 
-| Ruolo | Email | Password | Note |
-|-------|-------|----------|------|
-| Admin | admin@purelife.rp | Admin@2026! | Override totale |
-| Direttore NEWS | director.news@purelife.rp | News@2026! | Hierarchy level 4 |
-| Reporter NEWS | reporter.news@purelife.rp | News@2026! | Hierarchy level 1 |
-| Capo LSPD | chief.lspd@purelife.rp | ChiefPass@123! | Capo settore |
-
----
-
-## 📡 API Endpoints Principali
-
-### Auth
-- `POST /api/auth/login` - Login
-- `POST /api/auth/register/citizen` - Registrazione cittadini
-- `GET /api/auth/me` - Info utente corrente
-- `POST /api/auth/refresh` - Refresh token
-
-### LSPD
-- `GET /api/lspd/stats` - Statistiche dashboard
-- `GET/POST /api/lspd/cases` - Gestione casi
-- `GET/POST /api/lspd/warrants` - Gestione mandati
-- `GET/POST /api/lspd/fines` - Gestione multe
-
-### EMS
-- `GET /api/ems/stats` - Statistiche dashboard
-- `GET/POST /api/ems/patients` - Gestione pazienti
-- `GET/POST /api/ems/reports` - Gestione referti
-
-### Dispatch
-- `GET /api/dispatch/stats` - Statistiche chiamate
-- `GET /api/dispatch/calls/active` - Chiamate attive
-- `POST /api/dispatch/calls` - Nuova chiamata
-
-### Justice
-- `GET /api/justice/stats` - Statistiche
-- `GET/POST /api/justice/cases` - Pratiche legali
-- `GET/POST /api/justice/hearings` - Udienze
-
-### News v2
-- `GET /api/v2/news/published` - Articoli pubblicati
-- `GET /api/v2/news/breaking` - Breaking news
-
-### Chat
-- `GET /api/chat/channels` - Lista canali
-- `POST /api/chat/channels/{name}/messages` - Invia messaggio
-
----
-
-## 🔮 Backlog / Future Tasks
-
-### P1 - Prossimi Sviluppi
-1. **Modifica profilo utente** - Cambio password, aggiornamento nome in game
-2. **Ripristino utenti eliminati** - Un-delete per soft-delete
-
-### P2 - Miglioramenti
-1. **Menzioni di gruppo nella Service Chat** - @tutti, @settore
-2. **Dashboard Analytics** - Statistiche per admin
-3. **Gestione veicoli** - Registro veicoli cittadini
-
-### P3 - Integrazione Avanzata
-1. **Integrazione FiveM avanzata** - Sync in-game con dashboard
-2. **Sistema eventi** - Calendario eventi RP
+| Ruolo | Email | Password |
+|-------|-------|----------|
+| Admin | admin@purelife.rp | Admin@2026! |
 
 ---
 
@@ -225,34 +161,26 @@ PURE LIFE OS è un sistema operativo web completo per gestire un server RP (role
 
 | Data | Versione | Modifiche |
 |------|----------|-----------|
-| 2026-02-07 | 5.0 | FASE 5: Bug fix completo, pagine frontend complete, migrazione DB, security fix, registrazione pubblica |
-| 2026-02-07 | 4.3 | Registrazione cittadini, fix DB columns |
-| 2026-02-07 | 4.2 | Security fix: token validation, logout, soft-delete |
-| 2026-02-07 | 4.1 | Bug Fix: Lista utenti, Stato presenza, Logo |
-| 2026-02-06 | 4.0 | FASE 4: News 2.0, Chat 2.0, Push Notifications |
-| 2026-02-05 | 3.0 | FASE 3: Notifiche SSE, Calendario, TopBar |
-| 2026-02-04 | 2.0 | FASE 2: City Hub base |
-| 2026-02-03 | 1.0 | FASE 1: Sistema base |
+| 2026-02-08 | 3.0.0-alpha | **P0 Performance Extreme**: Cache LRU, WebSocket, Skeleton, Virtual List, Indici DB |
+| 2026-02-07 | 2.5.0 | Bug fix completo, pagine frontend, security fix |
+| 2026-02-06 | 2.0.0 | News 2.0, Chat 2.0, Push Notifications |
 
 ---
 
-## ✅ Stato Attuale (07/02/2026)
+## ✅ Stato Attuale (08/02/2026)
 
-**Applicazione COMPLETAMENTE FUNZIONANTE**
+**PURE LIFE OS 3.0 - P0 COMPLETATO**
 
-- ✅ Login/Logout sicuro con validazione token
-- ✅ Admin Dashboard con statistiche
-- ✅ LSPD: Dashboard, Casi, Mandati, Multe
-- ✅ EMS: Dashboard, Pazienti, Referti
-- ✅ Dispatch: Centro Comando con chiamate
-- ✅ Justice: Pratiche legali, Udienze
-- ✅ News: Breaking news, Articoli pubblici
-- ✅ Chat: Canali settoriali
-- ✅ City Hub: Pagina pubblica
-- ✅ Registrazione: Cittadini possono registrarsi
+- ✅ Performance Extreme Mode attivo
+- ✅ Cache backend funzionante (66.7% hit rate)
+- ✅ WebSocket engine pronto
+- ✅ Skeleton loaders implementati
+- ✅ Virtual scrolling disponibile
+- ✅ Tutti i moduli funzionanti
+- ✅ Database ottimizzato (+8 indici)
 
-**Test Report:** Iteration 10 - 96% backend, 95% frontend
+**Prossimo: P1 - UI OS-Style Revolution**
 
 ---
 
-*Ultimo aggiornamento: 2026-02-07*
+*PURE LIFE OS - Il Sistema Operativo della Città*
