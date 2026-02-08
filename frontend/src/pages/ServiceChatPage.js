@@ -109,12 +109,13 @@ export const ServiceChatPage = () => {
   // Fetch presence
   const fetchPresence = useCallback(async () => {
     try {
+      const headers = { Authorization: `Bearer ${token}` };
       const [presenceRes, myPresenceRes] = await Promise.all([
         axios.get(
           activeChannel ? `${API_URL}/api/chat/presence?channel_name=${activeChannel.name}` : `${API_URL}/api/chat/presence`,
-          { headers: authHeaders }
+          { headers }
         ),
-        axios.get(`${API_URL}/api/chat/presence/me`, { headers: authHeaders })
+        axios.get(`${API_URL}/api/chat/presence/me`, { headers })
       ]);
       setPresence(presenceRes.data);
       setMyPresence(myPresenceRes.data);
