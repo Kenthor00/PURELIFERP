@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSound } from '../../context/SoundContext';
 import { useSSE } from '../../context/SSEContext';
 import { useNavigate } from 'react-router-dom';
 import { StatsSkeleton, ListSkeleton } from '../../components/ui/Skeleton';
+import { toast } from 'sonner';
 import {
   Shield,
   FileText,
@@ -17,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export const LSPDDashboard = () => {
-  const { api } = useAuth();
+  const { api, user } = useAuth();
   const { play } = useSound();
   const { subscribe } = useSSE();
   const navigate = useNavigate();
@@ -31,26 +32,28 @@ export const LSPDDashboard = () => {
   const [recentCases, setRecentCases] = useState([]);
   const [recentEvents, setRecentEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const canDelete = user?.sector === 'ADMIN' || (user?.sector === 'LSPD' && user?.hierarchy_level >= 8);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [statsRes, casesRes, eventsRes] = await Promise.all([
+        api.get('/lspd/stats'),
+        api.get('/lspd/cases?limit=5'),
+        api.get('/timeline/recent?limit=10'),
+      ]);
+      
+      setStats(statsRes.data);
+      setRecentCases(casesRes.data);
+      setRecentEvents(eventsRes.data.filter(e => e.category === 'lspd'));
+    } catch (error) {
+      console.error('Errore fetch dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [api]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsRes, casesRes, eventsRes] = await Promise.all([
-          api.get('/lspd/stats'),
-          api.get('/lspd/cases?limit=5'),
-          api.get('/timeline/recent?limit=10'),
-        ]);
-        
-        setStats(statsRes.data);
-        setRecentCases(casesRes.data);
-        setRecentEvents(eventsRes.data.filter(e => e.category === 'lspd'));
-      } catch (error) {
-        console.error('Errore fetch dashboard:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
 
     const unsubscribe = subscribe('case_created', (event) => {
