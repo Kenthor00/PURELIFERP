@@ -265,12 +265,32 @@ export const LSPDDashboard = () => {
               </div>
               ATTIVITÀ RECENTE
             </h2>
-            <button
-              onClick={() => navigate('/timeline')}
-              className="text-plos-primary text-[10px] tracking-wider hover:underline flex items-center gap-1"
-            >
-              TIMELINE <ChevronRight size={12} />
-            </button>
+            <div className="flex items-center gap-2">
+              {recentEvents.length > 0 && canDelete && (
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Eliminare tutta l\'attività recente LSPD?')) return;
+                    try {
+                      await api.delete('/timeline/clear', { params: { entity_type: 'lspd' } });
+                      toast.success('Attività eliminata');
+                      fetchData();
+                    } catch (err) {
+                      toast.error('Errore eliminazione attività');
+                    }
+                  }}
+                  className="text-red-400 text-[10px] tracking-wider hover:underline flex items-center gap-1"
+                  data-testid="clear-activity-btn"
+                >
+                  ELIMINA TUTTO
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/timeline')}
+                className="text-plos-primary text-[10px] tracking-wider hover:underline flex items-center gap-1"
+              >
+                TIMELINE <ChevronRight size={12} />
+              </button>
+            </div>
           </div>
           
           <div className="divide-y divide-plos-border/30">
