@@ -17,6 +17,7 @@ import {
 const COMMAND_ACTIONS = [
   // Navigazione
   { id: 'home', label: 'Vai alla Home', keywords: ['home', 'dashboard', 'principale'], icon: Home, action: 'navigate', path: '/', category: 'Navigazione' },
+  { id: 'pulse', label: 'City Pulse - Centro Controllo', keywords: ['pulse', 'controllo', 'heatmap', 'mappa'], icon: BarChart3, action: 'navigate', path: '/pulse', category: 'Navigazione', roles: ['ADMIN', 'DISPATCH', 'GOVERNMENT'] },
   { id: 'lspd', label: 'LSPD Dashboard', keywords: ['lspd', 'polizia', 'police'], icon: Shield, action: 'navigate', path: '/lspd', category: 'Navigazione', roles: ['LSPD', 'ADMIN', 'DISPATCH'] },
   { id: 'ems', label: 'EMS Dashboard', keywords: ['ems', 'medico', 'ospedale'], icon: Heart, action: 'navigate', path: '/ems', category: 'Navigazione', roles: ['EMS', 'ADMIN', 'DISPATCH'] },
   { id: 'dispatch', label: 'Centro Dispatch', keywords: ['dispatch', 'chiamate', 'emergenze'], icon: Radio, action: 'navigate', path: '/dispatch', category: 'Navigazione', roles: ['DISPATCH', 'ADMIN', 'LSPD', 'EMS'] },
