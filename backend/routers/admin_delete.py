@@ -160,7 +160,7 @@ async def delete_resource(
     # Log audit PRIMA dell'eliminazione
     await log_audit(
         db=db,
-        action=AuditAction.DELETE,
+        action=AuditAction.RESOURCE_DELETE,
         user=current_user,
         entity_type=resource_type.value,
         entity_id=resource_id,
