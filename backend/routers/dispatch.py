@@ -312,3 +312,88 @@ async def get_dispatch_stats(
     await ModuleCache.set_stats("dispatch", stats, ttl=15)
     
     return stats
+
+
+@router.get("/zones/activity")
+async def get_zone_activity(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Restituisce l'attività per zona basata su chiamate dispatch e casi LSPD.
+    Le zone sono predefinite (mappa GTA).
+    """
+    from datetime import datetime, timedelta
+    from sqlalchemy import or_, and_
+    from models import Case
+    
+    # Zone predefinite della mappa
+    zones = {
+        'vinewood': {'name': 'Vinewood', 'level': 0, 'incidents': 0},
+        'downtown': {'name': 'Downtown', 'level': 0, 'incidents': 0},
+        'pillbox': {'name': 'Pillbox Hill', 'level': 0, 'incidents': 0},
+        'vespucci': {'name': 'Vespucci', 'level': 0, 'incidents': 0},
+        'la_mesa': {'name': 'La Mesa', 'level': 0, 'incidents': 0},
+        'sandy': {'name': 'Sandy Shores', 'level': 0, 'incidents': 0},
+        'paleto': {'name': 'Paleto Bay', 'level': 0, 'incidents': 0},
+        'grapeseed': {'name': 'Grapeseed', 'level': 0, 'incidents': 0},
+        'del_perro': {'name': 'Del Perro', 'level': 0, 'incidents': 0},
+        'rockford': {'name': 'Rockford Hills', 'level': 0, 'incidents': 0},
+    }
+    
+    # Ottieni chiamate attive delle ultime 24 ore
+    yesterday = datetime.utcnow() - timedelta(hours=24)
+    
+    # Chiamate Dispatch attive
+    calls_result = await db.execute(
+        select(DispatchCall).where(
+            or_(
+                DispatchCall.status.in_([CallStatus.PENDING, CallStatus.ASSIGNED, CallStatus.IN_PROGRESS]),
+                and_(
+                    DispatchCall.status == CallStatus.COMPLETED,
+                    DispatchCall.created_at >= yesterday
+                )
+            )
+        )
+    )
+    calls = calls_result.scalars().all()
+    
+    # Casi LSPD aperti
+    cases_result = await db.execute(
+        select(Case).where(Case.status.in_(['open', 'investigating']))
+    )
+    cases = cases_result.scalars().all()
+    
+    # Analizza location delle chiamate e casi per calcolare attività per zona
+    for call in calls:
+        if call.location:
+            location_lower = call.location.lower()
+            for zone_id, zone_data in zones.items():
+                if zone_id.replace('_', ' ') in location_lower or zone_data['name'].lower() in location_lower:
+                    zones[zone_id]['incidents'] += 1
+                    # P1 = +40, P2 = +20, P3 = +10
+                    if call.priority == CallPriority.P1:
+                        zones[zone_id]['level'] += 40
+                    elif call.priority == CallPriority.P2:
+                        zones[zone_id]['level'] += 20
+                    else:
+                        zones[zone_id]['level'] += 10
+    
+    for case in cases:
+        if case.location:
+            location_lower = case.location.lower()
+            for zone_id, zone_data in zones.items():
+                if zone_id.replace('_', ' ') in location_lower or zone_data['name'].lower() in location_lower:
+                    zones[zone_id]['incidents'] += 1
+                    zones[zone_id]['level'] += 15  # Caso aperto = +15
+    
+    # Normalizza i livelli a 0-100
+    for zone_id in zones:
+        zones[zone_id]['level'] = min(100, zones[zone_id]['level'])
+        zones[zone_id]['type'] = (
+            'critica' if zones[zone_id]['level'] > 70 else
+            'elevata' if zones[zone_id]['level'] > 40 else
+            'normale'
+        )
+    
+    return zones
