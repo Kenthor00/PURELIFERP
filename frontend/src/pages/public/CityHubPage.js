@@ -178,9 +178,15 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
 
   return (
     <div 
-      className={`fixed right-2 sm:right-3 top-1/2 -translate-y-1/2 z-50 ${className}`}
+      className={`absolute right-1 sm:right-2 top-1/2 z-50 ${className}`}
+      style={{ 
+        transform: 'translateY(-50%)',
+        pointerEvents: 'auto'
+      }}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      onTouchStart={() => setIsHovering(true)}
+      onTouchEnd={() => setTimeout(() => setIsHovering(false), 1000)}
       data-testid="premium-scrollbar"
     >
       {/* Scrollbar Container con glow effect */}
