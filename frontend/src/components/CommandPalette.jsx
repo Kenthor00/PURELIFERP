@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Search, Command, FileText, Users, Shield, Heart, Radio, Gavel,
   Newspaper, MessageSquare, Bell, Settings, Home, LogOut,
