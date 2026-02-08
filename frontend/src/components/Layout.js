@@ -37,6 +37,13 @@ const PRESENCE_CONFIG = {
 const getNavItems = (role) => {
   const items = [];
   
+  // City Pulse - Centro di Controllo (per admin, dispatch, government)
+  if (['admin', 'dispatch', 'government'].includes(role)) {
+    items.push(
+      { path: '/pulse', icon: Circle, label: 'City Pulse', color: 'text-plos-primary', special: true },
+    );
+  }
+  
   // Role-specific items
   if (['police', 'dispatch', 'admin'].includes(role)) {
     items.push(
