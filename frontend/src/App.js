@@ -7,9 +7,8 @@ import { HealthProvider } from './context/HealthContext';
 import { Toaster } from 'sonner';
 import axios from 'axios';
 
-import Layout from './components/Layout';
+import OSLayout from './components/OSLayout';
 import HealthBanner from './components/HealthBanner';
-import TopBar from './components/TopBar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SetGameNamePage from './pages/SetGameNamePage';
@@ -66,6 +65,7 @@ import NewsEditorPage from './pages/news/NewsEditorPage';
 import ServiceChatPage from './pages/ServiceChatPage';
 
 import './App.css';
+import './styles/os-system.css';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -296,7 +296,7 @@ const ProtectedRoute = ({ children, allowedSectors }) => {
     }
   }
 
-  return <Layout>{children}</Layout>;
+  return <OSLayout>{children}</OSLayout>;
 };
 
 const AppRoutes = () => {
@@ -604,10 +604,7 @@ function App() {
               <SSEProvider>
                 <SSOHandler />
                 <HealthBanner />
-                <TopBar />
-                <div className="pt-12"> {/* Padding for TopBar */}
-                  <AppRoutes />
-                </div>
+                <AppRoutes />
                 <Toaster
                   position="top-right"
                   toastOptions={{
