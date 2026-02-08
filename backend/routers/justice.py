@@ -19,6 +19,7 @@ from schemas import (
 )
 from auth import get_current_user, require_roles, UserRole
 from sse_manager import sse_manager
+from cache import ModuleCache
 
 router = APIRouter(prefix="/justice", tags=["Governo & Giustizia"])
 
