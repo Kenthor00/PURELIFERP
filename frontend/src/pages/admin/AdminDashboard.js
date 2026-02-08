@@ -1,222 +1,243 @@
 /**
- * PURE LIFE OS - Admin Dashboard
- * Dashboard principale per gli amministratori
+ * PURE LIFE OS 3.0 - Admin Dashboard
+ * WOW PASS Applied
  */
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
-import { toast } from 'sonner';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { OsStatCard, OsPanel, OsSectionHeader, OsListRow, OsBadge, OsEmptyState, OsSkeleton, OsQuickAction, OsPageHeader } from '../../components/os/OsComponents';
+import {
+  Shield,
+  Users,
+  FileText,
+  Activity,
+  Clock,
+  Settings,
+  Database,
+  BarChart3,
+  ChevronRight,
+  UserCheck,
+  LogIn,
+  AlertTriangle,
+} from 'lucide-react';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, api } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [recentAudit, setRecentAudit] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
+    fetchData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
-      const token = localStorage.getItem('plos_token');
-      // For now, we'll show placeholder stats until the endpoint is ready
-      setStats({
-        totalUsers: 0,
-        activeUsers: 0,
-        todayLogins: 0,
-        pendingActions: 0
-      });
+      // Fetch admin stats
+      const [statsRes, auditRes] = await Promise.all([
+        api.get('/admin/stats').catch(() => ({ data: { totalUsers: 0, activeUsers: 0, todayLogins: 0, pendingActions: 0 } })),
+        api.get('/admin/audit?limit=10').catch(() => ({ data: [] })),
+      ]);
+      
+      setStats(statsRes.data);
+      setRecentAudit(Array.isArray(auditRes.data) ? auditRes.data : []);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setStats({ totalUsers: 0, activeUsers: 0, todayLogins: 0, pendingActions: 0 });
     } finally {
       setLoading(false);
     }
   };
 
-  const menuItems = [
-    {
-      title: 'Gestione Utenti',
-      description: 'Crea, modifica e gestisci gli utenti del sistema',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-        </svg>
-      ),
-      link: '/admin/users',
-      color: 'from-blue-500 to-blue-600'
-    },
-    {
-      title: 'Audit Log',
-      description: 'Visualizza e monitora tutte le azioni nel sistema',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      link: '/admin/audit',
-      color: 'from-purple-500 to-purple-600'
-    }
+  const sectorStats = [
+    { name: 'LSPD', count: stats?.lspd_users || 0, color: 'blue' },
+    { name: 'EMS', count: stats?.ems_users || 0, color: 'red' },
+    { name: 'GOV', count: stats?.gov_users || 0, color: 'purple' },
+    { name: 'NEWS', count: stats?.news_users || 0, color: 'green' },
+    { name: 'DISPATCH', count: stats?.dispatch_users || 0, color: 'orange' },
   ];
 
-  const sectorStats = [
-    { name: 'LSPD', count: 0, color: 'bg-blue-500' },
-    { name: 'EMS', count: 0, color: 'bg-red-500' },
-    { name: 'GOV', count: 0, color: 'bg-yellow-500' },
-    { name: 'NEWS', count: 0, color: 'bg-green-500' },
-    { name: 'DISPATCH', count: 0, color: 'bg-orange-500' }
-  ];
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <OsPageHeader icon={Shield} title="ADMIN DASHBOARD" subtitle="Pannello di Controllo Sistema" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="bg-plos-surface rounded-lg p-5 animate-pulse">
+              <div className="h-4 bg-plos-bg rounded w-1/2 mb-3"></div>
+              <div className="h-8 bg-plos-bg rounded w-1/3"></div>
+            </div>
+          ))}
+        </div>
+        <div className="grid lg:grid-cols-2 gap-6">
+          <OsPanel><OsSkeleton rows={5} /></OsPanel>
+          <OsPanel><OsSkeleton rows={5} /></OsPanel>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 p-6" data-testid="admin-dashboard">
+    <div className="p-6 space-y-6" data-testid="admin-dashboard">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-white tracking-wider">
-            ADMIN DASHBOARD
-          </h1>
-          <p className="text-plos-text-secondary mt-1">
-            Benvenuto, {user?.game_name || user?.email}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-plos-accent/20 rounded-lg">
-          <div className="w-2 h-2 bg-plos-accent rounded-full animate-pulse"></div>
-          <span className="text-plos-accent text-sm font-medium">SUPER ADMIN</span>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <OsPageHeader 
+          icon={Shield} 
+          title={<>ADMIN <span className="text-plos-primary">DASHBOARD</span></>}
+          subtitle={`Benvenuto, ${user?.game_name || user?.email}`}
+        />
+        <div className="flex items-center gap-2 px-4 py-2 bg-plos-primary/10 border border-plos-primary/30 rounded-lg">
+          <div className="w-2 h-2 bg-plos-primary rounded-full animate-pulse"></div>
+          <span className="text-plos-primary text-sm font-heading tracking-wider">SUPER ADMIN</span>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="glass-card rounded-xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-plos-text-secondary text-sm">Utenti Totali</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats?.totalUsers || 0}</p>
-            </div>
-            <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-plos-text-secondary text-sm">Utenti Attivi</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats?.activeUsers || 0}</p>
-            </div>
-            <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-plos-text-secondary text-sm">Login Oggi</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats?.todayLogins || 0}</p>
-            </div>
-            <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-plos-text-secondary text-sm">Azioni Pendenti</p>
-              <p className="text-3xl font-bold text-white mt-1">{stats?.pendingActions || 0}</p>
-            </div>
-            <div className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <OsStatCard
+          icon={Users}
+          label="UTENTI TOTALI"
+          value={stats?.totalUsers || stats?.total_users || 0}
+          color="blue"
+          onClick={() => navigate('/admin/users')}
+        />
+        <OsStatCard
+          icon={UserCheck}
+          label="UTENTI ATTIVI"
+          value={stats?.activeUsers || stats?.active_users || 0}
+          color="green"
+        />
+        <OsStatCard
+          icon={LogIn}
+          label="LOGIN OGGI"
+          value={stats?.todayLogins || stats?.today_logins || 0}
+          color="purple"
+        />
+        <OsStatCard
+          icon={AlertTriangle}
+          label="AZIONI PENDENTI"
+          value={stats?.pendingActions || stats?.pending_actions || 0}
+          color="orange"
+        />
       </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-xl font-heading font-semibold text-white mb-4">
-          Azioni Rapide
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {menuItems.map((item, index) => (
-            <Link
-              key={index}
-              to={item.link}
-              className="glass-card rounded-xl p-6 hover:border-plos-primary/50 transition-all duration-300 group"
-              data-testid={`admin-menu-${item.title.toLowerCase().replace(/\s/g, '-')}`}
-            >
-              <div className="flex items-start gap-4">
-                <div className={`w-14 h-14 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-white group-hover:scale-110 transition-transform`}>
-                  {item.icon}
+      {/* Content Grid */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Quick Actions */}
+        <OsPanel>
+          <OsSectionHeader 
+            icon={Settings} 
+            title="AZIONI RAPIDE" 
+            color="plos-primary"
+          />
+          
+          <div className="p-4 grid grid-cols-2 gap-3">
+            <OsQuickAction
+              icon={Users}
+              title="Gestione Utenti"
+              subtitle="Crea e modifica utenti"
+              color="blue"
+              onClick={() => navigate('/admin/users')}
+            />
+            <OsQuickAction
+              icon={FileText}
+              title="Audit Log"
+              subtitle="Monitora attività"
+              color="purple"
+              onClick={() => navigate('/admin/audit')}
+            />
+            <OsQuickAction
+              icon={Database}
+              title="Cache"
+              subtitle="Statistiche cache"
+              color="green"
+              onClick={() => navigate('/admin/cache')}
+            />
+            <OsQuickAction
+              icon={BarChart3}
+              title="Performance"
+              subtitle="Metriche sistema"
+              color="orange"
+              onClick={() => navigate('/admin/performance')}
+            />
+          </div>
+        </OsPanel>
+
+        {/* Sector Stats */}
+        <OsPanel>
+          <OsSectionHeader 
+            icon={BarChart3} 
+            title="UTENTI PER SETTORE" 
+            color="blue"
+          />
+          
+          <div className="p-4 space-y-3">
+            {sectorStats.map((sector) => (
+              <div key={sector.name} className="flex items-center gap-3">
+                <OsBadge variant={sector.color === 'blue' ? 'info' : sector.color === 'red' ? 'danger' : sector.color === 'purple' ? 'purple' : sector.color === 'green' ? 'success' : 'warning'}>
+                  {sector.name}
+                </OsBadge>
+                <div className="flex-1 h-2 bg-plos-bg rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-500 ${
+                      sector.color === 'blue' ? 'bg-blue-500' :
+                      sector.color === 'red' ? 'bg-red-500' :
+                      sector.color === 'purple' ? 'bg-purple-500' :
+                      sector.color === 'green' ? 'bg-green-500' :
+                      'bg-orange-500'
+                    }`}
+                    style={{ width: `${Math.min(sector.count * 10, 100)}%` }}
+                  />
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white group-hover:text-plos-primary transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-plos-text-secondary text-sm mt-1">
-                    {item.description}
+                <span className="text-sm font-mono text-plos-text-secondary w-8 text-right">{sector.count}</span>
+              </div>
+            ))}
+          </div>
+        </OsPanel>
+      </div>
+
+      {/* Recent Audit Log */}
+      <OsPanel>
+        <OsSectionHeader 
+          icon={Clock} 
+          title="ATTIVITÀ RECENTE" 
+          color="purple"
+          action={() => navigate('/admin/audit')}
+          actionLabel="AUDIT COMPLETO"
+        />
+        
+        <div className="divide-y divide-plos-border/20">
+          {recentAudit.length === 0 ? (
+            <OsEmptyState 
+              icon={Activity}
+              title="Nessuna attività registrata"
+              description="Le azioni degli utenti appariranno qui"
+            />
+          ) : (
+            recentAudit.slice(0, 8).map((log, i) => (
+              <OsListRow key={log.id || i} index={i}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <OsBadge variant={log.action?.includes('create') ? 'success' : log.action?.includes('delete') ? 'danger' : 'info'}>
+                        {log.action?.toUpperCase() || 'ACTION'}
+                      </OsBadge>
+                      <span className="text-sm font-medium truncate">{log.description || log.action}</span>
+                    </div>
+                    <p className="text-xs text-plos-text-muted mt-1">
+                      {log.user_email || 'Sistema'} • {log.entity_type || 'N/A'}
+                    </p>
+                  </div>
+                  <p className="mono text-[10px] text-plos-text-muted whitespace-nowrap">
+                    {log.created_at ? new Date(log.created_at).toLocaleTimeString('it-IT') : '--:--'}
                   </p>
                 </div>
-                <svg className="w-5 h-5 text-plos-text-secondary group-hover:text-plos-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-          ))}
+              </OsListRow>
+            ))
+          )}
         </div>
-      </div>
-
-      {/* Sector Distribution */}
-      <div className="glass-card rounded-xl p-6">
-        <h2 className="text-xl font-heading font-semibold text-white mb-4">
-          Distribuzione per Settore
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {sectorStats.map((sector, index) => (
-            <div key={index} className="text-center">
-              <div className={`w-12 h-12 mx-auto rounded-lg ${sector.color} flex items-center justify-center text-white font-bold mb-2`}>
-                {sector.count}
-              </div>
-              <p className="text-plos-text-secondary text-sm">{sector.name}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* System Info */}
-      <div className="glass-card rounded-xl p-6">
-        <h2 className="text-xl font-heading font-semibold text-white mb-4">
-          Informazioni Sistema
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="flex justify-between p-3 bg-plos-surface/50 rounded-lg">
-            <span className="text-plos-text-secondary">Versione</span>
-            <span className="text-white">1.0.0</span>
-          </div>
-          <div className="flex justify-between p-3 bg-plos-surface/50 rounded-lg">
-            <span className="text-plos-text-secondary">Database</span>
-            <span className="text-green-400">Connesso</span>
-          </div>
-          <div className="flex justify-between p-3 bg-plos-surface/50 rounded-lg">
-            <span className="text-plos-text-secondary">Ambiente</span>
-            <span className="text-plos-accent">Preview</span>
-          </div>
-        </div>
-      </div>
+      </OsPanel>
     </div>
   );
 };
