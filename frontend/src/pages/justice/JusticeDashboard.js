@@ -258,7 +258,21 @@ export const JusticePage = () => {
                         Cliente: {c.client_name}
                       </p>
                     </div>
-                    <ChevronRight className="text-plos-text-muted" size={20} />
+                    <div className="flex items-center gap-2">
+                      {canDelete && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteModal({ open: true, item: c, type: 'legal_case' });
+                          }}
+                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                          title="Elimina pratica"
+                        >
+                          <Trash2 size={16} className="text-red-400" />
+                        </button>
+                      )}
+                      <ChevronRight className="text-plos-text-muted" size={20} />
+                    </div>
                   </div>
                 </div>
               ))
@@ -266,6 +280,27 @@ export const JusticePage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, item: null, type: null })}
+        resourceType={deleteModal.type}
+        resourceName={deleteModal.item?.case_number || deleteModal.item?.hearing_number || ''}
+        resourceId={deleteModal.item?.id}
+        allowPermanent={true}
+        loading={deleteLoading}
+        onConfirm={async (options) => {
+          const result = await deleteResource(deleteModal.type, deleteModal.item.id, options);
+          if (result.success) {
+            toast.success(`${deleteModal.type === 'legal_case' ? 'Pratica' : 'Udienza'} eliminata con successo`);
+            setDeleteModal({ open: false, item: null, type: null });
+            fetchData();
+          } else {
+            toast.error(result.error);
+          }
+        }}
+      />
     </div>
   );
 };
