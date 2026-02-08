@@ -271,6 +271,7 @@ React 18 + TailwindCSS
 
 | Data | Versione | Modifiche |
 |------|----------|-----------|
+| 2026-02-08 | 3.0.6 | **SCROLLBAR CUSTOM PREMIUM**: Implementata scrollbar personalizzata per il Portale Pubblico (CityHubPage) compatibile con FiveM CEF browser. Design futuristico con glow al neon, drag del thumb, indicatore percentuale, click sul track. Testata su desktop, tablet (800x600) e lb-phone (340x600) |
 | 2026-02-08 | 3.0.5 | **FIX SSE OFFLINE**: Corretto indicatore SSE che mostrava "OFFLINE". Migliorata gestione errori QUIC e riconnessione automatica |
 | 2026-02-08 | 3.0.4 | **UI WOW PASS COMPLETO**: ServiceChatPage e UserManagement ridisegnate. Tutte le pagine principali ora usano OsComponents. 100% test passed |
 | 2026-02-08 | 3.0.3 | **UI WOW PASS GLOBALE**: Justice, City Pulse, Fines, Warrants ridisegnate con OsComponents. Portale pubblico trasformato in istituzionale premium. 100% test passed |
