@@ -29,7 +29,7 @@ export const CasesListPage = () => {
   const [deleteModal, setDeleteModal] = useState({ open: false, item: null });
   
   // Check if user can delete
-  const canDelete = user?.sector === 'ADMIN' || user?.level >= 8;
+  const canDelete = user?.sector === 'ADMIN' || user?.hierarchy_level >= 8;
 
   useEffect(() => {
     fetchCases();
