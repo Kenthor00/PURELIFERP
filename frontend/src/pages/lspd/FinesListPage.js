@@ -1,19 +1,29 @@
 /**
  * LSPD - Fines List Page
- * Gestione multe
+ * WOW PASS - Premium UI Design
  */
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { DeleteModal, useDelete } from '../../components/DeleteModal';
 import { ListSkeleton } from '../../components/ui/Skeleton';
+import {
+  OsPanel,
+  OsSectionHeader,
+  OsListRow,
+  OsBadge,
+  OsEmptyState,
+  OsPageHeader,
+} from '../../components/os/OsComponents';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Receipt, Plus, Search, DollarSign, CheckCircle, Clock, Trash2 } from 'lucide-react';
+import { Receipt, Plus, Search, DollarSign, CheckCircle, Clock, Trash2, ChevronRight } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const FinesListPage = () => {
   const { token, user } = useAuth();
+  const navigate = useNavigate();
   const { deleteResource, loading: deleteLoading } = useDelete();
   
   const [fines, setFines] = useState([]);
@@ -81,20 +91,26 @@ const FinesListPage = () => {
   const totalUnpaid = fines.filter(f => !f.is_paid).reduce((sum, f) => sum + f.amount, 0);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-heading font-bold flex items-center gap-2">
-            <Receipt className="text-plos-primary" />
-            GESTIONE MULTE
-          </h1>
-          <p className="text-plos-text-secondary text-sm">
-            {fines.length} multe totali | €{totalUnpaid.toLocaleString()} da riscuotere
-          </p>
+    <div className="space-y-6" data-testid="fines-list-page">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <Receipt className="text-red-400" size={24} />
+          </div>
+          <div>
+            <h1 className="text-xl lg:text-2xl font-heading font-bold tracking-wide">
+              GESTIONE <span className="text-red-400">MULTE</span>
+            </h1>
+            <p className="text-plos-text-muted text-sm mt-0.5">
+              {fines.length} multe totali | <span className="text-red-400">€{totalUnpaid.toLocaleString()}</span> da riscuotere
+            </p>
+          </div>
         </div>
         <button
-          onClick={() => setShowNewModal(true)}
-          className="btn-tactical flex items-center gap-2"
+          onClick={() => navigate('/lspd/fines/new')}
+          className="flex items-center gap-2 px-4 py-2.5 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg text-plos-primary font-heading text-sm transition-all"
+          data-testid="new-fine-btn"
         >
           <Plus size={18} />
           NUOVA MULTA
@@ -102,7 +118,7 @@ const FinesListPage = () => {
       </div>
 
       {/* Search & Filter */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-plos-text-muted" size={18} />
           <input
@@ -110,13 +126,14 @@ const FinesListPage = () => {
             placeholder="Cerca per numero, cittadino..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-plos-surface border border-plos-border rounded-lg"
+            className="w-full pl-10 pr-4 py-2.5 bg-plos-surface border border-plos-border rounded-lg text-white placeholder-plos-text-muted focus:border-plos-primary focus:outline-none transition-all"
+            data-testid="fines-search"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 bg-plos-surface border border-plos-border rounded-lg"
+          className="px-4 py-2.5 bg-plos-surface border border-plos-border rounded-lg text-white focus:border-plos-primary focus:outline-none transition-all"
         >
           <option value="all">Tutti gli stati</option>
           <option value="unpaid">Non pagate</option>
@@ -125,108 +142,69 @@ const FinesListPage = () => {
       </div>
 
       {/* Fines List */}
-      {loading ? (
-        <ListSkeleton rows={5} />
-      ) : filteredFines.length === 0 ? (
-        <div className="text-center py-8 text-plos-text-muted">Nessuna multa trovata</div>
-      ) : (
-        <div className="space-y-3">
-          {filteredFines.map((fine) => (
-            <div key={fine.id} className="glass-card p-4 rounded-lg flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`p-2 rounded-lg ${fine.is_paid ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-                  {fine.is_paid ? <CheckCircle className="text-green-500" /> : <Clock className="text-red-500" />}
+      <OsPanel>
+        <OsSectionHeader
+          icon={Receipt}
+          title={`MULTE (${filteredFines.length})`}
+          color="red"
+        />
+        
+        {loading ? (
+          <div className="p-4"><ListSkeleton rows={5} /></div>
+        ) : filteredFines.length === 0 ? (
+          <OsEmptyState
+            icon={Receipt}
+            title="Nessuna multa trovata"
+            description="Le multe emesse appariranno qui"
+            action={() => navigate('/lspd/fines/new')}
+            actionLabel="Emetti multa"
+          />
+        ) : (
+          <div className="divide-y divide-plos-border/20">
+            {filteredFines.map((fine, index) => (
+              <OsListRow key={fine.id} index={index}>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className={`p-2.5 rounded-lg ${fine.is_paid ? 'bg-green-500/20 border border-green-500/30' : 'bg-red-500/20 border border-red-500/30'}`}>
+                      {fine.is_paid ? <CheckCircle className="text-green-400" size={20} /> : <Clock className="text-red-400" size={20} />}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-[10px] text-red-400 tracking-wider">{fine.fine_number}</span>
+                        <OsBadge variant={fine.is_paid ? 'success' : 'danger'}>
+                          {fine.is_paid ? 'PAGATA' : 'NON PAGATA'}
+                        </OsBadge>
+                      </div>
+                      <p className="text-sm font-medium truncate">{fine.citizen_name}</p>
+                      <p className="text-xs text-plos-text-muted truncate">{fine.reason}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-xl font-heading font-bold text-plos-primary">€{fine.amount?.toLocaleString()}</p>
+                      <p className="text-[10px] text-plos-text-muted">
+                        {new Date(fine.created_at).toLocaleDateString('it-IT')}
+                      </p>
+                    </div>
+                    {canDelete && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteModal({ open: true, item: fine });
+                        }}
+                        className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                        title="Elimina multa"
+                      >
+                        <Trash2 size={16} className="text-red-400" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-plos-primary">{fine.fine_number}</p>
-                  <p className="text-lg">{fine.citizen_name}</p>
-                  <p className="text-sm text-plos-text-secondary">{fine.reason}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xl font-bold text-plos-primary">€{fine.amount?.toLocaleString()}</p>
-                <span className={`px-2 py-1 rounded text-xs ${fine.is_paid ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                  {fine.is_paid ? 'PAGATA' : 'NON PAGATA'}
-                </span>
-                <p className="text-xs text-plos-text-muted mt-1">
-                  {new Date(fine.created_at).toLocaleDateString('it-IT')}
-                </p>
-                {canDelete && (
-                  <button
-                    onClick={() => setDeleteModal({ open: true, item: fine })}
-                    className="mt-2 p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-all"
-                    title="Elimina multa"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* New Fine Modal */}
-      {showNewModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="glass-card rounded-xl p-6 w-full max-w-lg">
-            <h2 className="text-xl font-heading font-bold mb-4 flex items-center gap-2">
-              <Receipt className="text-plos-primary" />
-              NUOVA MULTA
-            </h2>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-sm text-plos-text-secondary mb-1">NOME CITTADINO *</label>
-                <input
-                  type="text"
-                  value={newFine.citizen_name}
-                  onChange={(e) => setNewFine({...newFine, citizen_name: e.target.value})}
-                  className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-plos-text-secondary mb-1">ID CITTADINO</label>
-                <input
-                  type="text"
-                  value={newFine.citizen_identifier}
-                  onChange={(e) => setNewFine({...newFine, citizen_identifier: e.target.value})}
-                  className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-plos-text-secondary mb-1">MOTIVO *</label>
-                <textarea
-                  value={newFine.reason}
-                  onChange={(e) => setNewFine({...newFine, reason: e.target.value})}
-                  className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
-                  rows={2}
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-plos-text-secondary mb-1">IMPORTO (€) *</label>
-                <input
-                  type="number"
-                  value={newFine.amount}
-                  onChange={(e) => setNewFine({...newFine, amount: e.target.value})}
-                  className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
-                  min="1"
-                  required
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowNewModal(false)} className="flex-1 px-4 py-2 bg-plos-surface rounded-lg">
-                  Annulla
-                </button>
-                <button type="submit" className="flex-1 btn-tactical">
-                  EMETTI MULTA
-                </button>
-              </div>
-            </form>
+              </OsListRow>
+            ))}
           </div>
-        </div>
-      )}
+        )}
+      </OsPanel>
 
       {/* Delete Modal */}
       <DeleteModal
