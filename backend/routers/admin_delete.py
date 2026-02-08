@@ -279,9 +279,10 @@ async def bulk_delete(
         db=db,
         action=AuditAction.DELETE,
         user=current_user,
-        resource_type=f"bulk_{resource_type.value}",
-        resource_id=0,
-        details={
+        entity_type=f"bulk_{resource_type.value}",
+        entity_id=0,
+        description=f"Bulk delete: {deleted_count} {resource_type.value}",
+        metadata={
             "deleted_ids": resource_ids,
             "count": deleted_count,
             "permanent": permanent,
