@@ -269,7 +269,12 @@ async def get_dispatch_stats(
     current_user: User = Depends(require_roles(UserRole.DISPATCH, UserRole.POLICE, UserRole.EMS)),
     db: AsyncSession = Depends(get_db)
 ):
-    """Statistiche dashboard Dispatch"""
+    """Statistiche dashboard Dispatch - CACHED 15s (più frequente per emergenze)"""
+    # Check cache first (TTL più breve per dispatch)
+    cached_stats = await ModuleCache.get_stats("dispatch")
+    if cached_stats:
+        return cached_stats
+    
     pending_calls = await db.execute(
         select(func.count(DispatchCall.id))
         .where(DispatchCall.status == CallStatus.PENDING)
@@ -296,9 +301,14 @@ async def get_dispatch_stats(
         )
     )
     
-    return {
+    stats = {
         "chiamate_in_attesa": pending_calls.scalar() or 0,
         "chiamate_attive": active_calls.scalar() or 0,
         "chiamate_p1": p1_calls.scalar() or 0,
         "completate_oggi": today_completed.scalar() or 0
     }
+    
+    # Cache for 15 seconds (dispatch needs fresher data)
+    await ModuleCache.set_stats("dispatch", stats, ttl=15)
+    
+    return stats
