@@ -119,15 +119,22 @@ React 18 + TailwindCSS
 ```
 /app/
 ├── backend/
+│   ├── server.py              # 🔧 SSE fix per token da query param
 │   └── routers/
 │       └── admin_delete.py    # 🆕 Sistema Delete Universale
 ├── frontend/
 │   └── src/
+│       ├── styles/
+│       │   └── os-system.css      # 🆕 Design System OS-Style
 │       ├── components/
-│       │   ├── CommandPalette.jsx   # 🆕 Command Palette (Ctrl+K)
-│       │   └── DeleteModal.jsx      # 🆕 Modal Eliminazione
+│       │   ├── OSLayout.jsx       # 🆕 Layout Sistema Operativo
+│       │   ├── SystemBar.jsx      # 🆕 Barra Sistema (top)
+│       │   ├── os/
+│       │   │   └── OSComponents.jsx # 🆕 Componenti OS riutilizzabili
+│       │   ├── CommandPalette.jsx # 🆕 Command Palette (Ctrl+K)
+│       │   └── DeleteModal.jsx    # 🆕 Modal Eliminazione
 │       └── pages/
-│           └── CityPulsePage.jsx    # 🆕 City Pulse Dashboard
+│           └── CityPulsePage.jsx  # 🆕 City Pulse Dashboard
 ```
 
 ---
