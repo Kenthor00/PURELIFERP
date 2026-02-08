@@ -100,8 +100,8 @@ def can_delete_resource(user: User, resource_type: ResourceType) -> bool:
     if user.sector.value == "ADMIN":
         return True
     
-    # Capi settore (level >= 8) possono eliminare risorse del proprio settore
-    if user.level >= 8:
+    # Capi settore (hierarchy_level >= 8) possono eliminare risorse del proprio settore
+    if user.hierarchy_level >= 8:
         config = RESOURCE_CONFIG.get(resource_type)
         if config:
             # Risorse senza settore specifico possono essere eliminate da qualsiasi capo
