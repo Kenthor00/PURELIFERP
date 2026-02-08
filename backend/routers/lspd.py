@@ -17,6 +17,7 @@ from schemas import (
 from auth import get_current_user, require_roles, UserRole, log_audit
 from utils import generate_case_number, generate_warrant_number, generate_fine_number
 from sse_manager import sse_manager
+from cache import cache, ModuleCache
 
 router = APIRouter(prefix="/lspd", tags=["LSPD"])
 
