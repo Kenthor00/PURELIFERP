@@ -63,6 +63,7 @@ export const SSEProvider = ({ children }) => {
       try {
         const data = JSON.parse(event.data);
         setEvents((prev) => [data, ...prev.slice(0, 99)]);
+        setLastEventTime(Date.now());
 
         const listeners = listenersRef.current[data.type] || [];
         listeners.forEach((callback) => callback(data));
