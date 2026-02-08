@@ -210,14 +210,17 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
         <div
           ref={trackRef}
           onClick={handleTrackClick}
-          className="relative w-3 sm:w-4 rounded-full cursor-pointer transition-all duration-300"
+          onTouchStart={(e) => {
+            const touch = e.touches[0];
+            handleTrackClick({ clientY: touch.clientY, currentTarget: e.currentTarget });
+          }}
+          className="relative w-4 sm:w-5 rounded-full cursor-pointer transition-all duration-300"
           style={{ 
-            height: 'calc(80vh - 60px)',
-            background: 'linear-gradient(180deg, rgba(0,200,83,0.08) 0%, rgba(0,0,0,0.4) 50%, rgba(0,200,83,0.08) 100%)',
-            border: '1px solid rgba(0,200,83,0.25)',
-            boxShadow: isHovering 
-              ? '0 0 20px rgba(0,200,83,0.2), inset 0 0 10px rgba(0,200,83,0.05)' 
-              : '0 0 10px rgba(0,200,83,0.1)'
+            height: '400px', // Altezza fissa per compatibilità CEF
+            maxHeight: '70vh',
+            background: 'linear-gradient(180deg, rgba(0,200,83,0.15) 0%, rgba(0,0,0,0.5) 50%, rgba(0,200,83,0.15) 100%)',
+            border: '2px solid rgba(0,200,83,0.4)',
+            boxShadow: '0 0 15px rgba(0,200,83,0.3), inset 0 0 10px rgba(0,200,83,0.1)'
           }}
         >
           {/* Track Glow Lines */}
