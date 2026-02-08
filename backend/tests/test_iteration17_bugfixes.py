@@ -135,25 +135,22 @@ class TestEMSReports(TestAuth):
         reports = response.json()
         assert isinstance(reports, list)
     
-    def test_get_report_detail(self, auth_headers):
-        """Test fetching report detail by ID"""
-        # First get reports list
+    def test_report_list_contains_full_data(self, auth_headers):
+        """Test that report list contains all data needed for modal display"""
+        # Note: There's no /reports/{id} endpoint - frontend uses list data for modal
         reports_res = requests.get(f"{BASE_URL}/api/ems/reports", headers=auth_headers)
+        assert reports_res.status_code == 200
         reports = reports_res.json()
         
         if len(reports) > 0:
-            report_id = reports[0]["id"]
-            response = requests.get(
-                f"{BASE_URL}/api/ems/reports/{report_id}",
-                headers=auth_headers
-            )
-            assert response.status_code == 200
-            
-            report = response.json()
+            report = reports[0]
+            # Verify all fields needed for modal are present
             assert "id" in report
             assert "report_number" in report
             assert "diagnosis" in report
             assert "treatment" in report
+            assert "patient_id" in report
+            assert "created_at" in report
 
 
 class TestJusticeDashboard(TestAuth):
