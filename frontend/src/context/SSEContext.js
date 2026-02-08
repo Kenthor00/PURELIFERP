@@ -107,6 +107,7 @@ export const SSEProvider = ({ children }) => {
       value={{
         events,
         connected,
+        lastEventTime,
         subscribe,
         connect,
         disconnect,
