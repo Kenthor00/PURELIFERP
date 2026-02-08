@@ -273,13 +273,14 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
           {/* Thumb */}
           <div
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
             className={`absolute left-1/2 -translate-x-1/2 rounded-full cursor-grab transition-all duration-150 ${
               isDragging ? 'cursor-grabbing scale-110' : ''
             }`}
             style={{
               top: thumbTop + 8, // 8px padding
               height: thumbHeight,
-              width: isHovering || isDragging ? '10px' : '8px',
+              width: isHovering || isDragging ? '14px' : '12px', // Più grande per touch
             }}
           >
             {/* Thumb Glow Background */}
