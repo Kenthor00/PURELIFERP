@@ -141,7 +141,7 @@ export const CasesListPage = () => {
       {/* Cases List */}
       <div className="space-y-3">
         {loading ? (
-          <div className="text-center py-8 text-plos-text-muted">Caricamento...</div>
+          <ListSkeleton rows={5} />
         ) : cases.length === 0 ? (
           <div className="card-tactical p-8 text-center">
             <FileText className="mx-auto mb-4 text-plos-text-muted" size={48} />
