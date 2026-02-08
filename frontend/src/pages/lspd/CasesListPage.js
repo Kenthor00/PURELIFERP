@@ -198,12 +198,46 @@ export const CasesListPage = () => {
                   </div>
                 </div>
                 
-                <ChevronRight className="text-plos-text-muted group-hover:text-plos-primary transition-colors" size={24} />
+                <div className="flex items-center gap-2">
+                  {canDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        play('click');
+                        setDeleteModal({ open: true, item: c });
+                      }}
+                      className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-all opacity-0 group-hover:opacity-100"
+                      title="Elimina caso"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                  <ChevronRight className="text-plos-text-muted group-hover:text-plos-primary transition-colors" size={24} />
+                </div>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, item: null })}
+        onConfirm={async (options) => {
+          const result = await deleteResource('case', deleteModal.item?.id, options);
+          if (result.success) {
+            setCases(prev => prev.filter(c => c.id !== deleteModal.item?.id));
+            setDeleteModal({ open: false, item: null });
+            play('success');
+          }
+        }}
+        resourceType="case"
+        resourceName={deleteModal.item?.title}
+        resourceId={deleteModal.item?.id}
+        allowPermanent={true}
+        loading={deleteLoading}
+      />
     </div>
   );
 };
