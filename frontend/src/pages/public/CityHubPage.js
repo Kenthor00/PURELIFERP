@@ -36,12 +36,12 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [scrollPercent, setScrollPercent] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Inizia come true per mostrare subito
   const trackRef = useRef(null);
   const dragStartY = useRef(0);
   const dragStartScrollTop = useRef(0);
 
-  // Verifica se c'è contenuto scrollabile (separato dal calcolo della posizione)
+  // Verifica se c'è contenuto scrollabile
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -49,7 +49,8 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
     const checkScrollable = () => {
       const { scrollHeight, clientHeight } = container;
       const scrollableHeight = scrollHeight - clientHeight;
-      setIsVisible(scrollableHeight > 10);
+      const shouldBeVisible = scrollableHeight > 10;
+      setIsVisible(shouldBeVisible);
     };
 
     // Check iniziale con retry
