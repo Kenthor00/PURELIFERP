@@ -27,11 +27,10 @@ html, body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  min-height: 100%;
 }
 
 #root {
-  min-height: 100%;
+  /* Allow content to expand naturally */
 }
 
 /* Ensure scroll works on FiveM in-game browsers */
