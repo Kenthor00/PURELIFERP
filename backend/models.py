@@ -468,6 +468,21 @@ class User(Base):
     def needs_game_name(self) -> bool:
         """Verifica se deve inserire il nome in game"""
         return not self.game_name or len(self.game_name.strip()) == 0
+    
+    @property
+    def role(self):
+        """Legacy property: mappa sector a UserRole per retrocompatibilità"""
+        from auth import UserRole
+        sector_to_role = {
+            Sector.ADMIN: UserRole.ADMIN,
+            Sector.LSPD: UserRole.POLICE,
+            Sector.EMS: UserRole.EMS,
+            Sector.DISPATCH: UserRole.DISPATCH,
+            Sector.GOV: UserRole.GOVERNMENT,
+            Sector.NEWS: UserRole.WEAZEL,
+            Sector.CIVIL: UserRole.CIVILIAN,
+        }
+        return sector_to_role.get(self.sector, UserRole.CIVILIAN)
 
 
 # ==========================================
