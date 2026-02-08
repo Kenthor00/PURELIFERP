@@ -26,10 +26,13 @@
 html, body {
   margin: 0;
   padding: 0;
+  height: auto !important;
+  min-height: 100%;
 }
 
 #root {
-  /* Allow content to expand naturally */
+  height: auto !important;
+  min-height: 100%;
 }
 
 /* Ensure scroll works on FiveM in-game browsers */
