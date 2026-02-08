@@ -339,6 +339,27 @@ export const DispatchPage = () => {
           </div>
         </div>
       )}
+      
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, item: null })}
+        resourceType="dispatch_call"
+        resourceName={deleteModal.item?.call_number || ''}
+        resourceId={deleteModal.item?.id}
+        allowPermanent={true}
+        loading={deleteLoading}
+        onConfirm={async (options) => {
+          const result = await deleteResource('dispatch_call', deleteModal.item.id, options);
+          if (result.success) {
+            toast.success('Chiamata eliminata con successo');
+            setDeleteModal({ open: false, item: null });
+            fetchData();
+          } else {
+            toast.error(result.error);
+          }
+        }}
+      />
     </div>
   );
 };
