@@ -179,57 +179,56 @@ export const CityHubPage = () => {
       </header>
 
       <main className="relative">
-        {/* Hero Panel - Più compatto */}
-        <section className="relative py-8 sm:py-12 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="relative bg-gradient-to-br from-plos-surface/80 to-[#0a0f12]/90 backdrop-blur-xl border border-plos-border/50 rounded-xl p-6 sm:p-8 overflow-hidden">
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-plos-primary/10 rounded-full blur-[60px]" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-[40px]" />
+        {/* Hero Panel - Ultra Compatto per Tablet */}
+        <section className="relative py-4 sm:py-6 lg:py-8 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+            <div className="relative bg-gradient-to-br from-plos-surface/80 to-[#0a0f12]/90 backdrop-blur-xl border border-plos-border/50 rounded-lg p-4 sm:p-5 lg:p-6 overflow-hidden">
+              {/* Decorative elements - hidden on small screens */}
+              <div className="hidden sm:block absolute top-0 right-0 w-32 h-32 bg-plos-primary/10 rounded-full blur-[40px]" />
               
-              <div className="relative z-10 max-w-2xl">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles size={14} className="text-plos-primary" />
-                  <span className="text-[10px] tracking-[0.3em] text-plos-primary font-heading">SERVIZI DIGITALI</span>
+              <div className="relative z-10">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Sparkles size={12} className="text-plos-primary" />
+                  <span className="text-[8px] sm:text-[9px] tracking-[0.2em] text-plos-primary font-heading">SERVIZI DIGITALI</span>
                 </div>
                 
-                <h2 className="text-2xl sm:text-3xl font-heading font-bold leading-tight mb-3">
-                  Benvenuto nel <span className="text-plos-primary">Portale Cittadino</span>
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-heading font-bold leading-tight mb-2">
+                  Benvenuto nel <span className="text-plos-primary">Portale</span>
                 </h2>
                 
-                <p className="text-plos-text-secondary text-sm sm:text-base mb-6 max-w-lg">
-                  Accedi ai servizi digitali della città. Consulta annunci, eventi, opportunità di lavoro e prenota appuntamenti.
+                <p className="text-plos-text-secondary text-xs sm:text-sm mb-4 max-w-md leading-relaxed">
+                  Accedi ai servizi digitali. Consulta annunci, eventi e opportunità.
                 </p>
                 
-                <div className="flex flex-wrap gap-2">
+                {/* Pulsanti in griglia 2x2 per tablet */}
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
                   <button
                     onClick={() => navigate('/city/announcements')}
-                    className="group flex items-center gap-2 px-4 py-2.5 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg text-plos-primary font-heading text-sm transition-all"
+                    className="flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg text-plos-primary font-heading text-xs transition-all"
                   >
-                    <Megaphone size={16} />
-                    Annunci
-                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    <Megaphone size={14} />
+                    <span>Annunci</span>
                   </button>
                   <button
                     onClick={() => navigate('/city/events')}
-                    className="group flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-sm transition-all"
+                    className="flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-xs transition-all"
                   >
-                    <Calendar size={16} />
-                    Eventi
+                    <Calendar size={14} />
+                    <span>Eventi</span>
                   </button>
                   <button
                     onClick={() => navigate('/city/recruitment')}
-                    className="group flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-sm transition-all"
+                    className="flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-xs transition-all"
                   >
-                    <Briefcase size={16} />
-                    Lavoro
+                    <Briefcase size={14} />
+                    <span>Lavoro</span>
                   </button>
                   <button
                     onClick={() => navigate('/city/appointments')}
-                    className="group flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-sm transition-all"
+                    className="flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-xs transition-all"
                   >
-                    <CalendarDays size={16} />
-                    Appuntamenti
+                    <CalendarDays size={14} />
+                    <span>Prenota</span>
                   </button>
                 </div>
               </div>
@@ -237,17 +236,31 @@ export const CityHubPage = () => {
           </div>
         </section>
 
-        {/* Breaking News Banner */}
+        {/* Breaking News Banner - Compatto */}
         {breakingNews.length > 0 && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-red-500/20 rounded-lg">
-                  <AlertCircle className="text-red-400 animate-pulse" size={18} />
+          <section className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mb-4">
+            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-2.5 sm:p-3 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-red-500/20 rounded">
+                  <AlertCircle className="text-red-400 animate-pulse" size={14} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="font-heading text-red-400 text-[9px] tracking-wider">ULTIMA ORA</span>
-                  <h3 className="font-medium text-sm truncate">{breakingNews[0].title}</h3>
+                  <span className="font-heading text-red-400 text-[8px] tracking-wider block">ULTIMA ORA</span>
+                  <h3 className="font-medium text-xs truncate">{breakingNews[0].title}</h3>
+                </div>
+                <button
+                  onClick={() => navigate(`/city/news/${breakingNews[0].id}`)}
+                  className="flex-shrink-0 px-2.5 py-1 text-red-400 border border-red-500/50 hover:bg-red-500/10 rounded text-[10px] font-heading transition-all"
+                >
+                  Leggi
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Content Grid - Stack verticale su mobile */}
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-8 space-y-4">
                 </div>
                 <button
                   onClick={() => navigate(`/city/news/${breakingNews[0].id}`)}
