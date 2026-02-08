@@ -127,7 +127,16 @@ export const CityHubPage = () => {
   }
 
   return (
-    <div className="bg-[#080c0f]" data-testid="city-hub-page" style={{ minHeight: 'auto' }}>
+    <div 
+      className="fivem-scroll-container bg-[#080c0f]" 
+      data-testid="city-hub-page"
+      style={{ 
+        height: '100vh',
+        overflow: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch'
+      }}
+    >
       {/* Institutional Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-plos-primary/[0.02] via-transparent to-cyan-500/[0.02]" />
@@ -136,7 +145,7 @@ export const CityHubPage = () => {
       </div>
 
       {/* Header - Compatto */}
-      <header className="relative bg-[#0a0f12]/90 backdrop-blur-xl border-b border-plos-border/50">
+      <header className="sticky top-0 z-50 bg-[#0a0f12]/95 backdrop-blur-xl border-b border-plos-border/50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3">
           <div className="flex items-center justify-between gap-2">
             <CityLogo />
