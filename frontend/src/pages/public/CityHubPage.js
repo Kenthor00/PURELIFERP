@@ -112,7 +112,7 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
     };
   }, [containerRef, updateScrollbar, isVisible]);
 
-  // Handle drag start
+  // Handle drag start (mouse)
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -121,7 +121,15 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
     document.body.style.userSelect = 'none';
   };
 
-  // Handle drag move
+  // Handle touch start
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartY.current = e.touches[0].clientY;
+    dragStartScrollTop.current = containerRef.current?.scrollTop || 0;
+  };
+
+  // Handle drag move (mouse + touch)
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging || !containerRef.current || !trackRef.current) return;
@@ -139,19 +147,43 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
       container.scrollTop = dragStartScrollTop.current + scrollDelta;
     };
 
+    const handleTouchMove = (e) => {
+      if (!isDragging || !containerRef.current || !trackRef.current) return;
+
+      const container = containerRef.current;
+      const track = trackRef.current;
+      const trackRect = track.getBoundingClientRect();
+      const trackHeight = trackRect.height - 16;
+      
+      const deltaY = e.touches[0].clientY - dragStartY.current;
+      const scrollableHeight = container.scrollHeight - container.clientHeight;
+      const maxThumbTop = trackHeight - thumbHeight;
+      
+      const scrollDelta = (deltaY / maxThumbTop) * scrollableHeight;
+      container.scrollTop = dragStartScrollTop.current + scrollDelta;
+    };
+
     const handleMouseUp = () => {
       setIsDragging(false);
       document.body.style.userSelect = '';
     };
 
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+    };
+
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
     }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isDragging, containerRef, thumbHeight]);
 
