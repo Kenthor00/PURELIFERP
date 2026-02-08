@@ -276,7 +276,12 @@ async def get_ems_stats(
     current_user: User = Depends(require_roles(UserRole.EMS, UserRole.DISPATCH)),
     db: AsyncSession = Depends(get_db)
 ):
-    """Statistiche dashboard EMS"""
+    """Statistiche dashboard EMS - CACHED 30s"""
+    # Check cache first
+    cached_stats = await ModuleCache.get_stats("ems")
+    if cached_stats:
+        return cached_stats
+    
     total_patients = await db.execute(select(func.count(Patient.id)))
     
     today_reports = await db.execute(
@@ -286,8 +291,13 @@ async def get_ems_stats(
     
     total_reports = await db.execute(select(func.count(MedicalReport.id)))
     
-    return {
+    stats = {
         "pazienti_totali": total_patients.scalar() or 0,
         "referti_oggi": today_reports.scalar() or 0,
         "referti_totali": total_reports.scalar() or 0
     }
+    
+    # Cache for 30 seconds
+    await ModuleCache.set_stats("ems", stats, ttl=30)
+    
+    return stats
