@@ -201,6 +201,25 @@ const WarrantsListPage = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, item: null })}
+        onConfirm={async (options) => {
+          const result = await deleteResource('warrant', deleteModal.item?.id, options);
+          if (result.success) {
+            setWarrants(prev => prev.filter(w => w.id !== deleteModal.item?.id));
+            setDeleteModal({ open: false, item: null });
+            toast.success('Mandato eliminato');
+          }
+        }}
+        resourceType="warrant"
+        resourceName={deleteModal.item?.suspect_name}
+        resourceId={deleteModal.item?.id}
+        allowPermanent={true}
+        loading={deleteLoading}
+      />
     </div>
   );
 };
