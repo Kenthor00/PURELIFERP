@@ -276,56 +276,43 @@ export const CityHubPage = () => {
         {/* Content Grid */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
           
-          {/* Announcements Section */}
-          <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-plos-border/30">
+          {/* Announcements Section - Compatto */}
+          <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between p-3 border-b border-plos-border/30">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-purple-500/20 rounded-lg">
-                  <Megaphone size={16} className="text-purple-400" />
+                <div className="p-1 bg-purple-500/20 rounded">
+                  <Megaphone size={14} className="text-purple-400" />
                 </div>
-                <div>
-                  <h2 className="font-heading text-base tracking-wider">ANNUNCI</h2>
-                  <p className="text-[9px] text-plos-text-muted tracking-wider">Comunicazioni ufficiali</p>
-                </div>
+                <h2 className="font-heading text-sm tracking-wider">ANNUNCI</h2>
               </div>
               <button
                 onClick={() => navigate('/city/announcements')}
-                className="text-plos-primary text-[10px] tracking-wider hover:underline flex items-center gap-1"
+                className="text-plos-primary text-[9px] tracking-wider hover:underline flex items-center gap-0.5"
               >
-                VEDI TUTTI <ChevronRight size={12} />
+                TUTTI <ChevronRight size={10} />
               </button>
             </div>
             
-            <div className="p-4">
+            <div className="p-3">
               {announcements.length === 0 ? (
-                <div className="text-center py-6">
-                  <Megaphone size={28} className="mx-auto mb-2 text-plos-text-muted/30" />
-                  <p className="text-plos-text-muted text-sm">Nessun annuncio disponibile</p>
+                <div className="text-center py-4">
+                  <Megaphone size={20} className="mx-auto mb-1.5 text-plos-text-muted/30" />
+                  <p className="text-plos-text-muted text-xs">Nessun annuncio</p>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {announcements.slice(0, 4).map((announcement) => (
                     <div
                       key={announcement.id}
-                      className="group p-3 bg-black/20 border border-plos-border/30 rounded-lg hover:border-purple-500/30 transition-all cursor-pointer"
+                      className="group p-2.5 bg-black/20 border border-plos-border/30 rounded hover:border-purple-500/30 transition-all cursor-pointer"
                       onClick={() => navigate(`/city/announcements/${announcement.id}`)}
                     >
-                      <div className="flex items-start gap-2">
-                        <div className="p-1 bg-purple-500/10 rounded">
-                          <Megaphone size={12} className="text-purple-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[9px] text-purple-400 font-heading tracking-wider">
-                            {announcement.category?.toUpperCase() || 'GENERALE'}
-                          </span>
-                          <h3 className="font-medium text-sm mt-0.5 group-hover:text-plos-primary transition-colors line-clamp-2">
-                            {announcement.title}
-                          </h3>
-                          <p className="text-[10px] text-plos-text-muted mt-1">
-                            {new Date(announcement.created_at).toLocaleDateString('it-IT')}
-                          </p>
-                        </div>
-                      </div>
+                      <span className="text-[8px] text-purple-400 font-heading tracking-wider">
+                        {announcement.category?.toUpperCase() || 'GENERALE'}
+                      </span>
+                      <h3 className="font-medium text-xs mt-0.5 group-hover:text-plos-primary transition-colors line-clamp-2">
+                        {announcement.title}
+                      </h3>
                     </div>
                   ))}
                 </div>
