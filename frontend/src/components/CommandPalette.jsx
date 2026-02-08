@@ -33,8 +33,11 @@ const COMMAND_ACTIONS = [
   
   // Azioni rapide LSPD
   { id: 'new-case', label: 'Nuovo Caso LSPD', keywords: ['nuovo', 'caso', 'crea'], icon: Plus, action: 'navigate', path: '/lspd/cases/new', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
-  { id: 'new-warrant', label: 'Nuovo Mandato', keywords: ['mandato', 'nuovo'], icon: Plus, action: 'navigate', path: '/lspd/warrants', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
-  { id: 'new-fine', label: 'Nuova Multa', keywords: ['multa', 'nuova'], icon: Plus, action: 'navigate', path: '/lspd/fines', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
+  { id: 'new-warrant', label: 'Nuovo Mandato', keywords: ['mandato', 'nuovo', 'arresto'], icon: Plus, action: 'navigate', path: '/lspd/warrants/new', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
+  { id: 'new-fine', label: 'Nuova Multa', keywords: ['multa', 'nuova', 'sanzione'], icon: Plus, action: 'navigate', path: '/lspd/fines/new', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
+  { id: 'cases-list', label: 'Gestione Casi', keywords: ['casi', 'lista'], icon: FileText, action: 'navigate', path: '/lspd/cases', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
+  { id: 'warrants-list', label: 'Gestione Mandati', keywords: ['mandati', 'lista'], icon: AlertTriangle, action: 'navigate', path: '/lspd/warrants', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
+  { id: 'fines-list', label: 'Gestione Multe', keywords: ['multe', 'lista'], icon: DollarSign, action: 'navigate', path: '/lspd/fines', category: 'Azioni LSPD', roles: ['LSPD', 'ADMIN'] },
   
   // Azioni rapide EMS
   { id: 'new-patient', label: 'Nuovo Paziente', keywords: ['paziente', 'nuovo'], icon: Plus, action: 'navigate', path: '/ems', category: 'Azioni EMS', roles: ['EMS', 'ADMIN'] },
