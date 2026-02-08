@@ -272,28 +272,21 @@ export const LSPDDashboard = () => {
               TIMELINE <ChevronRight size={12} />
             </button>
           </div>
-            </h2>
-            <button
-              onClick={() => navigate('/timeline')}
-              className="text-plos-primary text-xs hover:underline"
-            >
-              Timeline completa
-            </button>
-          </div>
           
-          <div className="space-y-0">
+          <div className="divide-y divide-plos-border/30">
             {recentEvents.length === 0 ? (
-              <p className="text-plos-text-muted text-sm text-center py-4">
-                Nessuna attività recente
-              </p>
+              <div className="p-8 text-center">
+                <Clock size={32} className="mx-auto mb-3 text-plos-text-muted/50" />
+                <p className="text-plos-text-muted text-sm">Nessuna attività recente</p>
+              </div>
             ) : (
-              recentEvents.slice(0, 6).map((event) => (
-                <div key={event.id} className="timeline-item">
+              recentEvents.slice(0, 6).map((event, i) => (
+                <div key={event.id} className="p-4 hover:bg-white/[0.02] transition-colors" style={{ animationDelay: `${i * 50}ms` }}>
                   <p className="text-sm font-medium">{event.title}</p>
-                  <p className="text-xs text-plos-text-secondary mt-1">
+                  <p className="text-xs text-plos-text-secondary mt-1 line-clamp-1">
                     {event.description}
                   </p>
-                  <p className="mono text-xs text-plos-text-muted mt-1">
+                  <p className="mono text-[10px] text-plos-text-muted mt-2">
                     {new Date(event.created_at).toLocaleString('it-IT')}
                   </p>
                 </div>
