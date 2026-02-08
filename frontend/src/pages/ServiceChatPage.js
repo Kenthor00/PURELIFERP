@@ -1,6 +1,15 @@
+/**
+ * PURE LIFE OS 3.0 - Service Chat
+ * WOW PASS - Premium UI Design
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import {
+  OsPanel,
+  OsSectionHeader,
+  OsEmptyState,
+} from '../components/os/OsComponents';
 import axios from 'axios';
 import {
   MessageSquare, Send, Users, Pin, Trash2, Settings,
@@ -403,31 +412,37 @@ export const ServiceChatPage = () => {
 
   // Main render
   return (
-    <div className="h-screen flex tactical-bg" data-testid="service-chat-page">
+    <div className="h-screen flex" data-testid="service-chat-page">
       {/* Sidebar */}
-      <div className="w-64 border-r border-plos-border bg-plos-surface flex flex-col">
+      <div className="w-72 border-r border-plos-border/50 bg-gradient-to-b from-plos-surface/90 to-plos-bg/90 backdrop-blur-sm flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-plos-border">
+        <div className="p-4 border-b border-plos-border/30">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="text-plos-text-secondary hover:text-white">
-              <ArrowLeft size={20} />
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-plos-surface/50 rounded-lg transition-colors text-plos-text-secondary hover:text-white">
+              <ArrowLeft size={18} />
             </button>
-            <div>
-              <h1 className="font-heading text-sm tracking-wider flex items-center gap-2">
-                <MessageSquare className="text-plos-primary" size={16} />
-                SERVICE CHAT
-              </h1>
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-plos-primary/10 border border-plos-primary/30 rounded-lg">
+                <MessageSquare className="text-plos-primary" size={18} />
+              </div>
+              <div>
+                <h1 className="font-heading text-sm tracking-wider text-white">SERVICE CHAT</h1>
+                <p className="text-[10px] text-plos-text-muted">COMUNICAZIONI INTERNE</p>
+              </div>
             </div>
           </div>
         </div>
         
         {/* My Status */}
-        <div className="p-3 border-b border-plos-border">
-          <div className="text-xs text-plos-text-muted mb-2">IL MIO STATO</div>
+        <div className="p-4 border-b border-plos-border/30">
+          <div className="text-[10px] text-plos-text-muted tracking-wider mb-2 flex items-center gap-1">
+            <div className="w-1 h-3 bg-plos-primary rounded-full"></div>
+            IL MIO STATO
+          </div>
           <select
             value={myPresence?.status || 'online'}
             onChange={(e) => updateMyPresence(e.target.value)}
-            className="input-tactical w-full text-sm"
+            className="w-full px-3 py-2 bg-plos-surface/50 border border-plos-border/50 rounded-lg text-sm text-white focus:border-plos-primary focus:outline-none transition-all"
           >
             <option value="online">🟢 Online</option>
             <option value="in_service">🔵 In Servizio</option>
@@ -437,53 +452,61 @@ export const ServiceChatPage = () => {
         
         {/* Channels */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-3">
-            <div className="text-xs text-plos-text-muted mb-2">CANALI</div>
-            {channels.map(channel => {
-              const Icon = CHANNEL_ICONS[channel.name] || Hash;
-              return (
-                <button
-                  key={channel.id}
-                  onClick={() => setActiveChannel(channel)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 rounded text-sm text-left ${
-                    activeChannel?.id === channel.id 
-                      ? 'bg-plos-primary/20 text-white' 
-                      : 'text-plos-text-secondary hover:bg-plos-surface hover:text-white'
-                  }`}
-                  data-testid={`channel-${channel.name}`}
-                >
-                  <Icon size={16} />
-                  <span className="truncate">{channel.display_name}</span>
-                </button>
-              );
-            })}
+          <div className="p-4">
+            <div className="text-[10px] text-plos-text-muted tracking-wider mb-3 flex items-center gap-1">
+              <div className="w-1 h-3 bg-blue-500 rounded-full"></div>
+              CANALI
+            </div>
+            <div className="space-y-1">
+              {channels.map(channel => {
+                const Icon = CHANNEL_ICONS[channel.name] || Hash;
+                const isActive = activeChannel?.id === channel.id;
+                return (
+                  <button
+                    key={channel.id}
+                    onClick={() => setActiveChannel(channel)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-all ${
+                      isActive
+                        ? 'bg-plos-primary/20 border border-plos-primary/30 text-white' 
+                        : 'text-plos-text-secondary hover:bg-plos-surface/50 hover:text-white border border-transparent'
+                    }`}
+                    data-testid={`channel-${channel.name}`}
+                  >
+                    <Icon size={16} className={isActive ? 'text-plos-primary' : ''} />
+                    <span className="truncate font-medium">{channel.display_name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
         
         {/* Presence Toggle */}
-        <div className="border-t border-plos-border">
+        <div className="border-t border-plos-border/30">
           <button
             onClick={() => setShowPresence(!showPresence)}
-            className="w-full p-3 flex items-center justify-between text-sm hover:bg-plos-surface"
+            className="w-full p-4 flex items-center justify-between text-sm hover:bg-plos-surface/30 transition-colors"
           >
             <span className="flex items-center gap-2">
               <Users size={16} className="text-plos-primary" />
-              Utenti Online
+              <span className="text-plos-text-secondary">Utenti Online</span>
             </span>
-            <span className="text-plos-text-muted">{presence.length}</span>
+            <span className="px-2 py-0.5 bg-plos-primary/20 text-plos-primary text-xs rounded-full font-medium">
+              {presence.length}
+            </span>
           </button>
           
           {showPresence && (
-            <div className="max-h-48 overflow-y-auto border-t border-plos-border">
+            <div className="max-h-48 overflow-y-auto border-t border-plos-border/30 bg-plos-bg/50">
               {presence.map(p => (
-                <div key={p.user_id} className="px-4 py-2 flex items-center gap-2 text-sm">
+                <div key={p.user_id} className="px-4 py-2.5 flex items-center gap-2 text-sm hover:bg-plos-surface/30">
                   <Circle size={8} className={`${STATUS_COLORS[p.status]} fill-current`} />
-                  <span className="truncate">{p.game_name}</span>
-                  <span className="text-xs text-plos-text-muted ml-auto">{p.sector}</span>
+                  <span className="truncate text-white">{p.game_name}</span>
+                  <span className="text-[10px] text-plos-text-muted ml-auto tracking-wider">{p.sector}</span>
                 </div>
               ))}
               {presence.length === 0 && (
-                <div className="px-4 py-3 text-sm text-plos-text-muted text-center">
+                <div className="px-4 py-4 text-sm text-plos-text-muted text-center">
                   Nessun utente online
                 </div>
               )}
@@ -496,25 +519,32 @@ export const ServiceChatPage = () => {
       </div>
       
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-plos-bg/50">
         {/* Channel Header */}
         {activeChannel && (
-          <div className="p-4 border-b border-plos-border bg-plos-surface flex items-center justify-between">
-            <div>
-              <h2 className="font-heading tracking-wider flex items-center gap-2">
+          <div className="p-4 border-b border-plos-border/30 bg-gradient-to-r from-plos-surface/50 to-transparent backdrop-blur-sm flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-plos-primary/10 border border-plos-primary/30 rounded-lg">
                 {React.createElement(CHANNEL_ICONS[activeChannel.name] || Hash, { size: 18, className: 'text-plos-primary' })}
-                {activeChannel.display_name}
-              </h2>
-              {activeChannel.description && (
-                <p className="text-xs text-plos-text-muted mt-1">{activeChannel.description}</p>
-              )}
+              </div>
+              <div>
+                <h2 className="font-heading tracking-wider text-white flex items-center gap-2">
+                  {activeChannel.display_name}
+                </h2>
+                {activeChannel.description && (
+                  <p className="text-xs text-plos-text-muted mt-0.5">{activeChannel.description}</p>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-plos-text-muted flex items-center gap-1">
-                <AtSign size={12} /> Usa @nome per menzionare
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-plos-text-muted flex items-center gap-1.5 tracking-wider">
+                <AtSign size={12} className="text-plos-primary" /> USA @NOME PER MENZIONARE
               </span>
-              <button onClick={() => { fetchMessages(); fetchPresence(); }} className="btn-tactical-secondary p-2">
-                <RefreshCw size={16} />
+              <button 
+                onClick={() => { fetchMessages(); fetchPresence(); }} 
+                className="p-2 bg-plos-surface/50 border border-plos-border/50 hover:border-plos-primary/50 rounded-lg transition-all"
+              >
+                <RefreshCw size={16} className="text-plos-text-secondary" />
               </button>
             </div>
           </div>
@@ -523,20 +553,21 @@ export const ServiceChatPage = () => {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center h-full text-plos-text-muted">
-              Caricamento...
+            <div className="flex items-center justify-center h-full">
+              <div className="text-plos-text-muted animate-pulse">Caricamento...</div>
             </div>
           ) : !activeChannel ? (
-            <div className="flex flex-col items-center justify-center h-full text-plos-text-muted">
-              <MessageSquare size={48} className="mb-4" />
-              <p>Seleziona un canale per iniziare</p>
-            </div>
+            <OsEmptyState
+              icon={MessageSquare}
+              title="Seleziona un canale"
+              description="Scegli un canale dalla sidebar per iniziare a chattare"
+            />
           ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-plos-text-muted">
-              <MessageSquare size={48} className="mb-4" />
-              <p>Nessun messaggio in questo canale</p>
-              <p className="text-sm mt-2">Sii il primo a scrivere!</p>
-            </div>
+            <OsEmptyState
+              icon={MessageSquare}
+              title="Nessun messaggio"
+              description="Sii il primo a scrivere in questo canale!"
+            />
           ) : (
             <div className="py-4">
               {messages.map(msg => (
@@ -549,32 +580,32 @@ export const ServiceChatPage = () => {
         
         {/* Message Input with Mention Autocomplete */}
         {activeChannel && (
-          <div className="relative p-4 border-t border-plos-border bg-plos-surface">
+          <div className="relative p-4 border-t border-plos-border/30 bg-gradient-to-r from-plos-surface/50 to-transparent backdrop-blur-sm">
             {/* Mention Autocomplete Popup */}
             {showMentionPopup && mentionUsers.length > 0 && (
               <div 
-                className="absolute bottom-full left-4 right-4 mb-2 bg-plos-bg border border-plos-border rounded-lg shadow-xl max-h-48 overflow-y-auto"
+                className="absolute bottom-full left-4 right-4 mb-2 bg-plos-surface border border-plos-border/50 rounded-lg shadow-xl max-h-48 overflow-y-auto"
                 data-testid="mention-autocomplete"
               >
-                <div className="p-2 text-xs text-plos-text-muted border-b border-plos-border">
-                  Menziona utente
+                <div className="p-2 text-[10px] text-plos-text-muted border-b border-plos-border/30 tracking-wider flex items-center gap-1">
+                  <AtSign size={10} /> MENZIONA UTENTE
                 </div>
                 {mentionUsers.map((u, index) => (
                   <button
                     key={u.id}
                     onClick={() => selectMention(u)}
-                    className={`w-full px-3 py-2 flex items-center gap-2 text-sm text-left hover:bg-plos-surface transition-colors ${
+                    className={`w-full px-3 py-2.5 flex items-center gap-3 text-sm text-left hover:bg-plos-primary/10 transition-colors ${
                       index === mentionIndex ? 'bg-plos-primary/20' : ''
                     }`}
                   >
-                    <div className="w-6 h-6 rounded-full bg-plos-surface flex items-center justify-center text-xs font-bold text-plos-primary">
+                    <div className="w-7 h-7 rounded-full bg-plos-primary/20 border border-plos-primary/30 flex items-center justify-center text-xs font-bold text-plos-primary">
                       {u.game_name?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1">
-                      <span className="font-medium">{u.game_name}</span>
-                      <span className="text-xs text-plos-text-muted ml-2">{u.sector}</span>
+                      <span className="font-medium text-white">{u.game_name}</span>
+                      <span className="text-[10px] text-plos-text-muted ml-2 tracking-wider">{u.sector}</span>
                     </div>
-                    {u.grade && <span className="text-xs text-plos-text-muted">{u.grade}</span>}
+                    {u.grade && <span className="text-[10px] text-plos-text-muted">{u.grade}</span>}
                   </button>
                 ))}
               </div>
@@ -588,14 +619,14 @@ export const ServiceChatPage = () => {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={`Scrivi in #${activeChannel.display_name}... (usa @ per menzionare)`}
-                className="input-tactical flex-1"
+                className="flex-1 px-4 py-3 bg-plos-surface/50 border border-plos-border/50 rounded-lg text-white placeholder-plos-text-muted focus:border-plos-primary focus:outline-none transition-all"
                 disabled={sending}
                 data-testid="chat-input"
               />
               <button 
                 onClick={sendMessage} 
                 disabled={sending || !newMessage.trim()}
-                className="btn-tactical px-4"
+                className="px-5 bg-plos-primary/20 border border-plos-primary/50 hover:bg-plos-primary/30 text-plos-primary rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="send-message-btn"
               >
                 <Send size={18} />
