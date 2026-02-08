@@ -4,25 +4,33 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { DeleteModal, useDelete } from '../../components/DeleteModal';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Receipt, Plus, Search, DollarSign, CheckCircle, Clock } from 'lucide-react';
+import { Receipt, Plus, Search, DollarSign, CheckCircle, Clock, Trash2 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const FinesListPage = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const { deleteResource, loading: deleteLoading } = useDelete();
+  
   const [fines, setFines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showNewModal, setShowNewModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ open: false, item: null });
   const [newFine, setNewFine] = useState({
     citizen_name: '',
     citizen_identifier: '',
     reason: '',
     amount: ''
   });
+  
+  // Check if user can delete
+  const canDelete = user?.sector === 'ADMIN' || user?.hierarchy_level >= 8;
 
   useEffect(() => {
     fetchFines();
