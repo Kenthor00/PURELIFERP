@@ -130,7 +130,7 @@ export const ServiceChatPage = () => {
     try {
       const res = await axios.get(
         `${API_URL}/api/chat/channels/${activeChannel.name}/users?q=${encodeURIComponent(query)}`,
-        { headers: authHeaders }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setMentionUsers(res.data);
       setMentionIndex(0);
