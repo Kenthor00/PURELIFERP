@@ -4,7 +4,7 @@ Feed eventi globale unificato
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, or_
+from sqlalchemy import select, func, desc, delete, or_
 from typing import Optional, List
 
 from database import get_db
