@@ -416,10 +416,26 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path="/lspd/warrants/new"
+          element={
+            <ProtectedRoute allowedRoles={['police', 'dispatch']}>
+              <NewWarrantPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/lspd/fines"
           element={
             <ProtectedRoute allowedRoles={['police', 'dispatch']}>
               <FinesListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lspd/fines/new"
+          element={
+            <ProtectedRoute allowedRoles={['police', 'dispatch']}>
+              <NewFinePage />
             </ProtectedRoute>
           }
         />
