@@ -499,6 +499,16 @@ const AppRoutes = () => {
           }
         />
 
+        {/* City Pulse - Centro di Controllo (UNIQUE FEATURE) */}
+        <Route
+          path="/pulse"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'dispatch', 'government']}>
+              <CityPulsePage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Chat Routes - Service Chat 2.0 */}
         <Route
           path="/chat"
