@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSound } from '../../context/SoundContext';
 import { useNavigate } from 'react-router-dom';
+import { DeleteModal, useDelete } from '../../components/DeleteModal';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import {
   FileText,
   Plus,
@@ -9,6 +11,7 @@ import {
   Filter,
   ChevronRight,
   Clock,
+  Trash2,
 } from 'lucide-react';
 
 export const CasesListPage = () => {
