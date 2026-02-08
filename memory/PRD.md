@@ -24,10 +24,23 @@ PURE LIFE OS è un **Sistema Operativo Civico Roleplay ULTRA PREMIUM** per serve
 - **Fix DB Evidence:** Aggiunta colonna `collected_by` alla tabella `evidence`
 - **Fix DB Chat:** Aggiunta colonna `updated_at` e resa `sender_id` nullable in `chat_messages`
 - **Debug Panel:** Nuovo strumento diagnostica per admin (icona Bug in basso a destra)
-  - Status SSE, Token, Ultimo evento
-  - Tab Errori e API calls
 - **Verificato:** Tutti i flussi CRUD LSPD (casi, multe, mandati) funzionanti
 - **Verificato:** Chat funzionante con canali, messaggi, presenza
+
+### BUG FIX + UI WOW PASS ✅ (08/02/2026)
+
+#### Bug Fix Route Nuova Multa/Mandato
+- **Nuove route dedicate:** `/lspd/fines/new` e `/lspd/warrants/new`
+- **Nuove pagine:** `NewFinePage.js` e `NewWarrantPage.js` con form completi
+- **Command Palette aggiornata:** Azioni LSPD navigate alle nuove route
+- **Funziona da:** HOME LSPD, Command Palette (Ctrl+K), direct URL
+
+#### UI WOW PASS - LSPD Dashboard
+- **Stat Cards Premium:** Gradient, top accent line, glow on hover, trend indicator
+- **Casi Recenti:** Header con icona box, badge status colorati, hover effects
+- **Attività Recente:** Timeline elegante con dettagli evento
+- **Quick Actions OS-Style:** Card con glow effect, descrizioni, icone animate
+- **Empty States:** Widget placeholder eleganti quando non ci sono dati
 
 ### FASE P0 - Performance Extreme ✅ (08/02/2026)
 - Cache In-Memory LRU backend
