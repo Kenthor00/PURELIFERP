@@ -41,7 +41,35 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
   const dragStartY = useRef(0);
   const dragStartScrollTop = useRef(0);
 
-  // Calcola dimensioni thumb e posizione
+  // Verifica se c'è contenuto scrollabile (separato dal calcolo della posizione)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const checkScrollable = () => {
+      const { scrollHeight, clientHeight } = container;
+      const scrollableHeight = scrollHeight - clientHeight;
+      setIsVisible(scrollableHeight > 10);
+    };
+
+    // Check iniziale con retry
+    checkScrollable();
+    const timers = [
+      setTimeout(checkScrollable, 200),
+      setTimeout(checkScrollable, 500),
+      setTimeout(checkScrollable, 1000),
+      setTimeout(checkScrollable, 2000)
+    ];
+
+    window.addEventListener('resize', checkScrollable);
+    
+    return () => {
+      window.removeEventListener('resize', checkScrollable);
+      timers.forEach(clearTimeout);
+    };
+  }, [containerRef]);
+
+  // Calcola dimensioni thumb e posizione (solo quando visible e track esiste)
   const updateScrollbar = useCallback(() => {
     const container = containerRef.current;
     const track = trackRef.current;
@@ -49,9 +77,6 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
 
     const { scrollHeight, clientHeight, scrollTop } = container;
     const scrollableHeight = scrollHeight - clientHeight;
-    
-    // Mostra scrollbar solo se c'è contenuto da scrollare
-    setIsVisible(scrollableHeight > 10);
     
     if (scrollableHeight <= 0) return;
 
@@ -73,24 +98,18 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
   // Aggiorna scrollbar quando il container scrolla
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !isVisible) return;
 
     container.addEventListener('scroll', updateScrollbar);
-    window.addEventListener('resize', updateScrollbar);
     
-    // Update iniziale con retry per garantire che il DOM sia pronto
-    const timers = [
-      setTimeout(updateScrollbar, 100),
-      setTimeout(updateScrollbar, 500),
-      setTimeout(updateScrollbar, 1000)
-    ];
+    // Update iniziale quando il track è disponibile
+    const timer = setTimeout(updateScrollbar, 100);
     
     return () => {
       container.removeEventListener('scroll', updateScrollbar);
-      window.removeEventListener('resize', updateScrollbar);
-      timers.forEach(clearTimeout);
+      clearTimeout(timer);
     };
-  }, [containerRef, updateScrollbar]);
+  }, [containerRef, updateScrollbar, isVisible]);
 
   // Handle drag start
   const handleMouseDown = (e) => {
