@@ -44,7 +44,8 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
   // Calcola dimensioni thumb e posizione
   const updateScrollbar = useCallback(() => {
     const container = containerRef.current;
-    if (!container) return;
+    const track = trackRef.current;
+    if (!container || !track) return;
 
     const { scrollHeight, clientHeight, scrollTop } = container;
     const scrollableHeight = scrollHeight - clientHeight;
@@ -54,8 +55,8 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
     
     if (scrollableHeight <= 0) return;
 
-    // Calcola altezza thumb (minimo 40px, massimo 60% del track)
-    const trackHeight = clientHeight - 16; // 8px padding top + bottom
+    // Usa l'altezza effettiva del track
+    const trackHeight = track.getBoundingClientRect().height - 16; // padding
     const ratio = clientHeight / scrollHeight;
     const calculatedHeight = Math.max(40, Math.min(trackHeight * 0.6, trackHeight * ratio));
     setThumbHeight(calculatedHeight);
