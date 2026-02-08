@@ -162,9 +162,10 @@ async def delete_resource(
         db=db,
         action=AuditAction.DELETE,
         user=current_user,
-        resource_type=resource_type.value,
-        resource_id=resource_id,
-        details={
+        entity_type=resource_type.value,
+        entity_id=resource_id,
+        description=f"{config['name']} #{resource_id} eliminato",
+        metadata={
             "resource_name": config["name"],
             "permanent": permanent,
             "reason": reason,
