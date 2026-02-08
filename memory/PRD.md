@@ -31,6 +31,24 @@ PURE LIFE OS è un **Sistema Operativo Civico Roleplay ULTRA PREMIUM** per serve
 
 ### FASE P1 - UI OS-Style + Funzionalità Uniche ✅ (08/02/2026)
 
+#### 🖥️ UI Sistema Operativo - RIFATTORIZZAZIONE COMPLETA ✅ (08/02/2026)
+- **OSLayout.jsx**: Nuovo layout principale stile sistema operativo
+- **SystemBar.jsx**: Barra di sistema in alto con:
+  - PURE LIFE OS v3.0 branding
+  - Orologio con data/ora in tempo reale
+  - Stato server (ONLINE/OFFLINE)
+  - Livello Allerta Città (Normale/Elevato/Critico)
+- **Sidebar Navigation**: Navigazione moduli con icone e colori dipartimento
+  - City Pulse (Centro Controllo)
+  - LSPD, EMS, Dispatch, Giustizia, Weazel, Chat, Admin
+  - COMANDI (⌘K), IMPOSTAZIONI, ESCI
+- **os-system.css**: Design system completo con:
+  - Palette scura (#0a0f12 base, accenti verde neon #00ff9c)
+  - Effetto vetro (backdrop blur)
+  - Animazioni fluide (fade-in, slide-in, scale-in)
+  - Componenti OS (glass-card, stat-card, module-card)
+- **SSE fix**: Endpoint ora accetta token da query param per EventSource
+
 #### 🎯 Command Palette (Ctrl+K) - MAI VISTA PRIMA
 - Apertura con **Ctrl+K** da qualsiasi pagina
 - Design OS-style con sfondo blur
