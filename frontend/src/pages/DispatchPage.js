@@ -1,8 +1,13 @@
+/**
+ * PURE LIFE OS 3.0 - Dispatch Page
+ * WOW PASS Applied
+ */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { useSSE } from '../context/SSEContext';
 import { DeleteModal, useDelete } from '../components/DeleteModal';
+import { OsStatCard, OsPanel, OsSectionHeader, OsListRow, OsBadge, OsEmptyState, OsSkeleton, OsPageHeader } from '../components/os/OsComponents';
 import { toast } from 'sonner';
 import {
   Radio,
@@ -15,6 +20,9 @@ import {
   CheckCircle,
   Loader,
   Trash2,
+  X,
+  PhoneCall,
+  Siren,
 } from 'lucide-react';
 
 export const DispatchPage = () => {
@@ -83,6 +91,7 @@ export const DispatchPage = () => {
     e.preventDefault();
     
     if (!newCallForm.call_type || !newCallForm.location) {
+      toast.error('Tipo chiamata e posizione sono obbligatori');
       play('error');
       return;
     }
@@ -90,6 +99,7 @@ export const DispatchPage = () => {
     try {
       play('click');
       await api.post('/dispatch/calls', newCallForm);
+      toast.success('Chiamata creata con successo');
       play('success');
       setShowNewCall(false);
       setNewCallForm({
@@ -102,8 +112,8 @@ export const DispatchPage = () => {
       });
       fetchData();
     } catch (error) {
+      toast.error('Errore nella creazione della chiamata');
       play('error');
-      console.error('Errore creazione chiamata:', error);
     }
   };
 
@@ -111,134 +121,137 @@ export const DispatchPage = () => {
     try {
       play('click');
       await api.put(`/dispatch/calls/${callId}/complete`);
+      toast.success('Chiamata completata');
       play('success');
       fetchData();
     } catch (error) {
+      toast.error('Errore nel completamento');
       play('error');
-      console.error('Errore completamento chiamata:', error);
     }
   };
 
-  const getPriorityStyle = (priority) => {
-    if (priority === 'P1') return 'border-l-4 border-l-red-500 bg-red-500/5';
-    if (priority === 'P2') return 'border-l-4 border-l-orange-500 bg-orange-500/5';
-    if (priority === 'P3') return 'border-l-4 border-l-green-500 bg-green-500/5';
-    return '';
-  };
-
-  const isDispatcher = user?.role === 'dispatch' || user?.role === 'admin';
+  const isDispatcher = user?.role === 'dispatch' || user?.role === 'admin' || user?.sector === 'DISPATCH' || user?.sector === 'ADMIN';
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-plos-primary animate-pulse">Caricamento...</div>
+      <div className="p-6 space-y-6">
+        <OsPageHeader icon={Radio} title="DISPATCH CENTER" subtitle="Centro Comando Operativo" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="bg-plos-surface rounded-lg p-5 animate-pulse">
+              <div className="h-4 bg-plos-bg rounded w-1/2 mb-3"></div>
+              <div className="h-8 bg-plos-bg rounded w-1/3"></div>
+            </div>
+          ))}
+        </div>
+        <OsPanel><OsSkeleton rows={5} /></OsPanel>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6" data-testid="dispatch-page">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl tracking-wider flex items-center gap-2">
-            <Radio className="text-plos-primary" />
-            DISPATCH <span className="text-plos-primary">CENTER</span>
-          </h1>
-          <p className="text-plos-text-secondary text-sm mt-1">
-            Centro Comando Operativo
-          </p>
-        </div>
-        
-        {isDispatcher && (
-          <button
-            onClick={() => {
-              play('click');
-              setShowNewCall(true);
-            }}
-            className="btn-tactical flex items-center gap-2"
-            data-testid="new-call-btn"
-          >
-            <Plus size={18} />
-            NUOVA CHIAMATA
-          </button>
-        )}
-      </div>
+    <div className="p-6 space-y-6" data-testid="dispatch-page">
+      {/* Header */}
+      <OsPageHeader 
+        icon={Radio}
+        title={<>DISPATCH <span className="text-plos-primary">CENTER</span></>}
+        subtitle="Centro Comando Operativo"
+        action={isDispatcher ? () => { play('click'); setShowNewCall(true); } : null}
+        actionLabel="NUOVA CHIAMATA"
+        actionIcon={Plus}
+      />
 
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="card-tactical p-4">
-          <p className="text-plos-text-secondary text-xs tracking-wider font-heading">IN ATTESA</p>
-          <p className="font-heading text-3xl text-orange-500">{stats.chiamate_in_attesa}</p>
-        </div>
-        <div className="card-tactical p-4">
-          <p className="text-plos-text-secondary text-xs tracking-wider font-heading">ATTIVE</p>
-          <p className="font-heading text-3xl text-blue-500">{stats.chiamate_attive}</p>
-        </div>
-        <div className="card-tactical p-4">
-          <p className="text-plos-text-secondary text-xs tracking-wider font-heading">PRIORITÀ 1</p>
-          <p className="font-heading text-3xl text-red-500">{stats.chiamate_p1}</p>
-        </div>
-        <div className="card-tactical p-4">
-          <p className="text-plos-text-secondary text-xs tracking-wider font-heading">COMPLETATE OGGI</p>
-          <p className="font-heading text-3xl text-green-500">{stats.completate_oggi}</p>
-        </div>
+        <OsStatCard
+          icon={Clock}
+          label="IN ATTESA"
+          value={stats.chiamate_in_attesa}
+          color="orange"
+        />
+        <OsStatCard
+          icon={PhoneCall}
+          label="ATTIVE"
+          value={stats.chiamate_attive}
+          color="blue"
+        />
+        <OsStatCard
+          icon={Siren}
+          label="PRIORITÀ 1"
+          value={stats.chiamate_p1}
+          color="red"
+        />
+        <OsStatCard
+          icon={CheckCircle}
+          label="COMPLETATE OGGI"
+          value={stats.completate_oggi}
+          color="green"
+        />
       </div>
 
-      <div className="card-tactical p-4">
-        <h2 className="font-heading text-lg tracking-wider mb-4 flex items-center gap-2">
-          <AlertTriangle size={18} className="text-orange-500" />
-          CHIAMATE ATTIVE
-        </h2>
+      {/* Active Calls */}
+      <OsPanel>
+        <OsSectionHeader 
+          icon={PhoneCall} 
+          title="CHIAMATE ATTIVE" 
+          color="orange"
+        />
         
-        {calls.length === 0 ? (
-          <p className="text-plos-text-muted text-sm text-center py-8">
-            Nessuna chiamata attiva
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {calls.map((call) => (
-              <div
-                key={call.id}
-                className={`p-4 border border-plos-border ${getPriorityStyle(call.priority)}`}
-                data-testid={`call-${call.id}`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className={`status-badge status-${call.priority.toLowerCase()}`}>
+        <div className="divide-y divide-plos-border/20">
+          {calls.length === 0 ? (
+            <OsEmptyState 
+              icon={Phone}
+              title="Nessuna chiamata attiva"
+              description="Le chiamate in arrivo appariranno qui"
+              action={isDispatcher ? () => setShowNewCall(true) : null}
+              actionLabel="Crea chiamata test"
+            />
+          ) : (
+            calls.map((call, i) => (
+              <OsListRow key={call.id} index={i}>
+                <div className={`flex items-start justify-between gap-4 ${
+                  call.priority === 'P1' ? 'border-l-4 border-l-red-500 -ml-4 pl-4' :
+                  call.priority === 'P2' ? 'border-l-4 border-l-orange-500 -ml-4 pl-4' :
+                  'border-l-4 border-l-green-500 -ml-4 pl-4'
+                }`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <OsBadge variant={
+                        call.priority === 'P1' ? 'danger' :
+                        call.priority === 'P2' ? 'warning' : 'success'
+                      }>
                         {call.priority}
-                      </span>
-                      <span className="mono text-xs text-plos-text-secondary">{call.call_number}</span>
-                      <span className="text-xs uppercase">{call.status.replace('_', ' ')}</span>
+                      </OsBadge>
+                      <span className="font-heading text-sm tracking-wider">{call.call_type}</span>
+                      <span className="mono text-[10px] text-plos-text-muted">{call.call_number}</span>
                     </div>
                     
-                    <h3 className="font-medium text-lg">{call.call_type}</h3>
-                    
-                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-plos-text-secondary">
-                      <span className="flex items-center gap-1">
-                        <MapPin size={14} />
-                        {call.location}
-                      </span>
-                      {call.caller_name && (
-                        <span className="flex items-center gap-1">
-                          <Phone size={14} />
-                          {call.caller_name}
-                        </span>
-                      )}
+                    <div className="flex items-center gap-2 text-xs text-plos-text-secondary mt-2">
+                      <MapPin size={12} className="text-plos-primary" />
+                      <span>{call.location}</span>
                     </div>
                     
                     {call.description && (
-                      <p className="text-sm text-plos-text-muted mt-2">{call.description}</p>
+                      <p className="text-xs text-plos-text-muted mt-2 line-clamp-2">{call.description}</p>
                     )}
+                    
+                    <div className="flex items-center gap-4 mt-3 text-[10px] text-plos-text-muted">
+                      {call.caller_name && (
+                        <span className="flex items-center gap-1">
+                          <Users size={10} /> {call.caller_name}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Clock size={10} /> {new Date(call.created_at).toLocaleTimeString('it-IT')}
+                      </span>
+                    </div>
                   </div>
                   
-                  <div className="flex flex-col gap-2">
-                    <span className="mono text-xs text-plos-text-muted">
-                      {new Date(call.created_at).toLocaleTimeString('it-IT')}
-                    </span>
-                    {call.status !== 'completed' && (
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {call.status !== 'completed' && isDispatcher && (
                       <button
                         onClick={() => handleCompleteCall(call.id)}
-                        className="text-xs px-2 py-1 border border-green-500 text-green-500 hover:bg-green-500 hover:text-black"
+                        className="px-3 py-1.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-heading tracking-wider hover:bg-green-500/20 transition-colors rounded"
                       >
                         COMPLETA
                       </button>
@@ -246,92 +259,122 @@ export const DispatchPage = () => {
                     {canDelete && (
                       <button
                         onClick={() => setDeleteModal({ open: true, item: call })}
-                        className="text-xs px-2 py-1 border border-red-500 text-red-500 hover:bg-red-500 hover:text-black"
+                        className="p-1.5 hover:bg-red-500/20 rounded transition-colors"
                         title="Elimina chiamata"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} className="text-red-400" />
                       </button>
                     )}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              </OsListRow>
+            ))
+          )}
+        </div>
+      </OsPanel>
 
+      {/* New Call Modal */}
       {showNewCall && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="glass-panel corner-brackets w-full max-w-lg p-6" data-testid="new-call-modal">
-            <h2 className="font-heading text-xl tracking-wider mb-4">NUOVA CHIAMATA</h2>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-plos-surface to-plos-bg border border-plos-border rounded-lg w-full max-w-lg overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-plos-border bg-orange-500/5">
+              <h2 className="font-heading text-lg tracking-wider flex items-center gap-2">
+                <div className="p-1.5 bg-orange-500/20 rounded">
+                  <Plus size={16} className="text-orange-400" />
+                </div>
+                NUOVA CHIAMATA
+              </h2>
+              <button onClick={() => setShowNewCall(false)} className="p-1 hover:bg-plos-surface rounded">
+                <X size={18} />
+              </button>
+            </div>
             
-            <form onSubmit={handleCreateCall} className="space-y-4">
+            <form onSubmit={handleCreateCall} className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                    PRIORITÀ
-                  </label>
+                  <label className="text-[10px] text-plos-text-muted tracking-wider font-heading block mb-1">PRIORITÀ</label>
                   <select
                     value={newCallForm.priority}
                     onChange={(e) => setNewCallForm({ ...newCallForm, priority: e.target.value })}
-                    className="input-tactical w-full"
+                    className="w-full bg-plos-bg border border-plos-border rounded px-3 py-2 text-sm focus:border-plos-primary focus:outline-none"
                   >
-                    <option value="P1">P1 - Critica</option>
-                    <option value="P2">P2 - Alta</option>
-                    <option value="P3">P3 - Normale</option>
+                    <option value="P1">P1 - EMERGENZA</option>
+                    <option value="P2">P2 - URGENTE</option>
+                    <option value="P3">P3 - NORMALE</option>
                   </select>
                 </div>
-                
                 <div>
-                  <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                    TIPO
-                  </label>
+                  <label className="text-[10px] text-plos-text-muted tracking-wider font-heading block mb-1">TIPO *</label>
                   <input
                     type="text"
                     value={newCallForm.call_type}
                     onChange={(e) => setNewCallForm({ ...newCallForm, call_type: e.target.value })}
-                    className="input-tactical w-full"
-                    placeholder="Es: Rapina, Incidente..."
+                    className="w-full bg-plos-bg border border-plos-border rounded px-3 py-2 text-sm focus:border-plos-primary focus:outline-none"
+                    placeholder="Es: Incidente, Rapina..."
                     required
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                  POSIZIONE
-                </label>
+                <label className="text-[10px] text-plos-text-muted tracking-wider font-heading block mb-1">POSIZIONE *</label>
                 <input
                   type="text"
                   value={newCallForm.location}
                   onChange={(e) => setNewCallForm({ ...newCallForm, location: e.target.value })}
-                  className="input-tactical w-full"
-                  placeholder="Indirizzo o zona"
+                  className="w-full bg-plos-bg border border-plos-border rounded px-3 py-2 text-sm focus:border-plos-primary focus:outline-none"
+                  placeholder="Indirizzo o coordinate"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-plos-text-secondary text-xs tracking-wider font-heading mb-2">
-                  DESCRIZIONE
-                </label>
+                <label className="text-[10px] text-plos-text-muted tracking-wider font-heading block mb-1">DESCRIZIONE</label>
                 <textarea
                   value={newCallForm.description}
                   onChange={(e) => setNewCallForm({ ...newCallForm, description: e.target.value })}
-                  className="input-tactical w-full min-h-[80px]"
-                  placeholder="Dettagli della chiamata"
+                  rows={3}
+                  className="w-full bg-plos-bg border border-plos-border rounded px-3 py-2 text-sm focus:border-plos-primary focus:outline-none resize-none"
+                  placeholder="Dettagli dell'emergenza..."
                 />
               </div>
               
-              <div className="flex justify-end gap-4 pt-4 border-t border-plos-border">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] text-plos-text-muted tracking-wider font-heading block mb-1">CHIAMANTE</label>
+                  <input
+                    type="text"
+                    value={newCallForm.caller_name}
+                    onChange={(e) => setNewCallForm({ ...newCallForm, caller_name: e.target.value })}
+                    className="w-full bg-plos-bg border border-plos-border rounded px-3 py-2 text-sm focus:border-plos-primary focus:outline-none"
+                    placeholder="Nome chiamante"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-plos-text-muted tracking-wider font-heading block mb-1">TELEFONO</label>
+                  <input
+                    type="text"
+                    value={newCallForm.caller_phone}
+                    onChange={(e) => setNewCallForm({ ...newCallForm, caller_phone: e.target.value })}
+                    className="w-full bg-plos-bg border border-plos-border rounded px-3 py-2 text-sm focus:border-plos-primary focus:outline-none"
+                    placeholder="Numero telefono"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowNewCall(false)}
-                  className="px-4 py-2 border border-plos-border text-plos-text-secondary"
+                  className="flex-1 py-2.5 border border-plos-border hover:border-plos-text-muted transition-colors font-heading text-sm"
                 >
                   ANNULLA
                 </button>
-                <button type="submit" className="btn-tactical">
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 transition-colors font-heading text-sm flex items-center justify-center gap-2"
+                >
+                  <Radio size={16} />
                   CREA CHIAMATA
                 </button>
               </div>
@@ -339,7 +382,7 @@ export const DispatchPage = () => {
           </div>
         </div>
       )}
-      
+
       {/* Delete Modal */}
       <DeleteModal
         isOpen={deleteModal.open}
