@@ -187,9 +187,36 @@ async def health_check():
 async def sse_events(
     request: Request,
     token: str = None,
-    current_user = Depends(get_current_user)
+    db: AsyncSession = Depends(get_db)
 ):
-    """SSE endpoint per eventi realtime"""
+    """SSE endpoint per eventi realtime - accetta token da query param o header"""
+    from sqlalchemy import select
+    from models import User
+    
+    # Try to get token from query param (for EventSource) or Authorization header
+    auth_token = token
+    if not auth_token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            auth_token = auth_header[7:]
+    
+    if not auth_token:
+        raise HTTPException(status_code=401, detail="Token richiesto")
+    
+    try:
+        payload = decode_token(auth_token)
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Token non valido")
+        
+        result = await db.execute(select(User).where(User.id == int(user_id)))
+        user = result.scalar_one_or_none()
+        if not user or not user.is_active:
+            raise HTTPException(status_code=401, detail="Utente non autorizzato")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token non valido")
     async def event_stream():
         client_id = await sse_manager.connect()
         try:
