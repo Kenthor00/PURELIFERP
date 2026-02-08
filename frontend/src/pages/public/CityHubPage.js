@@ -760,38 +760,8 @@ export const CityHubPage = () => {
       </main>
       </div>
 
-      {/* FiveM Scroll Buttons - Fissi sul lato destro */}
-      <div className="fixed right-2 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2">
-        {/* Scroll Up Button */}
-        <button
-          onClick={() => scrollBy('up')}
-          disabled={!canScrollUp}
-          className={`p-2 rounded-lg border transition-all ${
-            canScrollUp
-              ? 'bg-plos-primary/20 border-plos-primary/50 text-plos-primary hover:bg-plos-primary/30 active:scale-95'
-              : 'bg-plos-surface/30 border-plos-border/30 text-plos-text-muted/30 cursor-not-allowed'
-          }`}
-          data-testid="scroll-up-btn"
-          title="Scorri su"
-        >
-          <ChevronUp size={20} />
-        </button>
-        
-        {/* Scroll Down Button */}
-        <button
-          onClick={() => scrollBy('down')}
-          disabled={!canScrollDown}
-          className={`p-2 rounded-lg border transition-all ${
-            canScrollDown
-              ? 'bg-plos-primary/20 border-plos-primary/50 text-plos-primary hover:bg-plos-primary/30 active:scale-95'
-              : 'bg-plos-surface/30 border-plos-border/30 text-plos-text-muted/30 cursor-not-allowed'
-          }`}
-          data-testid="scroll-down-btn"
-          title="Scorri giù"
-        >
-          <ChevronDown size={20} />
-        </button>
-      </div>
+      {/* Premium Custom Scrollbar per FiveM CEF */}
+      <PremiumScrollbar containerRef={scrollContainerRef} />
     </div>
   );
 };
