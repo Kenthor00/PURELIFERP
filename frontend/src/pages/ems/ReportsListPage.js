@@ -4,14 +4,16 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { DeleteModal, useDelete } from '../../components/DeleteModal';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { FileText, Plus, Search, User, Calendar, Eye } from 'lucide-react';
+import { FileText, Plus, Search, User, Calendar, Eye, Trash2 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const ReportsListPage = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const { deleteResource, loading: deleteLoading } = useDelete();
   const [reports, setReports] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,7 @@ const ReportsListPage = () => {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ open: false, item: null });
   const [newReport, setNewReport] = useState({
     patient_id: '',
     diagnosis: '',
@@ -26,6 +29,8 @@ const ReportsListPage = () => {
     prescription: '',
     notes: ''
   });
+  
+  const canDelete = user?.sector === 'ADMIN' || (user?.sector === 'EMS' && user?.hierarchy_level >= 8);
 
   useEffect(() => {
     fetchData();
