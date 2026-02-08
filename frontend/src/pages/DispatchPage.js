@@ -243,6 +243,15 @@ export const DispatchPage = () => {
                         COMPLETA
                       </button>
                     )}
+                    {canDelete && (
+                      <button
+                        onClick={() => setDeleteModal({ open: true, item: call })}
+                        className="text-xs px-2 py-1 border border-red-500 text-red-500 hover:bg-red-500 hover:text-black"
+                        title="Elimina chiamata"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
