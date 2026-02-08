@@ -279,51 +279,65 @@ export const LSPDDashboard = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/lspd/cases/new');
-          }}
-          className="p-4 bg-blue-500/10 border border-blue-500/30 hover:border-blue-500 transition-colors text-center"
-        >
-          <FileText className="mx-auto mb-2 text-blue-500" size={24} />
-          <span className="font-heading text-sm">Nuovo Caso</span>
-        </button>
-        
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/lspd/warrants/new');
-          }}
-          className="p-4 bg-orange-500/10 border border-orange-500/30 hover:border-orange-500 transition-colors text-center"
-        >
-          <AlertTriangle className="mx-auto mb-2 text-orange-500" size={24} />
-          <span className="font-heading text-sm">Nuovo Mandato</span>
-        </button>
-        
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/lspd/fines/new');
-          }}
-          className="p-4 bg-red-500/10 border border-red-500/30 hover:border-red-500 transition-colors text-center"
-        >
-          <DollarSign className="mx-auto mb-2 text-red-500" size={24} />
-          <span className="font-heading text-sm">Nuova Multa</span>
-        </button>
-        
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/dispatch');
-          }}
-          className="p-4 bg-plos-primary/10 border border-plos-primary/30 hover:border-plos-primary transition-colors text-center"
-        >
-          <Radio className="mx-auto mb-2 text-plos-primary" size={24} />
-          <span className="font-heading text-sm">Dispatch</span>
-        </button>
+      {/* Quick Actions - OS Style Module Grid */}
+      <div className="mt-6">
+        <h2 className="text-plos-text-muted text-[10px] tracking-[0.2em] font-heading mb-3 uppercase flex items-center gap-2">
+          <div className="w-1 h-3 bg-plos-primary rounded-full"></div>
+          AZIONI RAPIDE
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <button
+            onClick={() => {
+              play('click');
+              navigate('/lspd/cases/new');
+            }}
+            className="group relative overflow-hidden p-5 bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 rounded-lg hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 text-left"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <FileText className="mb-3 text-blue-400 group-hover:scale-110 transition-transform" size={28} />
+            <p className="font-heading text-sm text-white">Nuovo Caso</p>
+            <p className="text-[10px] text-plos-text-muted mt-1">Apri investigazione</p>
+          </button>
+          
+          <button
+            onClick={() => {
+              play('click');
+              navigate('/lspd/warrants/new');
+            }}
+            className="group relative overflow-hidden p-5 bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 rounded-lg hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 text-left"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <AlertTriangle className="mb-3 text-orange-400 group-hover:scale-110 transition-transform" size={28} />
+            <p className="font-heading text-sm text-white">Nuovo Mandato</p>
+            <p className="text-[10px] text-plos-text-muted mt-1">Emetti mandato</p>
+          </button>
+          
+          <button
+            onClick={() => {
+              play('click');
+              navigate('/lspd/fines/new');
+            }}
+            className="group relative overflow-hidden p-5 bg-gradient-to-br from-red-500/10 to-transparent border border-red-500/20 rounded-lg hover:border-red-500/50 hover:shadow-lg hover:shadow-red-500/10 transition-all duration-300 text-left"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <DollarSign className="mb-3 text-red-400 group-hover:scale-110 transition-transform" size={28} />
+            <p className="font-heading text-sm text-white">Nuova Multa</p>
+            <p className="text-[10px] text-plos-text-muted mt-1">Sanzione amministrativa</p>
+          </button>
+          
+          <button
+            onClick={() => {
+              play('click');
+              navigate('/dispatch');
+            }}
+            className="group relative overflow-hidden p-5 bg-gradient-to-br from-plos-primary/10 to-transparent border border-plos-primary/20 rounded-lg hover:border-plos-primary/50 hover:shadow-lg hover:shadow-plos-primary/10 transition-all duration-300 text-left"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-plos-primary/5 rounded-full -translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-500" />
+            <Radio className="mb-3 text-plos-primary group-hover:scale-110 transition-transform" size={28} />
+            <p className="font-heading text-sm text-white">Dispatch</p>
+            <p className="text-[10px] text-plos-text-muted mt-1">Centro chiamate</p>
+          </button>
+        </div>
       </div>
     </div>
   );
