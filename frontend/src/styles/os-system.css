@@ -1,0 +1,656 @@
+/**
+ * PURE LIFE OS 3.0 - SISTEMA OPERATIVO GOVERNATIVO
+ * Design System - Palette Istituzionale Tecnologica
+ */
+
+:root {
+  /* ═══════════════════════════════════════════════════════
+     SISTEMA OPERATIVO GOVERNATIVO - PALETTE UFFICIALE
+     ═══════════════════════════════════════════════════════ */
+  
+  /* Background Layers */
+  --os-bg-base: #0a0f12;
+  --os-bg-layer: rgba(18, 25, 30, 0.75);
+  --os-bg-card: #0f1519;
+  --os-bg-elevated: #141c22;
+  --os-bg-hover: #1a252d;
+  
+  /* Borders */
+  --os-border: #1b2a30;
+  --os-border-light: #243038;
+  --os-border-glow: rgba(0, 255, 156, 0.15);
+  
+  /* Text */
+  --os-text-primary: #e6f1f2;
+  --os-text-secondary: #7f9aa3;
+  --os-text-muted: #4a6670;
+  --os-text-disabled: #2d3d45;
+  
+  /* System Accent */
+  --os-accent: #00ff9c;
+  --os-accent-dim: #00cc7d;
+  --os-accent-glow: rgba(0, 255, 156, 0.12);
+  --os-accent-glow-strong: rgba(0, 255, 156, 0.25);
+  
+  /* Status Colors */
+  --os-success: #00ff9c;
+  --os-warning: #ffc857;
+  --os-danger: #ff3b3b;
+  --os-info: #3b9fff;
+  
+  /* Departments */
+  --os-lspd: #3b82f6;
+  --os-ems: #ef4444;
+  --os-dispatch: #f97316;
+  --os-justice: #8b5cf6;
+  --os-news: #eab308;
+  --os-gov: #06b6d4;
+  
+  /* Effects */
+  --os-glass-blur: 12px;
+  --os-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --os-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --os-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --os-shadow-glow: 0 0 20px var(--os-accent-glow);
+  
+  /* Spacing (Safe Area for Tablet) */
+  --os-safe-area: 16px;
+  --os-safe-area-lg: 24px;
+  
+  /* Transitions */
+  --os-transition-fast: 150ms ease;
+  --os-transition-normal: 250ms ease;
+  --os-transition-slow: 400ms ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BASE STYLES - SISTEMA OPERATIVO
+   ═══════════════════════════════════════════════════════ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+  background: var(--os-bg-base);
+  color: var(--os-text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Noise Texture Overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCROLLBAR - INVISIBILE / MINIMAL
+   ═══════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--os-border);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--os-accent-dim);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--os-border) transparent;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TYPOGRAPHY - SISTEMA
+   ═══════════════════════════════════════════════════════ */
+
+.os-heading {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.os-heading-xl {
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+}
+
+.os-heading-lg {
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+}
+
+.os-heading-md {
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+}
+
+.os-heading-sm {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.os-text {
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.os-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GLASS LAYER - EFFETTO VETRO
+   ═══════════════════════════════════════════════════════ */
+
+.os-glass {
+  background: var(--os-bg-layer);
+  backdrop-filter: blur(var(--os-glass-blur));
+  -webkit-backdrop-filter: blur(var(--os-glass-blur));
+  border: 1px solid var(--os-border);
+}
+
+.os-glass-card {
+  background: var(--os-bg-card);
+  border: 1px solid var(--os-border);
+  border-radius: 8px;
+  box-shadow: var(--os-shadow-sm), inset 0 1px 0 rgba(255,255,255,0.02);
+  transition: all var(--os-transition-normal);
+}
+
+.os-glass-card:hover {
+  border-color: var(--os-border-glow);
+  box-shadow: var(--os-shadow-md), var(--os-shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SYSTEM CARD - MODULO GOVERNATIVO
+   ═══════════════════════════════════════════════════════ */
+
+.os-module {
+  background: var(--os-bg-card);
+  border: 1px solid var(--os-border);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all var(--os-transition-normal);
+}
+
+.os-module-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--os-border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+}
+
+.os-module-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--os-bg-elevated);
+  border: 1px solid var(--os-border-light);
+}
+
+.os-module-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--os-border);
+}
+
+.os-module-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--os-text-primary);
+}
+
+.os-module-subtitle {
+  font-size: 0.75rem;
+  color: var(--os-text-secondary);
+  margin-top: 2px;
+}
+
+.os-module-content {
+  padding: 16px;
+}
+
+.os-module:hover {
+  border-color: var(--os-border-glow);
+  box-shadow: 0 0 0 1px var(--os-border-glow), var(--os-shadow-glow);
+}
+
+/* ═══════════════════════════════════════════════════════
+   STAT CARD - DATI SISTEMA
+   ═══════════════════════════════════════════════════════ */
+
+.os-stat {
+  background: var(--os-bg-card);
+  border: 1px solid var(--os-border);
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all var(--os-transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.os-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--stat-color, var(--os-accent));
+  opacity: 0.5;
+}
+
+.os-stat-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-text-muted);
+}
+
+.os-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--os-text-primary);
+  line-height: 1;
+}
+
+.os-stat-change {
+  font-size: 0.75rem;
+  color: var(--os-text-secondary);
+}
+
+.os-stat:hover {
+  border-color: var(--os-border-glow);
+  transform: translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════════════════
+   BUTTONS - SISTEMA OPERATIVO
+   ═══════════════════════════════════════════════════════ */
+
+.os-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  border: 1px solid var(--os-border);
+  background: var(--os-bg-card);
+  color: var(--os-text-primary);
+  cursor: pointer;
+  transition: all var(--os-transition-fast);
+}
+
+.os-btn:hover {
+  background: var(--os-bg-hover);
+  border-color: var(--os-accent-dim);
+}
+
+.os-btn:active {
+  transform: scale(0.98);
+}
+
+.os-btn-primary {
+  background: var(--os-accent);
+  border-color: var(--os-accent);
+  color: var(--os-bg-base);
+}
+
+.os-btn-primary:hover {
+  background: var(--os-accent-dim);
+  border-color: var(--os-accent-dim);
+  box-shadow: var(--os-shadow-glow);
+}
+
+.os-btn-danger {
+  border-color: var(--os-danger);
+  color: var(--os-danger);
+}
+
+.os-btn-danger:hover {
+  background: rgba(255, 59, 59, 0.1);
+  border-color: var(--os-danger);
+}
+
+.os-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.os-btn-ghost:hover {
+  background: var(--os-bg-hover);
+  border-color: var(--os-border);
+}
+
+/* ═══════════════════════════════════════════════════════
+   FORM INPUTS - SISTEMA
+   ═══════════════════════════════════════════════════════ */
+
+.os-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  background: var(--os-bg-base);
+  border: 1px solid var(--os-border);
+  border-radius: 4px;
+  color: var(--os-text-primary);
+  transition: all var(--os-transition-fast);
+}
+
+.os-input::placeholder {
+  color: var(--os-text-muted);
+}
+
+.os-input:focus {
+  outline: none;
+  border-color: var(--os-accent-dim);
+  box-shadow: 0 0 0 2px var(--os-accent-glow);
+}
+
+.os-input-label {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-text-muted);
+  margin-bottom: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS - SISTEMA OPERATIVO
+   ═══════════════════════════════════════════════════════ */
+
+@keyframes os-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes os-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes os-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes os-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--os-accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px 2px var(--os-accent-glow);
+  }
+}
+
+@keyframes os-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.os-animate-fade-in {
+  animation: os-fade-in 0.4s ease forwards;
+}
+
+.os-animate-slide-in {
+  animation: os-slide-in 0.3s ease forwards;
+}
+
+.os-animate-scale-in {
+  animation: os-scale-in 0.25s ease forwards;
+}
+
+.os-animate-glow {
+  animation: os-glow-pulse 3s ease-in-out infinite;
+}
+
+.os-animate-blink {
+  animation: os-blink 1s ease-in-out infinite;
+}
+
+/* Staggered animations for lists */
+.os-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.os-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.os-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.os-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.os-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.os-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.os-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.os-stagger > *:nth-child(8) { animation-delay: 350ms; }
+
+/* ═══════════════════════════════════════════════════════
+   STATUS INDICATORS
+   ═══════════════════════════════════════════════════════ */
+
+.os-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.os-status-online {
+  background: rgba(0, 255, 156, 0.1);
+  border-color: rgba(0, 255, 156, 0.3);
+  color: var(--os-success);
+}
+
+.os-status-warning {
+  background: rgba(255, 200, 87, 0.1);
+  border-color: rgba(255, 200, 87, 0.3);
+  color: var(--os-warning);
+}
+
+.os-status-danger {
+  background: rgba(255, 59, 59, 0.1);
+  border-color: rgba(255, 59, 59, 0.3);
+  color: var(--os-danger);
+}
+
+.os-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.os-status-dot.pulse {
+  animation: os-glow-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODAL - SISTEMA OPERATIVO
+   ═══════════════════════════════════════════════════════ */
+
+.os-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+
+.os-modal {
+  position: fixed;
+  inset: var(--os-safe-area);
+  background: var(--os-bg-card);
+  border: 1px solid var(--os-border);
+  border-radius: 8px;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  animation: os-scale-in 0.2s ease;
+}
+
+.os-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--os-border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+}
+
+.os-modal-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.os-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.os-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--os-border);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SAFE AREA - TABLET IMMERSION
+   ═══════════════════════════════════════════════════════ */
+
+.os-safe-area {
+  padding: var(--os-safe-area);
+}
+
+.os-safe-area-lg {
+  padding: var(--os-safe-area-lg);
+}
+
+/* ═══════════════════════════════════════════════════════
+   DEPARTMENT ACCENTS
+   ═══════════════════════════════════════════════════════ */
+
+.os-dept-lspd { --dept-color: var(--os-lspd); }
+.os-dept-ems { --dept-color: var(--os-ems); }
+.os-dept-dispatch { --dept-color: var(--os-dispatch); }
+.os-dept-justice { --dept-color: var(--os-justice); }
+.os-dept-news { --dept-color: var(--os-news); }
+.os-dept-gov { --dept-color: var(--os-gov); }
+
+.os-dept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  background: rgba(var(--dept-color), 0.1);
+  border: 1px solid rgba(var(--dept-color), 0.3);
+  color: var(--dept-color);
+}
+
+/* ═══════════════════════════════════════════════════════
+   NOTIFICATION - SISTEMA
+   ═══════════════════════════════════════════════════════ */
+
+.os-notification {
+  position: fixed;
+  top: 60px;
+  right: var(--os-safe-area);
+  max-width: 360px;
+  padding: 14px 18px;
+  background: var(--os-bg-card);
+  border: 1px solid var(--os-border);
+  border-radius: 6px;
+  box-shadow: var(--os-shadow-lg);
+  z-index: 200;
+  animation: os-slide-in 0.3s ease;
+}
+
+.os-notification-success {
+  border-left: 3px solid var(--os-success);
+}
+
+.os-notification-warning {
+  border-left: 3px solid var(--os-warning);
+}
+
+.os-notification-danger {
+  border-left: 3px solid var(--os-danger);
+}
