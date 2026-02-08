@@ -385,7 +385,12 @@ async def get_justice_stats(
     current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT)),
     db: AsyncSession = Depends(get_db)
 ):
-    """Statistiche giustizia"""
+    """Statistiche giustizia - CACHED 30s"""
+    # Check cache first
+    cached_stats = await ModuleCache.get_stats("justice")
+    if cached_stats:
+        return cached_stats
+    
     pending_cases = await db.execute(
         select(func.count(LegalCase.id))
         .where(LegalCase.status.in_([LegalCaseStatus.SUBMITTED, LegalCaseStatus.REVIEW]))
@@ -404,8 +409,13 @@ async def get_justice_stats(
         )
     )
     
-    return {
+    stats = {
         "pratiche_in_attesa": pending_cases.scalar() or 0,
         "udienze_programmate": scheduled_hearings.scalar() or 0,
         "verdetti_oggi": completed_today.scalar() or 0
     }
+    
+    # Cache for 30 seconds
+    await ModuleCache.set_stats("justice", stats, ttl=30)
+    
+    return stats
