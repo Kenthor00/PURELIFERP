@@ -73,7 +73,9 @@ export const ServiceChatPage = () => {
   // Fetch channels
   const fetchChannels = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/chat/channels`, { headers: authHeaders });
+      const res = await axios.get(`${API_URL}/api/chat/channels`, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
       setChannels(res.data);
       
       const paramChannel = searchParams.get('channel')?.toLowerCase();
@@ -87,7 +89,7 @@ export const ServiceChatPage = () => {
     } catch (error) {
       console.error('Errore fetch channels:', error);
     }
-  }, [searchParams, token]);
+  }, [searchParams, token, activeChannel]);
 
   // Fetch messages
   const fetchMessages = useCallback(async () => {
