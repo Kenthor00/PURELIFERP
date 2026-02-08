@@ -1,8 +1,9 @@
 /**
  * PURE LIFE OS 3.0 - City Hub Page
  * Portale Cittadino Istituzionale Premium
+ * Con supporto scroll per FiveM CEF browser
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -21,6 +22,8 @@ import {
   Briefcase,
   ArrowRight,
   Sparkles,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
