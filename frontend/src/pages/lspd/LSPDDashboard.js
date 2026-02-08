@@ -61,27 +61,42 @@ export const LSPDDashboard = () => {
     return () => unsubscribe();
   }, [api, subscribe, play]);
 
-  const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
+  const StatCard = ({ icon: Icon, label, value, color, onClick, trend }) => (
     <div
       onClick={onClick}
-      className={`card-tactical p-4 cursor-pointer group ${onClick ? 'hover:border-plos-primary' : ''}`}
+      className={`relative overflow-hidden bg-gradient-to-br from-plos-surface to-plos-bg border border-plos-border rounded-lg p-5 cursor-pointer group transition-all duration-300 hover:border-opacity-50 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5 ${onClick ? 'hover:border-plos-primary/50' : ''}`}
       data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}
+      style={{ '--stat-color': color.includes('blue') ? '#3b82f6' : color.includes('orange') ? '#f97316' : color.includes('red') ? '#ef4444' : '#00ff9c' }}
     >
-      <div className="flex items-start justify-between">
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] opacity-60" style={{ background: 'var(--stat-color)' }} />
+      
+      {/* Glow effect on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" 
+           style={{ background: `radial-gradient(ellipse at top, color-mix(in srgb, var(--stat-color) 10%, transparent) 0%, transparent 70%)` }} />
+      
+      <div className="relative flex items-start justify-between">
         <div>
-          <p className="text-plos-text-secondary text-xs tracking-wider font-heading mb-1">
+          <p className="text-plos-text-muted text-[10px] tracking-[0.15em] font-heading mb-2 uppercase">
             {label}
           </p>
-          <p className={`font-heading text-3xl ${color}`}>{value}</p>
+          <p className={`font-heading text-4xl font-bold tracking-tight ${color}`}>{value}</p>
+          {trend && (
+            <div className={`mt-2 text-xs flex items-center gap-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <TrendingUp size={12} className={trend < 0 ? 'rotate-180' : ''} />
+              <span>{Math.abs(trend)}% oggi</span>
+            </div>
+          )}
         </div>
-        <div className={`p-2 border ${color.replace('text-', 'border-')} bg-black/30`}>
-          <Icon size={20} className={color} />
+        <div className={`p-3 rounded-lg bg-black/40 border ${color.replace('text-', 'border-')}/30 group-hover:scale-110 transition-transform duration-300`}>
+          <Icon size={22} className={color} />
         </div>
       </div>
+      
       {onClick && (
-        <div className="mt-3 flex items-center gap-1 text-plos-text-muted text-xs group-hover:text-plos-primary transition-colors">
-          <span>Visualizza</span>
-          <ChevronRight size={14} />
+        <div className="mt-4 pt-3 border-t border-plos-border/50 flex items-center gap-1 text-plos-text-muted text-xs group-hover:text-plos-primary transition-colors">
+          <span className="tracking-wider">APRI DETTAGLI</span>
+          <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </div>
       )}
     </div>
