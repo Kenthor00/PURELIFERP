@@ -10,7 +10,7 @@ import {
   Search, Command, FileText, Users, Shield, Heart, Radio, Gavel,
   Newspaper, MessageSquare, Bell, Settings, Home, LogOut,
   Plus, Trash2, Eye, Edit, Calendar, AlertTriangle, BarChart3,
-  X, ArrowRight, Clock, Star
+  X, ArrowRight, Clock, Star, DollarSign
 } from 'lucide-react';
 
 // Azioni disponibili per tipo utente
