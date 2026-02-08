@@ -617,6 +617,7 @@ function App() {
                     },
                   }}
                 />
+                <DebugPanel />
               </SSEProvider>
             </SoundProvider>
           </AuthProvider>
