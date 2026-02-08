@@ -313,7 +313,7 @@ async def get_delete_permissions(
     
     return {
         "user_sector": current_user.sector.value,
-        "user_level": current_user.level,
+        "user_level": current_user.hierarchy_level,
         "is_admin": current_user.sector.value == "ADMIN",
         "permissions": permissions
     }
