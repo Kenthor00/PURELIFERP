@@ -92,15 +92,18 @@ export const SSEProvider = ({ children }) => {
         eventSource.close();
         eventSourceRef.current = null;
         
-        // Schedule reconnect after 5 seconds
+        // Schedule reconnect after 3 seconds (ridotto per riconnessione più rapida)
         reconnectTimeoutRef.current = setTimeout(() => {
           reconnectTimeoutRef.current = null;
           if (token) {
             connect();
           }
-        }, 5000);
+        }, 3000);
+      } else if (eventSource.readyState === EventSource.CONNECTING) {
+        // Se sta ancora tentando di connettersi, non mostrare offline
+        // L'errore potrebbe essere temporaneo (es. QUIC fallback)
+        console.log('SSE: Connessione in corso, attendo...');
       }
-      // Se readyState è CONNECTING, potrebbe essere un errore temporaneo, non disconnettiamo subito
     };
 
     eventSourceRef.current = eventSource;
