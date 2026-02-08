@@ -26,7 +26,6 @@
 html, body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
 }
 
 #root {
@@ -40,7 +39,8 @@ body {
   color: var(--plos-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: auto !important;
   -webkit-overflow-scrolling: touch; /* Smooth scroll on touch devices */
 }
 
