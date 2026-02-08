@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { useSSE } from '../context/SSEContext';
+import { CommandPalette, useCommandPalette } from './CommandPalette';
 import {
   Shield,
   Heart,
@@ -22,6 +23,7 @@ import {
   Building2,
   Newspaper,
   Circle,
+  Command,
 } from 'lucide-react';
 
 // Mapping stati presenza
