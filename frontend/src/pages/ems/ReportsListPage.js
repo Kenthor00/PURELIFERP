@@ -251,48 +251,107 @@ const ReportsListPage = () => {
 
       {/* Detail Modal */}
       {showDetailModal && selectedReport && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="glass-card rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-heading font-bold mb-4 flex items-center gap-2">
-              <FileText className="text-plos-primary" />
-              {selectedReport.report_number}
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-plos-text-secondary">PAZIENTE</p>
-                <p className="text-lg">{getPatientName(selectedReport.patient_id)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-plos-text-secondary">DIAGNOSI</p>
-                <p className="whitespace-pre-wrap">{selectedReport.diagnosis}</p>
-              </div>
-              <div>
-                <p className="text-sm text-plos-text-secondary">TRATTAMENTO</p>
-                <p className="whitespace-pre-wrap">{selectedReport.treatment}</p>
-              </div>
-              {selectedReport.prescription && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-plos-card border border-plos-border/50 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl">
+            {/* Header */}
+            <div className="p-4 border-b border-plos-border/30 bg-gradient-to-r from-plos-primary/10 to-transparent">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-plos-text-secondary">PRESCRIZIONE</p>
-                  <p className="whitespace-pre-wrap">{selectedReport.prescription}</p>
+                  <p className="mono text-xs text-plos-primary mb-1">{selectedReport.report_number}</p>
+                  <h2 className="text-xl font-heading font-bold flex items-center gap-2">
+                    <FileText className="text-plos-primary" />
+                    REFERTO MEDICO
+                  </h2>
                 </div>
-              )}
-              {selectedReport.notes && (
-                <div>
-                  <p className="text-sm text-plos-text-secondary">NOTE</p>
-                  <p className="whitespace-pre-wrap">{selectedReport.notes}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-sm text-plos-text-secondary">DATA</p>
-                <p>{new Date(selectedReport.created_at).toLocaleString('it-IT')}</p>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="p-2 hover:bg-plos-surface rounded-lg transition-colors"
+                >
+                  <span className="text-2xl leading-none">&times;</span>
+                </button>
               </div>
             </div>
-            <button
-              onClick={() => setShowDetailModal(false)}
-              className="w-full mt-4 px-4 py-2 bg-plos-surface rounded-lg"
-            >
-              Chiudi
-            </button>
+            
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(85vh-140px)] space-y-5">
+              {/* Patient Info */}
+              <div className="flex items-center gap-3 p-3 bg-plos-surface/50 rounded-lg">
+                <User className="text-plos-text-muted" size={20} />
+                <div>
+                  <p className="text-xs text-plos-text-muted">PAZIENTE</p>
+                  <p className="font-medium">{getPatientName(selectedReport.patient_id)}</p>
+                </div>
+              </div>
+              
+              {/* Diagnosis */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-heading text-plos-primary uppercase tracking-wider flex items-center gap-2">
+                  <div className="w-1 h-4 bg-plos-primary rounded-full"></div>
+                  DIAGNOSI
+                </h3>
+                <p className="text-plos-text-secondary whitespace-pre-wrap leading-relaxed p-3 bg-plos-surface/30 rounded-lg border border-plos-border/20">
+                  {selectedReport.diagnosis || 'Non specificata'}
+                </p>
+              </div>
+              
+              {/* Treatment */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-heading text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                  <div className="w-1 h-4 bg-blue-400 rounded-full"></div>
+                  TRATTAMENTO
+                </h3>
+                <p className="text-plos-text-secondary whitespace-pre-wrap leading-relaxed p-3 bg-plos-surface/30 rounded-lg border border-plos-border/20">
+                  {selectedReport.treatment || 'Non specificato'}
+                </p>
+              </div>
+              
+              {/* Prescription */}
+              {selectedReport.prescription && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-heading text-orange-400 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-1 h-4 bg-orange-400 rounded-full"></div>
+                    PRESCRIZIONE
+                  </h3>
+                  <p className="text-plos-text-secondary whitespace-pre-wrap leading-relaxed p-3 bg-orange-500/5 rounded-lg border border-orange-500/20">
+                    {selectedReport.prescription}
+                  </p>
+                </div>
+              )}
+              
+              {/* Notes */}
+              {selectedReport.notes && (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-heading text-plos-text-muted uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-1 h-4 bg-plos-text-muted rounded-full"></div>
+                    NOTE
+                  </h3>
+                  <p className="text-plos-text-secondary whitespace-pre-wrap leading-relaxed p-3 bg-plos-surface/30 rounded-lg border border-plos-border/20">
+                    {selectedReport.notes}
+                  </p>
+                </div>
+              )}
+              
+              {/* Metadata */}
+              <div className="pt-4 border-t border-plos-border/30 flex items-center justify-between text-xs text-plos-text-muted">
+                <span className="flex items-center gap-1">
+                  <Calendar size={12} />
+                  {new Date(selectedReport.created_at).toLocaleString('it-IT')}
+                </span>
+                {selectedReport.created_by_name && (
+                  <span>Creato da: {selectedReport.created_by_name}</span>
+                )}
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t border-plos-border/30 bg-plos-surface/20">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="w-full px-4 py-3 bg-plos-surface hover:bg-plos-surface/80 rounded-lg transition-colors font-heading"
+              >
+                CHIUDI
+              </button>
+            </div>
           </div>
         </div>
       )}
