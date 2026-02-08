@@ -5,8 +5,8 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { StatsSkeleton, ListSkeleton } from '../../components/ui/Skeleton';
+import { useAuth } from '../context/AuthContext';
+import { StatsSkeleton, ListSkeleton } from '../components/ui/Skeleton';
 import {
   Activity,
   TrendingUp,
