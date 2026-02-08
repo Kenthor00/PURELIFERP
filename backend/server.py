@@ -239,7 +239,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
     """
     # Verifica token JWT
     try:
-        payload = verify_token(token)
+        payload = decode_token(token)
         user_id = payload.get("sub")
         if not user_id:
             await websocket.close(code=4001, reason="Invalid token")
