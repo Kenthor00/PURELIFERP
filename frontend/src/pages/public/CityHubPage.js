@@ -243,7 +243,7 @@ export const CityHubPage = () => {
         )}
 
         {/* Content Grid - Stack verticale su mobile */}
-        <section className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-8 space-y-4">
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-6 sm:pb-8 space-y-4">
           
           {/* Announcements Section - Compatto */}
           <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-lg overflow-hidden">
