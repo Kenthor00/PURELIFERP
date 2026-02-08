@@ -135,36 +135,22 @@ export const CityHubPage = () => {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px]" />
       </div>
 
-      {/* Header */}
+      {/* Header - Compatto */}
       <header className="relative bg-[#0a0f12]/90 backdrop-blur-xl border-b border-plos-border/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2.5 sm:py-3">
+          <div className="flex items-center justify-between gap-2">
             <CityLogo />
             
-            <nav className="flex items-center gap-2 sm:gap-4 flex-wrap">
-              <button
-                onClick={() => navigate('/city/announcements')}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-plos-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-all"
-              >
-                <Megaphone size={16} />
-                <span>Annunci</span>
-              </button>
-              <button
-                onClick={() => navigate('/city/recruitment')}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-plos-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-all"
-              >
-                <Briefcase size={16} />
-                <span>Lavoro</span>
-              </button>
+            <nav className="flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => navigate('/login')}
-                className="px-4 py-2 text-sm font-heading text-plos-text-secondary hover:text-white border border-plos-border hover:border-plos-text-muted rounded-lg transition-all"
+                className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading text-plos-text-secondary hover:text-white border border-plos-border hover:border-plos-text-muted rounded transition-all"
               >
                 ACCEDI
               </button>
               <button
                 onClick={() => navigate('/register')}
-                className="px-4 py-2 text-sm font-heading bg-plos-primary/10 text-plos-primary border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg transition-all"
+                className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading bg-plos-primary/10 text-plos-primary border border-plos-primary/50 hover:bg-plos-primary/20 rounded transition-all"
                 data-testid="cityhub-register-btn"
               >
                 REGISTRATI
