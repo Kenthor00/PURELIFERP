@@ -345,16 +345,34 @@ export const JusticePage = () => {
           <OsQuickAction
             icon={Gavel}
             title="Verdetti"
-            subtitle="Decisioni recenti"
+            subtitle="Udienze completate"
             color="green"
-            onClick={() => { play('click'); navigate('/justice/verdicts'); }}
+            onClick={() => { 
+              play('click'); 
+              // Filtra udienze completate
+              const completedHearings = hearings.filter(h => h.status === 'completed');
+              if (completedHearings.length > 0) {
+                navigate(`/justice/hearings/${completedHearings[0].id}`);
+              } else {
+                toast.info('Nessun verdetto disponibile. Le udienze completate appariranno qui.');
+              }
+            }}
           />
           <OsQuickAction
             icon={Briefcase}
             title="Archivio"
-            subtitle="Casi archiviati"
+            subtitle="Pratiche chiuse"
             color="plos-primary"
-            onClick={() => { play('click'); navigate('/justice/archive'); }}
+            onClick={() => { 
+              play('click'); 
+              // Filtra pratiche approvate/chiuse
+              const closedCases = cases.filter(c => c.status === 'approved' || c.status === 'rejected');
+              if (closedCases.length > 0) {
+                navigate(`/justice/cases/${closedCases[0].id}`);
+              } else {
+                toast.info('Nessuna pratica archiviata. Le pratiche chiuse appariranno qui.');
+              }
+            }}
           />
         </div>
       </div>
