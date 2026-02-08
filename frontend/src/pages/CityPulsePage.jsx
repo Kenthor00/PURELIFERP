@@ -73,17 +73,19 @@ export const CityPulsePage = () => {
         justice: justiceRes.data,
       });
 
-      // Simulate zone activity based on stats
-      const activity = {};
-      CITY_ZONES.forEach(zone => {
-        // Random activity level per zone (in real impl, this would come from FiveM)
-        activity[zone.id] = {
-          level: Math.floor(Math.random() * 100),
-          incidents: Math.floor(Math.random() * 5),
-          type: ['normale', 'elevata', 'critica'][Math.floor(Math.random() * 3)],
-        };
-      });
-      setZoneActivity(activity);
+      // Fetch zone activity from real data (dispatch calls + LSPD cases)
+      try {
+        const zonesRes = await api.get('/dispatch/zones/activity');
+        setZoneActivity(zonesRes.data);
+      } catch (err) {
+        console.error('Errore fetch zone activity:', err);
+        // Fallback: zone senza attività
+        const fallbackActivity = {};
+        CITY_ZONES.forEach(zone => {
+          fallbackActivity[zone.id] = { level: 0, incidents: 0, type: 'normale' };
+        });
+        setZoneActivity(fallbackActivity);
+      }
 
       // Create activity feed
       const feed = [
