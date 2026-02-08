@@ -15,6 +15,7 @@ export const SSEProvider = ({ children }) => {
   const { token, isAuthenticated } = useAuth();
   const [events, setEvents] = useState([]);
   const [connected, setConnected] = useState(false);
+  const [lastEventTime, setLastEventTime] = useState(null);
   const eventSourceRef = useRef(null);
   const listenersRef = useRef({});
   const reconnectTimeoutRef = useRef(null);
