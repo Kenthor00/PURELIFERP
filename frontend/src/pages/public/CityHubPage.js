@@ -77,13 +77,17 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
     container.addEventListener('scroll', updateScrollbar);
     window.addEventListener('resize', updateScrollbar);
     
-    // Update iniziale
-    const timer = setTimeout(updateScrollbar, 100);
+    // Update iniziale con retry per garantire che il DOM sia pronto
+    const timers = [
+      setTimeout(updateScrollbar, 100),
+      setTimeout(updateScrollbar, 500),
+      setTimeout(updateScrollbar, 1000)
+    ];
     
     return () => {
       container.removeEventListener('scroll', updateScrollbar);
       window.removeEventListener('resize', updateScrollbar);
-      clearTimeout(timer);
+      timers.forEach(clearTimeout);
     };
   }, [containerRef, updateScrollbar]);
 
