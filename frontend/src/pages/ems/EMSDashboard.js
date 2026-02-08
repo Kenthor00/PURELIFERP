@@ -1,8 +1,13 @@
+/**
+ * PURE LIFE OS 3.0 - EMS Dashboard
+ * WOW PASS Applied
+ */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSound } from '../../context/SoundContext';
 import { useSSE } from '../../context/SSEContext';
 import { useNavigate } from 'react-router-dom';
+import { OsStatCard, OsPanel, OsSectionHeader, OsListRow, OsBadge, OsEmptyState, OsSkeleton, OsQuickAction, OsPageHeader } from '../../components/os/OsComponents';
 import {
   Heart,
   Users,
@@ -11,6 +16,9 @@ import {
   Clock,
   ChevronRight,
   Plus,
+  Ambulance,
+  Stethoscope,
+  AlertCircle,
 } from 'lucide-react';
 
 export const EMSDashboard = () => {
@@ -57,202 +65,183 @@ export const EMSDashboard = () => {
     return () => unsubscribe();
   }, [api, subscribe, play]);
 
-  const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
-    <div
-      onClick={onClick}
-      className={`card-tactical p-4 cursor-pointer group ${onClick ? 'hover:border-plos-primary' : ''}`}
-    >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-plos-text-secondary text-xs tracking-wider font-heading mb-1">
-            {label}
-          </p>
-          <p className={`font-heading text-3xl ${color}`}>{value}</p>
-        </div>
-        <div className={`p-2 border ${color.replace('text-', 'border-')} bg-black/30`}>
-          <Icon size={20} className={color} />
-        </div>
-      </div>
-      {onClick && (
-        <div className="mt-3 flex items-center gap-1 text-plos-text-muted text-xs group-hover:text-plos-primary transition-colors">
-          <span>Visualizza</span>
-          <ChevronRight size={14} />
-        </div>
-      )}
-    </div>
-  );
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-plos-primary animate-pulse">Caricamento...</div>
+      <div className="p-6 space-y-6">
+        <OsPageHeader icon={Heart} title="DASHBOARD EMS" subtitle="Sistema Sanitario Digitale" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1,2,3].map(i => (
+            <div key={i} className="bg-plos-surface rounded-lg p-5 animate-pulse">
+              <div className="h-4 bg-plos-bg rounded w-1/2 mb-3"></div>
+              <div className="h-8 bg-plos-bg rounded w-1/3"></div>
+            </div>
+          ))}
+        </div>
+        <div className="grid lg:grid-cols-2 gap-6">
+          <OsPanel><OsSkeleton rows={4} /></OsPanel>
+          <OsPanel><OsSkeleton rows={4} /></OsPanel>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6" data-testid="ems-dashboard">
+    <div className="p-6 space-y-6" data-testid="ems-dashboard">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl tracking-wider flex items-center gap-2">
-            <Heart className="text-red-500" />
-            DASHBOARD <span className="text-red-500">EMS</span>
-          </h1>
-          <p className="text-plos-text-secondary text-sm mt-1">
-            Sistema Sanitario Digitale
-          </p>
-        </div>
-        
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/ems/patients/new');
-          }}
-          className="btn-tactical flex items-center gap-2"
-          data-testid="new-patient-btn"
-        >
-          <Plus size={18} />
-          NUOVO PAZIENTE
-        </button>
-      </div>
+      <OsPageHeader 
+        icon={Heart} 
+        title={<>DASHBOARD <span className="text-red-400">EMS</span></>}
+        subtitle="Sistema Sanitario Digitale"
+        action={() => { play('click'); navigate('/ems/patients/new'); }}
+        actionLabel="NUOVO PAZIENTE"
+        actionIcon={Plus}
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard
+        <OsStatCard
           icon={Users}
           label="PAZIENTI TOTALI"
           value={stats.pazienti_totali}
-          color="text-red-500"
+          color="red"
           onClick={() => navigate('/ems/patients')}
         />
-        <StatCard
+        <OsStatCard
           icon={FileText}
           label="REFERTI OGGI"
           value={stats.referti_oggi}
-          color="text-plos-primary"
+          color="plos-primary"
           onClick={() => navigate('/ems/reports')}
         />
-        <StatCard
+        <OsStatCard
           icon={Activity}
           label="REFERTI TOTALI"
           value={stats.referti_totali}
-          color="text-blue-500"
+          color="blue"
         />
       </div>
 
       {/* Content Grid */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Recent Patients */}
-        <div className="card-tactical p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-lg tracking-wider flex items-center gap-2">
-              <Users size={18} className="text-red-500" />
-              PAZIENTI RECENTI
-            </h2>
-            <button
-              onClick={() => navigate('/ems/patients')}
-              className="text-plos-primary text-xs hover:underline"
-            >
-              Vedi tutti
-            </button>
-          </div>
+        <OsPanel>
+          <OsSectionHeader 
+            icon={Users} 
+            title="PAZIENTI RECENTI" 
+            color="red"
+            action={() => navigate('/ems/patients')}
+          />
           
-          <div className="space-y-2">
+          <div className="divide-y divide-plos-border/20">
             {recentPatients.length === 0 ? (
-              <p className="text-plos-text-muted text-sm text-center py-4">
-                Nessun paziente registrato
-              </p>
+              <OsEmptyState 
+                icon={Users}
+                title="Nessun paziente registrato"
+                description="Registra il primo paziente per iniziare"
+                action={() => navigate('/ems/patients/new')}
+                actionLabel="Registra paziente"
+              />
             ) : (
-              recentPatients.map((p) => (
-                <div
+              recentPatients.map((p, i) => (
+                <OsListRow
                   key={p.id}
+                  index={i}
                   onClick={() => {
                     play('click');
                     navigate(`/ems/patients/${p.id}`);
                   }}
-                  className="p-3 bg-black/30 border border-plos-border hover:border-plos-primary cursor-pointer transition-colors"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="mono text-xs text-plos-text-secondary">{p.patient_number}</p>
-                      <p className="text-sm font-medium mt-1">{p.name}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="mono text-[10px] text-plos-text-muted tracking-wider">{p.patient_number}</p>
+                      <p className="text-sm font-medium mt-1 truncate group-hover:text-plos-primary transition-colors">{p.name}</p>
                       {p.blood_type && (
-                        <span className="text-xs text-red-500">Gruppo: {p.blood_type}</span>
+                        <p className="text-[10px] text-red-400 mt-1">Gruppo: {p.blood_type}</p>
                       )}
                     </div>
+                    <div className="flex items-center gap-2">
+                      {p.is_critical && (
+                        <OsBadge variant="danger">CRITICO</OsBadge>
+                      )}
+                      <ChevronRight size={14} className="text-plos-text-muted group-hover:text-plos-primary transition-colors" />
+                    </div>
                   </div>
-                </div>
+                </OsListRow>
               ))
             )}
           </div>
-        </div>
+        </OsPanel>
 
         {/* Timeline */}
-        <div className="card-tactical p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-lg tracking-wider flex items-center gap-2">
-              <Clock size={18} className="text-plos-primary" />
-              ATTIVITÀ RECENTE
-            </h2>
-          </div>
+        <OsPanel>
+          <OsSectionHeader 
+            icon={Clock} 
+            title="ATTIVITÀ RECENTE" 
+            color="plos-primary"
+            action={() => navigate('/timeline')}
+            actionLabel="TIMELINE"
+          />
           
-          <div className="space-y-0">
+          <div className="divide-y divide-plos-border/20">
             {recentEvents.length === 0 ? (
-              <p className="text-plos-text-muted text-sm text-center py-4">
-                Nessuna attività recente
-              </p>
+              <OsEmptyState 
+                icon={Activity}
+                title="Nessuna attività recente"
+                description="Le attività EMS appariranno qui"
+              />
             ) : (
-              recentEvents.slice(0, 6).map((event) => (
-                <div key={event.id} className="timeline-item">
+              recentEvents.slice(0, 6).map((event, i) => (
+                <OsListRow key={event.id} index={i}>
                   <p className="text-sm font-medium">{event.title}</p>
-                  <p className="text-xs text-plos-text-secondary mt-1">
+                  <p className="text-xs text-plos-text-secondary mt-1 line-clamp-1">
                     {event.description}
                   </p>
-                  <p className="mono text-xs text-plos-text-muted mt-1">
+                  <p className="mono text-[10px] text-plos-text-muted mt-2">
                     {new Date(event.created_at).toLocaleString('it-IT')}
                   </p>
-                </div>
+                </OsListRow>
               ))
             )}
           </div>
-        </div>
+        </OsPanel>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/ems/patients/new');
-          }}
-          className="p-4 bg-red-500/10 border border-red-500/30 hover:border-red-500 transition-colors text-center"
-        >
-          <Users className="mx-auto mb-2 text-red-500" size={24} />
-          <span className="font-heading text-sm">Nuovo Paziente</span>
-        </button>
-        
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/ems/reports/new');
-          }}
-          className="p-4 bg-plos-primary/10 border border-plos-primary/30 hover:border-plos-primary transition-colors text-center"
-        >
-          <FileText className="mx-auto mb-2 text-plos-primary" size={24} />
-          <span className="font-heading text-sm">Nuovo Referto</span>
-        </button>
-        
-        <button
-          onClick={() => {
-            play('click');
-            navigate('/dispatch');
-          }}
-          className="p-4 bg-blue-500/10 border border-blue-500/30 hover:border-blue-500 transition-colors text-center"
-        >
-          <Activity className="mx-auto mb-2 text-blue-500" size={24} />
-          <span className="font-heading text-sm">Dispatch</span>
-        </button>
+      <div>
+        <h2 className="text-plos-text-muted text-[10px] tracking-[0.2em] font-heading mb-3 uppercase flex items-center gap-2">
+          <div className="w-1 h-3 bg-red-500 rounded-full"></div>
+          AZIONI RAPIDE
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <OsQuickAction
+            icon={Plus}
+            title="Nuovo Paziente"
+            subtitle="Registra paziente"
+            color="red"
+            onClick={() => { play('click'); navigate('/ems/patients/new'); }}
+          />
+          <OsQuickAction
+            icon={FileText}
+            title="Nuovo Referto"
+            subtitle="Crea referto medico"
+            color="plos-primary"
+            onClick={() => { play('click'); navigate('/ems/reports'); }}
+          />
+          <OsQuickAction
+            icon={Stethoscope}
+            title="Pazienti"
+            subtitle="Gestione pazienti"
+            color="blue"
+            onClick={() => { play('click'); navigate('/ems/patients'); }}
+          />
+          <OsQuickAction
+            icon={Ambulance}
+            title="Dispatch"
+            subtitle="Centrale operativa"
+            color="orange"
+            onClick={() => { play('click'); navigate('/dispatch'); }}
+          />
+        </div>
       </div>
     </div>
   );
