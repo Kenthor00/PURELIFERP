@@ -203,7 +203,21 @@ export const JusticePage = () => {
                         )}
                       </div>
                     </div>
-                    <ChevronRight className="text-plos-text-muted" size={20} />
+                    <div className="flex items-center gap-2">
+                      {canDelete && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteModal({ open: true, item: hearing, type: 'court_hearing' });
+                          }}
+                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                          title="Elimina udienza"
+                        >
+                          <Trash2 size={16} className="text-red-400" />
+                        </button>
+                      )}
+                      <ChevronRight className="text-plos-text-muted" size={20} />
+                    </div>
                   </div>
                 </div>
               ))
