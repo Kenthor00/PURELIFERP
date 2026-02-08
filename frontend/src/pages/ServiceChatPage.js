@@ -146,7 +146,7 @@ export const ServiceChatPage = () => {
       const res = await axios.put(
         `${API_URL}/api/chat/presence`,
         { status },
-        { headers: authHeaders }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setMyPresence(res.data);
     } catch (error) {
@@ -163,7 +163,7 @@ export const ServiceChatPage = () => {
       await axios.post(
         `${API_URL}/api/chat/channels/${activeChannel.name}/messages`,
         { content: newMessage.trim(), message_type: 'text' },
-        { headers: authHeaders }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewMessage('');
       setShowMentionPopup(false);
@@ -182,7 +182,7 @@ export const ServiceChatPage = () => {
     try {
       await axios.delete(
         `${API_URL}/api/chat/channels/${activeChannel.name}/messages/${messageId}`,
-        { headers: authHeaders }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchMessages();
     } catch (error) {
@@ -197,7 +197,7 @@ export const ServiceChatPage = () => {
       await axios.post(
         `${API_URL}/api/chat/channels/${activeChannel.name}/messages/${messageId}/pin`,
         {},
-        { headers: authHeaders }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchMessages();
     } catch (error) {
