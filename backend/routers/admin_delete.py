@@ -184,13 +184,6 @@ async def delete_resource(
                 .where(Model.id == resource_id)
                 .values(is_deleted=True, deleted_at=datetime.now(timezone.utc))
             )
-        elif hasattr(Model, 'status'):
-            # Per modelli con status, imposta a "deleted" o simile
-            await db.execute(
-                update(Model)
-                .where(Model.id == resource_id)
-                .values(status="DELETED")
-            )
         else:
             # Se non supporta soft delete, elimina permanentemente
             await db.execute(delete(Model).where(Model.id == resource_id))
