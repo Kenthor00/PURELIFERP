@@ -363,6 +363,9 @@ api_router.include_router(notifications.router)
 api_router.include_router(news_v2.router)
 api_router.include_router(push.router)
 
+# FASE P1 - Admin Delete System
+api_router.include_router(admin_delete.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
