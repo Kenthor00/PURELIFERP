@@ -182,6 +182,10 @@ class AuditAction(str, enum.Enum):
     ANNOUNCEMENT_REJECT = "announcement_reject"
     ANNOUNCEMENT_DELETE = "announcement_delete"
     
+    # Delete Universale
+    RESOURCE_DELETE = "resource_delete"
+    BULK_DELETE = "bulk_delete"
+    
     # City Hub - Advertising
     AD_SLOT_REQUEST = "ad_slot_request"
     AD_SLOT_APPROVE = "ad_slot_approve"
