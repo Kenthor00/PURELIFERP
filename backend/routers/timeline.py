@@ -98,3 +98,37 @@ async def get_timeline_stats(
         "eventi_oggi": today_events.scalar() or 0,
         "per_categoria": category_stats
     }
+
+
+@router.delete("/clear")
+async def clear_timeline_events(
+    entity_type: Optional[str] = None,
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.POLICE, UserRole.EMS)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Elimina eventi timeline per categoria.
+    Solo admin o capi dipartimento (hierarchy_level >= 8) possono eliminare.
+    """
+    # Verifica permessi
+    if current_user.role != UserRole.ADMIN and current_user.hierarchy_level < 8:
+        raise HTTPException(status_code=403, detail="Permessi insufficienti per eliminare timeline")
+    
+    query = delete(TimelineEvent)
+    
+    if entity_type:
+        # Mappa entity_type a categoria
+        category_map = {
+            'lspd': 'lspd',
+            'ems': 'ems',
+            'dispatch': 'dispatch',
+            'justice': 'justice'
+        }
+        category = category_map.get(entity_type.lower())
+        if category:
+            query = query.where(TimelineEvent.category == category)
+    
+    result = await db.execute(query)
+    await db.commit()
+    
+    return {"deleted": result.rowcount, "message": "Timeline eliminata con successo"}
