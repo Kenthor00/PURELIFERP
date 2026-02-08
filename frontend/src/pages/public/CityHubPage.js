@@ -160,7 +160,8 @@ export const CityHubPage = () => {
         </div>
       </header>
 
-      <main className="relative">
+      {/* Scrollable Content Area */}
+      <main className="relative flex-1 overflow-y-auto">
         {/* Hero Panel - Ultra Compatto per Tablet */}
         <section className="relative py-4 sm:py-6 lg:py-8 overflow-hidden">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
