@@ -126,7 +126,7 @@ const FinesListPage = () => {
 
       {/* Fines List */}
       {loading ? (
-        <div className="text-center py-8">Caricamento...</div>
+        <ListSkeleton rows={5} />
       ) : filteredFines.length === 0 ? (
         <div className="text-center py-8 text-plos-text-muted">Nessuna multa trovata</div>
       ) : (
