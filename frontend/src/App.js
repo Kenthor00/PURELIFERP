@@ -21,7 +21,9 @@ import CasesListPage from './pages/lspd/CasesListPage';
 import CaseDetailPage from './pages/lspd/CaseDetailPage';
 import NewCasePage from './pages/lspd/NewCasePage';
 import WarrantsListPage from './pages/lspd/WarrantsListPage';
+import NewWarrantPage from './pages/lspd/NewWarrantPage';
 import FinesListPage from './pages/lspd/FinesListPage';
+import NewFinePage from './pages/lspd/NewFinePage';
 
 // EMS
 import EMSDashboard from './pages/ems/EMSDashboard';
