@@ -138,6 +138,23 @@ Applicato design premium consistente su TUTTE le pagine:
 - News: Articoli
 - Sistema: Notifiche, Eventi Timeline
 
+#### 📜 Premium Custom Scrollbar - FiveM CEF Compatible ✅ (08/02/2026)
+- **Componente `PremiumScrollbar`** in `/app/frontend/src/pages/public/CityHubPage.js`
+- Design futuristico con:
+  - Track con gradient verde al neon (glow effect)
+  - Thumb luminoso con bordo brillante
+  - Pattern decorativo sul track
+  - Indicatore percentuale al hover/drag
+- **Funzionalità JavaScript pure** (no dipendenza da scrollbar native):
+  - Click sul track per saltare alla posizione
+  - Drag del thumb per scrollare
+  - Auto-hide quando non c'è contenuto scrollabile
+- **Compatibilità**:
+  - ✅ Desktop (1920x800)
+  - ✅ Tablet FiveM (800x600)
+  - ✅ lb-phone FiveM (340x600)
+- Risolve il problema dello scorrimento nei browser CEF di FiveM che non supportano lo scroll nativo
+
 ---
 
 ## 🏗️ Architettura Tecnica v3.0 ULTRA PREMIUM
