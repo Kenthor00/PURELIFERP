@@ -78,9 +78,12 @@ export const SSEProvider = ({ children }) => {
       eventSource.close();
       eventSourceRef.current = null;
       
-      // Schedule reconnect
+      // Schedule reconnect after 5 seconds
       reconnectTimeoutRef.current = setTimeout(() => {
         reconnectTimeoutRef.current = null;
+        if (token) {
+          connect();
+        }
       }, 5000);
     };
 
