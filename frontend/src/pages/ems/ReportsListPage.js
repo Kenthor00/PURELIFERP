@@ -296,6 +296,27 @@ const ReportsListPage = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, item: null })}
+        resourceType="medical_report"
+        resourceName={deleteModal.item?.report_number || ''}
+        resourceId={deleteModal.item?.id}
+        allowPermanent={true}
+        loading={deleteLoading}
+        onConfirm={async (options) => {
+          const result = await deleteResource('medical_report', deleteModal.item.id, options);
+          if (result.success) {
+            toast.success('Referto eliminato con successo');
+            setDeleteModal({ open: false, item: null });
+            fetchData();
+          } else {
+            toast.error(result.error);
+          }
+        }}
+      />
     </div>
   );
 };
