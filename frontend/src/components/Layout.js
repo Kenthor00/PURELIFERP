@@ -83,6 +83,7 @@ export const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette();
 
   const role = user?.role || 'citizen';
   const items = getNavItems(role);
