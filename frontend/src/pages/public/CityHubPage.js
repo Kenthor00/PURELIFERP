@@ -58,6 +58,7 @@ const CityLogo = () => (
 export const CityHubPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const scrollContainerRef = useRef(null);
   
   const [activeAds, setActiveAds] = useState([]);
   const [events, setEvents] = useState([]);
@@ -65,6 +66,41 @@ export const CityHubPage = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(true);
+
+  // FiveM CEF scroll handler - usa pulsanti per scrollare
+  const scrollBy = useCallback((direction) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    const scrollAmount = 200; // Pixel per scroll
+    const newScrollTop = container.scrollTop + (direction === 'down' ? scrollAmount : -scrollAmount);
+    
+    container.scrollTo({
+      top: newScrollTop,
+      behavior: 'smooth'
+    });
+  }, []);
+
+  // Aggiorna stato pulsanti scroll
+  const updateScrollButtons = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    setCanScrollUp(container.scrollTop > 10);
+    setCanScrollDown(container.scrollTop < container.scrollHeight - container.clientHeight - 10);
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', updateScrollButtons);
+      // Check iniziale
+      setTimeout(updateScrollButtons, 100);
+      return () => container.removeEventListener('scroll', updateScrollButtons);
+    }
+  }, [updateScrollButtons]);
 
   useEffect(() => {
     fetchData();
