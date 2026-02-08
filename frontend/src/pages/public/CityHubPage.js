@@ -179,61 +179,57 @@ export const CityHubPage = () => {
       </header>
 
       <main className="relative">
-        {/* Hero Panel */}
-        <section className="relative py-16 sm:py-24 overflow-hidden">
+        {/* Hero Panel - Più compatto */}
+        <section className="relative py-8 sm:py-12 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="relative bg-gradient-to-br from-plos-surface/80 to-[#0a0f12]/90 backdrop-blur-xl border border-plos-border/50 rounded-2xl p-8 sm:p-12 overflow-hidden">
+            <div className="relative bg-gradient-to-br from-plos-surface/80 to-[#0a0f12]/90 backdrop-blur-xl border border-plos-border/50 rounded-xl p-6 sm:p-8 overflow-hidden">
               {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-plos-primary/10 rounded-full blur-[80px]" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[60px]" />
+              <div className="absolute top-0 right-0 w-48 h-48 bg-plos-primary/10 rounded-full blur-[60px]" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-[40px]" />
               
               <div className="relative z-10 max-w-2xl">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles size={16} className="text-plos-primary" />
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-plos-primary" />
                   <span className="text-[10px] tracking-[0.3em] text-plos-primary font-heading">SERVIZI DIGITALI</span>
                 </div>
                 
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold leading-tight mb-4">
-                  Benvenuto nel<br />
-                  <span className="text-plos-primary">Portale Cittadino</span>
+                <h2 className="text-2xl sm:text-3xl font-heading font-bold leading-tight mb-3">
+                  Benvenuto nel <span className="text-plos-primary">Portale Cittadino</span>
                 </h2>
                 
-                <p className="text-plos-text-secondary text-lg mb-8 max-w-lg">
-                  Accedi ai servizi digitali della città. Consulta annunci, eventi, opportunità di lavoro e prenota appuntamenti con le istituzioni.
+                <p className="text-plos-text-secondary text-sm sm:text-base mb-6 max-w-lg">
+                  Accedi ai servizi digitali della città. Consulta annunci, eventi, opportunità di lavoro e prenota appuntamenti.
                 </p>
                 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => navigate('/city/announcements')}
-                    className="group flex items-center gap-2 px-5 py-3 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-xl text-plos-primary font-heading text-sm transition-all"
+                    className="group flex items-center gap-2 px-4 py-2.5 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg text-plos-primary font-heading text-sm transition-all"
                   >
-                    <Megaphone size={18} />
+                    <Megaphone size={16} />
                     Annunci
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                   <button
                     onClick={() => navigate('/city/events')}
-                    className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-xl text-white font-heading text-sm transition-all"
+                    className="group flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-sm transition-all"
                   >
-                    <Calendar size={18} />
+                    <Calendar size={16} />
                     Eventi
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                   <button
                     onClick={() => navigate('/city/recruitment')}
-                    className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-xl text-white font-heading text-sm transition-all"
+                    className="group flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-sm transition-all"
                   >
-                    <Briefcase size={18} />
+                    <Briefcase size={16} />
                     Lavoro
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                   <button
                     onClick={() => navigate('/city/appointments')}
-                    className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-xl text-white font-heading text-sm transition-all"
+                    className="group flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-lg text-white font-heading text-sm transition-all"
                   >
-                    <CalendarDays size={18} />
+                    <CalendarDays size={16} />
                     Appuntamenti
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               </div>
@@ -243,19 +239,19 @@ export const CityHubPage = () => {
 
         {/* Breaking News Banner */}
         {breakingNews.length > 0 && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
-            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 backdrop-blur-sm">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-red-500/20 rounded-lg">
-                  <AlertCircle className="text-red-400 animate-pulse" size={20} />
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
+            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-red-500/20 rounded-lg">
+                  <AlertCircle className="text-red-400 animate-pulse" size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="font-heading text-red-400 text-[10px] tracking-wider">ULTIMA ORA</span>
-                  <h3 className="font-medium truncate">{breakingNews[0].title}</h3>
+                  <span className="font-heading text-red-400 text-[9px] tracking-wider">ULTIMA ORA</span>
+                  <h3 className="font-medium text-sm truncate">{breakingNews[0].title}</h3>
                 </div>
                 <button
                   onClick={() => navigate(`/city/news/${breakingNews[0].id}`)}
-                  className="flex-shrink-0 px-4 py-2 text-red-400 border border-red-500/50 hover:bg-red-500/10 rounded-lg text-sm font-heading transition-all"
+                  className="flex-shrink-0 px-3 py-1.5 text-red-400 border border-red-500/50 hover:bg-red-500/10 rounded-lg text-xs font-heading transition-all"
                 >
                   Leggi
                 </button>
@@ -265,7 +261,7 @@ export const CityHubPage = () => {
         )}
 
         {/* Content Grid */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 space-y-8">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
           
           {/* Announcements Section */}
           <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-2xl overflow-hidden">
