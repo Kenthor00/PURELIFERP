@@ -49,14 +49,15 @@ export const SSEProvider = ({ children }) => {
     if (!token || eventSourceRef.current) return;
 
     const API_URL = process.env.REACT_APP_BACKEND_URL;
+    const sseUrl = `${API_URL}/api/sse/events?token=${token}`;
     
-    const eventSource = new EventSource(
-      `${API_URL}/api/sse/events?token=${token}`
-    );
+    console.log('SSE: Tentativo connessione a', sseUrl);
+    
+    const eventSource = new EventSource(sseUrl);
 
-    eventSource.onopen = () => {
+    eventSource.onopen = (e) => {
+      console.log('SSE: Connessione aperta', e);
       setConnected(true);
-      console.log('SSE Connesso');
     };
 
     eventSource.onmessage = (event) => {
@@ -64,6 +65,8 @@ export const SSEProvider = ({ children }) => {
         const data = JSON.parse(event.data);
         setEvents((prev) => [data, ...prev.slice(0, 99)]);
         setLastEventTime(Date.now());
+        // Quando riceviamo messaggi, siamo sicuramente connessi
+        setConnected(true);
 
         const listeners = listenersRef.current[data.type] || [];
         listeners.forEach((callback) => callback(data));
@@ -71,22 +74,33 @@ export const SSEProvider = ({ children }) => {
         const allListeners = listenersRef.current['*'] || [];
         allListeners.forEach((callback) => callback(data));
       } catch (error) {
-        console.error('Errore parsing SSE:', error);
+        // Heartbeat messages might not be JSON
+        if (event.data && event.data.trim()) {
+          console.log('SSE: Heartbeat o messaggio non-JSON ricevuto');
+        }
+        // Siamo comunque connessi se riceviamo dati
+        setConnected(true);
       }
     };
 
-    eventSource.onerror = () => {
-      setConnected(false);
-      eventSource.close();
-      eventSourceRef.current = null;
+    eventSource.onerror = (e) => {
+      console.log('SSE: Errore connessione', e, 'readyState:', eventSource.readyState);
       
-      // Schedule reconnect after 5 seconds
-      reconnectTimeoutRef.current = setTimeout(() => {
-        reconnectTimeoutRef.current = null;
-        if (token) {
-          connect();
-        }
-      }, 5000);
+      // readyState: 0 = CONNECTING, 1 = OPEN, 2 = CLOSED
+      if (eventSource.readyState === EventSource.CLOSED) {
+        setConnected(false);
+        eventSource.close();
+        eventSourceRef.current = null;
+        
+        // Schedule reconnect after 5 seconds
+        reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectTimeoutRef.current = null;
+          if (token) {
+            connect();
+          }
+        }, 5000);
+      }
+      // Se readyState è CONNECTING, potrebbe essere un errore temporaneo, non disconnettiamo subito
     };
 
     eventSourceRef.current = eventSource;
