@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { useSSE } from '../context/SSEContext';
+import { DeleteModal, useDelete } from '../components/DeleteModal';
+import { toast } from 'sonner';
 import {
   Radio,
   Phone,
@@ -12,12 +14,14 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader,
+  Trash2,
 } from 'lucide-react';
 
 export const DispatchPage = () => {
   const { api, user } = useAuth();
   const { play } = useSound();
   const { subscribe } = useSSE();
+  const { deleteResource, loading: deleteLoading } = useDelete();
   
   const [stats, setStats] = useState({
     chiamate_in_attesa: 0,
@@ -28,6 +32,7 @@ export const DispatchPage = () => {
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewCall, setShowNewCall] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ open: false, item: null });
   const [newCallForm, setNewCallForm] = useState({
     priority: 'P3',
     call_type: '',
@@ -36,6 +41,8 @@ export const DispatchPage = () => {
     caller_name: '',
     caller_phone: '',
   });
+  
+  const canDelete = user?.sector === 'ADMIN' || (user?.sector === 'DISPATCH' && user?.hierarchy_level >= 8);
 
   useEffect(() => {
     fetchData();
