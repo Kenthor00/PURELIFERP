@@ -1,9 +1,24 @@
+/**
+ * PURE LIFE OS 3.0 - Justice Dashboard
+ * WOW PASS - Premium UI Design
+ */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSound } from '../../context/SoundContext';
 import { useNavigate } from 'react-router-dom';
 import { DeleteModal, useDelete } from '../../components/DeleteModal';
 import { toast } from 'sonner';
+import { StatsSkeleton, ListSkeleton } from '../../components/ui/Skeleton';
+import {
+  OsStatCard,
+  OsPanel,
+  OsSectionHeader,
+  OsListRow,
+  OsBadge,
+  OsEmptyState,
+  OsPageHeader,
+  OsQuickAction,
+} from '../../components/os/OsComponents';
 import {
   Scale,
   Calendar,
@@ -14,6 +29,7 @@ import {
   ChevronRight,
   Gavel,
   Trash2,
+  Briefcase,
 } from 'lucide-react';
 
 export const JusticePage = () => {
@@ -56,27 +72,36 @@ export const JusticePage = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'scheduled': return 'text-blue-500 border-blue-500';
-      case 'in_progress': return 'text-orange-500 border-orange-500';
-      case 'completed': return 'text-green-500 border-green-500';
-      case 'draft': return 'text-plos-text-muted border-plos-border';
-      case 'submitted': return 'text-blue-500 border-blue-500';
-      case 'review': return 'text-orange-500 border-orange-500';
-      case 'approved': return 'text-green-500 border-green-500';
-      case 'rejected': return 'text-red-500 border-red-500';
-      default: return 'text-plos-text-muted border-plos-border';
-    }
+  const getStatusBadge = (status) => {
+    const map = {
+      scheduled: { variant: 'info', label: 'PROGRAMMATA' },
+      in_progress: { variant: 'warning', label: 'IN CORSO' },
+      completed: { variant: 'success', label: 'COMPLETATA' },
+      draft: { variant: 'default', label: 'BOZZA' },
+      submitted: { variant: 'info', label: 'INVIATA' },
+      review: { variant: 'warning', label: 'IN REVISIONE' },
+      approved: { variant: 'success', label: 'APPROVATA' },
+      rejected: { variant: 'danger', label: 'RESPINTA' },
+    };
+    return map[status] || { variant: 'default', label: status?.toUpperCase() || 'N/A' };
   };
 
-  const canCreateHearing = user?.role === 'judge' || user?.role === 'government' || user?.role === 'admin';
-  const canCreateCase = user?.role === 'lawyer' || user?.role === 'prosecutor' || user?.role === 'admin';
+  const canCreateHearing = user?.role === 'judge' || user?.role === 'government' || user?.role === 'admin' || user?.sector === 'GOV' || user?.sector === 'ADMIN';
+  const canCreateCase = user?.role === 'lawyer' || user?.role === 'prosecutor' || user?.role === 'admin' || user?.sector === 'GOV' || user?.sector === 'ADMIN';
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-plos-primary animate-pulse">Caricamento...</div>
+      <div className="space-y-6 animate-fade-in" data-testid="justice-dashboard-loading">
+        <OsPageHeader
+          icon={Scale}
+          title="GOVERNO & GIUSTIZIA"
+          subtitle="Sistema Giudiziario"
+        />
+        <StatsSkeleton count={3} />
+        <div className="grid lg:grid-cols-2 gap-6">
+          <OsPanel><ListSkeleton rows={5} /></OsPanel>
+          <OsPanel><ListSkeleton rows={5} /></OsPanel>
+        </div>
       </div>
     );
   }
@@ -85,14 +110,18 @@ export const JusticePage = () => {
     <div className="space-y-6" data-testid="justice-page">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl tracking-wider flex items-center gap-2">
-            <Scale className="text-purple-500" />
-            GOVERNO & <span className="text-purple-500">GIUSTIZIA</span>
-          </h1>
-          <p className="text-plos-text-secondary text-sm mt-1">
-            Sistema Giudiziario
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+            <Scale className="text-purple-400" size={24} />
+          </div>
+          <div>
+            <h1 className="text-xl lg:text-2xl font-heading font-bold tracking-wide">
+              GOVERNO & <span className="text-purple-400">GIUSTIZIA</span>
+            </h1>
+            <p className="text-plos-text-muted text-sm mt-0.5">
+              Sistema Giudiziario Pure Life
+            </p>
+          </div>
         </div>
         
         <div className="flex gap-2">
@@ -102,7 +131,8 @@ export const JusticePage = () => {
                 play('click');
                 navigate('/justice/cases/new');
               }}
-              className="btn-tactical flex items-center gap-2"
+              className="flex items-center gap-2 px-4 py-2.5 bg-purple-500/10 border border-purple-500/50 hover:bg-purple-500/20 rounded-lg text-purple-400 font-heading text-sm transition-all"
+              data-testid="new-case-btn"
             >
               <Plus size={18} />
               NUOVA PRATICA
@@ -114,7 +144,8 @@ export const JusticePage = () => {
                 play('click');
                 navigate('/justice/hearings/new');
               }}
-              className="btn-tactical flex items-center gap-2"
+              className="flex items-center gap-2 px-4 py-2.5 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg text-plos-primary font-heading text-sm transition-all"
+              data-testid="new-hearing-btn"
             >
               <Calendar size={18} />
               NUOVA UDIENZA
@@ -123,161 +154,208 @@ export const JusticePage = () => {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card-tactical p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-plos-text-secondary text-xs tracking-wider font-heading">
-                PRATICHE IN ATTESA
-              </p>
-              <p className="font-heading text-3xl text-orange-500">{stats.pratiche_in_attesa}</p>
-            </div>
-            <FileText className="text-orange-500" size={24} />
-          </div>
-        </div>
-        
-        <div className="card-tactical p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-plos-text-secondary text-xs tracking-wider font-heading">
-                UDIENZE PROGRAMMATE
-              </p>
-              <p className="font-heading text-3xl text-blue-500">{stats.udienze_programmate}</p>
-            </div>
-            <Calendar className="text-blue-500" size={24} />
-          </div>
-        </div>
-        
-        <div className="card-tactical p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-plos-text-secondary text-xs tracking-wider font-heading">
-                VERDETTI OGGI
-              </p>
-              <p className="font-heading text-3xl text-green-500">{stats.verdetti_oggi}</p>
-            </div>
-            <Gavel className="text-green-500" size={24} />
-          </div>
-        </div>
+        <OsStatCard
+          icon={FileText}
+          label="PRATICHE IN ATTESA"
+          value={stats.pratiche_in_attesa}
+          color="orange"
+          onClick={() => navigate('/justice/cases')}
+        />
+        <OsStatCard
+          icon={Calendar}
+          label="UDIENZE PROGRAMMATE"
+          value={stats.udienze_programmate}
+          color="blue"
+          onClick={() => navigate('/justice/hearings')}
+        />
+        <OsStatCard
+          icon={Gavel}
+          label="VERDETTI OGGI"
+          value={stats.verdetti_oggi}
+          color="green"
+        />
       </div>
 
       {/* Content Grid */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Upcoming Hearings */}
-        <div className="card-tactical p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-lg tracking-wider flex items-center gap-2">
-              <Calendar size={18} className="text-blue-500" />
-              PROSSIME UDIENZE
-            </h2>
-          </div>
+        <OsPanel>
+          <OsSectionHeader
+            icon={Calendar}
+            title="PROSSIME UDIENZE"
+            color="blue"
+            action={() => navigate('/justice/hearings')}
+            actionLabel="TUTTE"
+          />
           
-          <div className="space-y-3">
+          <div className="divide-y divide-plos-border/20">
             {hearings.length === 0 ? (
-              <p className="text-plos-text-muted text-sm text-center py-4">
-                Nessuna udienza programmata
-              </p>
+              <OsEmptyState
+                icon={Calendar}
+                title="Nessuna udienza programmata"
+                description="Le udienze appariranno qui"
+                action={canCreateHearing ? () => navigate('/justice/hearings/new') : null}
+                actionLabel="Programma udienza"
+              />
             ) : (
-              hearings.map((hearing) => (
-                <div
-                  key={hearing.id}
-                  className="p-3 bg-black/30 border border-plos-border hover:border-purple-500 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="mono text-xs text-purple-500">{hearing.hearing_number}</span>
-                        <span className={`status-badge ${getStatusColor(hearing.status)}`}>
-                          {hearing.status}
-                        </span>
+              hearings.map((hearing, index) => {
+                const badge = getStatusBadge(hearing.status);
+                return (
+                  <OsListRow
+                    key={hearing.id}
+                    index={index}
+                    onClick={() => navigate(`/justice/hearings/${hearing.id}`)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span className="font-mono text-[10px] text-purple-400 tracking-wider">
+                            {hearing.hearing_number}
+                          </span>
+                          <OsBadge variant={badge.variant}>{badge.label}</OsBadge>
+                        </div>
+                        <p className="text-sm font-medium group-hover:text-plos-primary transition-colors line-clamp-1">
+                          {hearing.title}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-plos-text-muted">
+                          <span className="flex items-center gap-1">
+                            <Clock size={12} className="text-blue-400" />
+                            {new Date(hearing.scheduled_date).toLocaleString('it-IT', {
+                              day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                            })}
+                          </span>
+                          {hearing.courtroom && (
+                            <span className="text-purple-400">Aula: {hearing.courtroom}</span>
+                          )}
+                        </div>
                       </div>
-                      <p className="font-medium">{hearing.title}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-plos-text-secondary">
-                        <span className="flex items-center gap-1">
-                          <Clock size={12} />
-                          {new Date(hearing.scheduled_date).toLocaleString('it-IT')}
-                        </span>
-                        {hearing.courtroom && (
-                          <span>Aula: {hearing.courtroom}</span>
+                      <div className="flex items-center gap-2">
+                        {canDelete && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteModal({ open: true, item: hearing, type: 'court_hearing' });
+                            }}
+                            className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                            title="Elimina udienza"
+                          >
+                            <Trash2 size={14} className="text-red-400" />
+                          </button>
                         )}
+                        <ChevronRight size={16} className="text-plos-text-muted group-hover:text-plos-primary group-hover:translate-x-0.5 transition-all" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {canDelete && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteModal({ open: true, item: hearing, type: 'court_hearing' });
-                          }}
-                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
-                          title="Elimina udienza"
-                        >
-                          <Trash2 size={16} className="text-red-400" />
-                        </button>
-                      )}
-                      <ChevronRight className="text-plos-text-muted" size={20} />
-                    </div>
-                  </div>
-                </div>
-              ))
+                  </OsListRow>
+                );
+              })
             )}
           </div>
-        </div>
+        </OsPanel>
 
         {/* Legal Cases */}
-        <div className="card-tactical p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-lg tracking-wider flex items-center gap-2">
-              <FileText size={18} className="text-orange-500" />
-              PRATICHE LEGALI
-            </h2>
-          </div>
+        <OsPanel>
+          <OsSectionHeader
+            icon={FileText}
+            title="PRATICHE LEGALI"
+            color="orange"
+            action={() => navigate('/justice/cases')}
+            actionLabel="TUTTE"
+          />
           
-          <div className="space-y-3">
+          <div className="divide-y divide-plos-border/20">
             {cases.length === 0 ? (
-              <p className="text-plos-text-muted text-sm text-center py-4">
-                Nessuna pratica
-              </p>
+              <OsEmptyState
+                icon={FileText}
+                title="Nessuna pratica"
+                description="Le pratiche appariranno qui"
+                action={canCreateCase ? () => navigate('/justice/cases/new') : null}
+                actionLabel="Nuova pratica"
+              />
             ) : (
-              cases.map((c) => (
-                <div
-                  key={c.id}
-                  className="p-3 bg-black/30 border border-plos-border hover:border-purple-500 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="mono text-xs text-orange-500">{c.case_number}</span>
-                        <span className={`status-badge ${getStatusColor(c.status)}`}>
-                          {c.status}
-                        </span>
+              cases.map((c, index) => {
+                const badge = getStatusBadge(c.status);
+                return (
+                  <OsListRow
+                    key={c.id}
+                    index={index}
+                    onClick={() => navigate(`/justice/cases/${c.id}`)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span className="font-mono text-[10px] text-orange-400 tracking-wider">
+                            {c.case_number}
+                          </span>
+                          <OsBadge variant={badge.variant}>{badge.label}</OsBadge>
+                        </div>
+                        <p className="text-sm font-medium group-hover:text-plos-primary transition-colors">
+                          {c.case_type}
+                        </p>
+                        <p className="text-xs text-plos-text-muted mt-1">
+                          Cliente: <span className="text-plos-text-secondary">{c.client_name}</span>
+                        </p>
                       </div>
-                      <p className="font-medium">{c.case_type}</p>
-                      <p className="text-sm text-plos-text-secondary mt-1">
-                        Cliente: {c.client_name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        {canDelete && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteModal({ open: true, item: c, type: 'legal_case' });
+                            }}
+                            className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                            title="Elimina pratica"
+                          >
+                            <Trash2 size={14} className="text-red-400" />
+                          </button>
+                        )}
+                        <ChevronRight size={16} className="text-plos-text-muted group-hover:text-plos-primary group-hover:translate-x-0.5 transition-all" />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {canDelete && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteModal({ open: true, item: c, type: 'legal_case' });
-                          }}
-                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
-                          title="Elimina pratica"
-                        >
-                          <Trash2 size={16} className="text-red-400" />
-                        </button>
-                      )}
-                      <ChevronRight className="text-plos-text-muted" size={20} />
-                    </div>
-                  </div>
-                </div>
-              ))
+                  </OsListRow>
+                );
+              })
             )}
           </div>
+        </OsPanel>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mt-6">
+        <h2 className="text-plos-text-muted text-[10px] tracking-[0.2em] font-heading mb-3 uppercase flex items-center gap-2">
+          <div className="w-1 h-3 bg-purple-500 rounded-full"></div>
+          AZIONI RAPIDE
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <OsQuickAction
+            icon={FileText}
+            title="Nuova Pratica"
+            subtitle="Crea fascicolo"
+            color="orange"
+            onClick={() => { play('click'); navigate('/justice/cases/new'); }}
+          />
+          <OsQuickAction
+            icon={Calendar}
+            title="Nuova Udienza"
+            subtitle="Programma sessione"
+            color="blue"
+            onClick={() => { play('click'); navigate('/justice/hearings/new'); }}
+          />
+          <OsQuickAction
+            icon={Gavel}
+            title="Verdetti"
+            subtitle="Decisioni recenti"
+            color="green"
+            onClick={() => { play('click'); navigate('/justice/verdicts'); }}
+          />
+          <OsQuickAction
+            icon={Briefcase}
+            title="Archivio"
+            subtitle="Casi archiviati"
+            color="plos-primary"
+            onClick={() => { play('click'); navigate('/justice/archive'); }}
+          />
         </div>
       </div>
       
