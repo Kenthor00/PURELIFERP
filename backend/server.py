@@ -16,7 +16,8 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 import time
 
-from database import get_db, engine, async_session, run_auto_migrations, check_tables_exist, AsyncSession
+from database import get_db, engine, async_session, run_auto_migrations, check_tables_exist
+from sqlalchemy.ext.asyncio import AsyncSession
 from auth import get_current_user, decode_token
 from sse_manager import sse_manager
 from outbox_worker import outbox_worker
