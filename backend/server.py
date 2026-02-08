@@ -226,6 +226,116 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ==========================================
+# WEBSOCKET ENDPOINT (Real-Time Engine)
+# ==========================================
+
+@app.websocket("/api/ws/{token}")
+async def websocket_endpoint(websocket: WebSocket, token: str):
+    """
+    WebSocket endpoint per real-time communication
+    URL: ws://host/api/ws/{jwt_token}
+    """
+    # Verifica token JWT
+    try:
+        payload = verify_token(token)
+        user_id = payload.get("sub")
+        if not user_id:
+            await websocket.close(code=4001, reason="Invalid token")
+            return
+        user_id = int(user_id)
+    except Exception as e:
+        await websocket.close(code=4001, reason="Invalid token")
+        return
+    
+    # Connetti
+    await ws_manager.connect(websocket, user_id)
+    
+    try:
+        while True:
+            # Ricevi messaggi dal client
+            data = await websocket.receive_json()
+            
+            msg_type = data.get("type")
+            
+            if msg_type == "ping":
+                # Heartbeat
+                await ws_manager.update_heartbeat(user_id)
+                await websocket.send_json({"type": WSEventType.PONG, "timestamp": time.time()})
+            
+            elif msg_type == "subscribe":
+                # Subscribe a canale
+                channel = data.get("channel")
+                if channel:
+                    await ws_manager.subscribe_channel(user_id, channel)
+            
+            elif msg_type == "unsubscribe":
+                # Unsubscribe da canale
+                channel = data.get("channel")
+                if channel:
+                    await ws_manager.unsubscribe_channel(user_id, channel)
+            
+            elif msg_type == "chat_message":
+                # Forward chat message (gestito dal chat router)
+                pass
+            
+    except WebSocketDisconnect:
+        await ws_manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        await ws_manager.disconnect(websocket)
+
+
+# ==========================================
+# PERFORMANCE / CACHE ENDPOINTS
+# ==========================================
+
+@api_router.get("/system/cache/stats")
+async def cache_stats_endpoint(current_user = Depends(get_current_user)):
+    """Statistiche cache (admin only)"""
+    return {
+        "cache": await get_cache_stats(),
+        "websocket": ws_manager.stats(),
+        "sse": {"connected_clients": len(sse_manager.clients)}
+    }
+
+
+@api_router.post("/system/cache/clear")
+async def clear_cache_endpoint(current_user = Depends(get_current_user)):
+    """Svuota cache (admin only)"""
+    if current_user.sector.value != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    result = await clear_all_cache()
+    return {"status": "ok", "message": "Cache cleared"}
+
+
+@api_router.get("/system/performance")
+async def performance_metrics():
+    """Metriche performance sistema"""
+    start = time.time()
+    
+    # Quick DB check
+    db_latency = None
+    try:
+        from sqlalchemy import text
+        db_start = time.time()
+        async with async_session() as session:
+            await session.execute(text("SELECT 1"))
+        db_latency = round((time.time() - db_start) * 1000, 2)
+    except:
+        db_latency = -1
+    
+    return {
+        "api_latency_ms": round((time.time() - start) * 1000, 2),
+        "db_latency_ms": db_latency,
+        "cache": await get_cache_stats(),
+        "websocket": ws_manager.stats(),
+        "online_users": ws_manager.get_online_users()
+    }
+
+
 # Include all routers
 api_router.include_router(auth.router)
 api_router.include_router(users.router)
