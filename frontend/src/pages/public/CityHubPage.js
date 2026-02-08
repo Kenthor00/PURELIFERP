@@ -243,20 +243,6 @@ export const CityHubPage = () => {
 
         {/* Content Grid - Stack verticale su mobile */}
         <section className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-8 space-y-4">
-                </div>
-                <button
-                  onClick={() => navigate(`/city/news/${breakingNews[0].id}`)}
-                  className="flex-shrink-0 px-3 py-1.5 text-red-400 border border-red-500/50 hover:bg-red-500/10 rounded-lg text-xs font-heading transition-all"
-                >
-                  Leggi
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Content Grid */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
           
           {/* Announcements Section - Compatto */}
           <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-lg overflow-hidden">
