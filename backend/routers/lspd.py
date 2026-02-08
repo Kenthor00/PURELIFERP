@@ -421,7 +421,13 @@ async def get_lspd_stats(
     current_user: User = Depends(require_roles(UserRole.POLICE, UserRole.DISPATCH)),
     db: AsyncSession = Depends(get_db)
 ):
-    """Statistiche dashboard LSPD"""
+    """Statistiche dashboard LSPD - CACHED 30s"""
+    # Check cache first
+    cached_stats = await ModuleCache.get_stats("lspd")
+    if cached_stats:
+        return cached_stats
+    
+    # Query stats
     open_cases = await db.execute(
         select(func.count(Case.id)).where(Case.status.in_([CaseStatus.OPEN, CaseStatus.INVESTIGATING]))
     )
@@ -438,9 +444,14 @@ async def get_lspd_stats(
         select(func.sum(Fine.amount)).where(Fine.is_paid == False)
     )
     
-    return {
+    stats = {
         "casi_aperti": open_cases.scalar() or 0,
         "mandati_attivi": active_warrants.scalar() or 0,
         "multe_non_pagate": unpaid_fines.scalar() or 0,
         "totale_multe": total_fines_amount.scalar() or 0
     }
+    
+    # Cache for 30 seconds
+    await ModuleCache.set_stats("lspd", stats, ttl=30)
+    
+    return stats
