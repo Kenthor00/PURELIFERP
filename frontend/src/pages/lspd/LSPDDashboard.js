@@ -89,8 +89,34 @@ export const LSPDDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-plos-primary animate-pulse">Caricamento...</div>
+      <div className="space-y-6 animate-fade-in" data-testid="lspd-dashboard-loading">
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="font-heading text-2xl tracking-wider flex items-center gap-2">
+              <Shield className="text-blue-500" />
+              DASHBOARD <span className="text-blue-500">LSPD</span>
+            </h1>
+            <p className="text-plos-text-secondary text-sm mt-1">
+              Centro Operativo Polizia
+            </p>
+          </div>
+        </div>
+        
+        {/* Stats Skeleton */}
+        <StatsSkeleton count={4} />
+        
+        {/* Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="card-tactical p-4">
+            <h3 className="font-heading text-sm tracking-wider mb-4">CASI RECENTI</h3>
+            <ListSkeleton rows={5} />
+          </div>
+          <div className="card-tactical p-4">
+            <h3 className="font-heading text-sm tracking-wider mb-4">ATTIVITÀ RECENTE</h3>
+            <ListSkeleton rows={5} showAvatar />
+          </div>
+        </div>
       </div>
     );
   }
