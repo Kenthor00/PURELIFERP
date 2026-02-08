@@ -406,7 +406,10 @@ export const CityHubPage = () => {
   }
 
   return (
-    <div className="relative bg-[#080c0f]" style={{ height: '100vh', overflow: 'hidden' }}>
+    <div className="relative bg-[#080c0f]" style={{ height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      {/* Premium Custom Scrollbar per FiveM CEF - Posizionata sopra il container */}
+      <PremiumScrollbar containerRef={scrollContainerRef} />
+      
       {/* Scrollable Content Container */}
       <div 
         ref={scrollContainerRef}
@@ -416,7 +419,8 @@ export const CityHubPage = () => {
           height: '100vh',
           overflowY: 'auto',
           overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch'
+          WebkitOverflowScrolling: 'touch',
+          paddingRight: '20px' // Spazio per la scrollbar
         }}
       >
       {/* Institutional Background */}
