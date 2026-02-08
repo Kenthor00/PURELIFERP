@@ -16,6 +16,7 @@ from schemas import (
 from auth import get_current_user, require_roles, UserRole
 from utils import generate_call_number
 from sse_manager import sse_manager
+from cache import ModuleCache
 
 router = APIRouter(prefix="/dispatch", tags=["Dispatch"])
 
