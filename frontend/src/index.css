@@ -28,6 +28,8 @@ html, body {
   padding: 0;
   height: auto !important;
   min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto !important;
 }
 
 #root {
@@ -42,8 +44,6 @@ body {
   color: var(--plos-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  overflow-y: auto !important;
   -webkit-overflow-scrolling: touch; /* Smooth scroll on touch devices */
 }
 
