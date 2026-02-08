@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSound } from '../../context/SoundContext';
 import { useNavigate } from 'react-router-dom';
+import { DeleteModal, useDelete } from '../../components/DeleteModal';
+import { toast } from 'sonner';
 import {
   Scale,
   Calendar,
@@ -11,12 +13,14 @@ import {
   Plus,
   ChevronRight,
   Gavel,
+  Trash2,
 } from 'lucide-react';
 
 export const JusticePage = () => {
   const { api, user } = useAuth();
   const { play } = useSound();
   const navigate = useNavigate();
+  const { deleteResource, loading: deleteLoading } = useDelete();
   
   const [stats, setStats] = useState({
     pratiche_in_attesa: 0,
@@ -26,6 +30,9 @@ export const JusticePage = () => {
   const [hearings, setHearings] = useState([]);
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState({ open: false, item: null, type: null });
+  
+  const canDelete = user?.sector === 'ADMIN' || (user?.sector === 'GOV' && user?.hierarchy_level >= 8);
 
   useEffect(() => {
     fetchData();
