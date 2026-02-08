@@ -66,13 +66,14 @@ PURE LIFE OS è un **Sistema Operativo Civico Roleplay ULTRA PREMIUM** per serve
 - Auto-refresh ogni 30 secondi
 - Statistiche aggregate LSPD/EMS/Dispatch/Justice
 
-#### 🗑️ Sistema Delete Universale
+#### 🗑️ Sistema Delete Universale ✅ COMPLETATO (08/02/2026)
 - API `/api/admin/delete/{type}/{id}` per eliminare qualsiasi risorsa
 - **Admin**: può eliminare tutto (anche permanentemente)
 - **Capi Settore** (level >= 8): possono eliminare risorse del proprio settore
 - **Modal di conferma** con motivo opzionale
 - **Eliminazione permanente** richiede conferma digitando "ELIMINA"
 - **Pulsante cestino** visibile su ogni elemento delle liste
+- ✅ Integrato in: LSPD (casi, mandati, multe), EMS (referti), Justice (udienze, pratiche), Dispatch (chiamate)
 
 #### Risorse Eliminabili
 - LSPD: Casi, Mandati, Multe, Prove
