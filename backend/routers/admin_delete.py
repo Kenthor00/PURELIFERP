@@ -270,7 +270,7 @@ async def bulk_delete(
     # Log audit
     await log_audit(
         db=db,
-        action=AuditAction.DELETE,
+        action=AuditAction.BULK_DELETE,
         user=current_user,
         entity_type=f"bulk_{resource_type.value}",
         entity_id=0,
