@@ -27,14 +27,18 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
+/* Ensure scroll works on FiveM in-game browsers */
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--plos-bg);
   color: var(--plos-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll on touch devices */
 }
 
 /* Tactical Grid Background */
