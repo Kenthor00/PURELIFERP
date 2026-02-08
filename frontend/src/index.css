@@ -270,6 +270,55 @@ body {
   background: var(--plos-primary);
 }
 
+/* FiveM / LBPhone / Tablet Compatibility */
+.fivem-mode {
+  /* Hide scrollbar for NUI */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fivem-mode::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area for mobile devices */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-friendly targets for mobile */
+@media (max-width: 1024px) {
+  .btn-tactical,
+  .btn-tactical-sm,
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Larger touch targets for icons */
+  .touch-target {
+    padding: 12px;
+  }
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 /* Animations */
 @keyframes pulse-glow {
   0%, 100% {
