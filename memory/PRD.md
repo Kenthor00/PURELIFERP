@@ -20,6 +20,15 @@ PURE LIFE OS è un **Sistema Operativo Civico Roleplay ULTRA PREMIUM** per serve
 ### FASE 1-4 - Sistema Base + City Hub + News + Chat ✅
 ### FASE 5 - Bug Fix e Stabilizzazione ✅
 
+### BUGFIX SPRINT ✅ (08/02/2026)
+- **Fix DB Evidence:** Aggiunta colonna `collected_by` alla tabella `evidence`
+- **Fix DB Chat:** Aggiunta colonna `updated_at` e resa `sender_id` nullable in `chat_messages`
+- **Debug Panel:** Nuovo strumento diagnostica per admin (icona Bug in basso a destra)
+  - Status SSE, Token, Ultimo evento
+  - Tab Errori e API calls
+- **Verificato:** Tutti i flussi CRUD LSPD (casi, multe, mandati) funzionanti
+- **Verificato:** Chat funzionante con canali, messaggi, presenza
+
 ### FASE P0 - Performance Extreme ✅ (08/02/2026)
 - Cache In-Memory LRU backend
 - +8 Indici Database
