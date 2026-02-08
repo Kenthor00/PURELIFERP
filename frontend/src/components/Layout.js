@@ -161,6 +161,16 @@ export const Layout = ({ children }) => {
             <span>City</span>
           </button>
 
+          {/* Command Palette Button */}
+          <button
+            onClick={() => setCommandPaletteOpen(true)}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-400 hover:text-white hover:border-plos-primary/50 transition-all text-sm"
+            title="Comandi rapidi (Ctrl+K)"
+          >
+            <Command size={14} />
+            <span className="text-xs">Ctrl+K</span>
+          </button>
+
           {/* User Presence Status */}
           <div className="flex items-center gap-2 text-sm">
             <Circle size={8} className={`fill-current ${(PRESENCE_CONFIG[presence] || PRESENCE_CONFIG.offline).color}`} />
