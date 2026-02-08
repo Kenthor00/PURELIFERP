@@ -183,12 +183,14 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
         <div
           ref={trackRef}
           onClick={handleTrackClick}
-          className="relative w-3 rounded-full cursor-pointer transition-all duration-300"
+          className="relative w-3 sm:w-4 rounded-full cursor-pointer transition-all duration-300"
           style={{ 
-            height: 'calc(100vh - 32px)',
-            background: 'linear-gradient(180deg, rgba(0,200,83,0.05) 0%, rgba(0,0,0,0.3) 50%, rgba(0,200,83,0.05) 100%)',
-            border: '1px solid rgba(0,200,83,0.15)',
-            boxShadow: isHovering ? '0 0 20px rgba(0,200,83,0.1)' : 'none'
+            height: 'calc(80vh - 60px)',
+            background: 'linear-gradient(180deg, rgba(0,200,83,0.08) 0%, rgba(0,0,0,0.4) 50%, rgba(0,200,83,0.08) 100%)',
+            border: '1px solid rgba(0,200,83,0.25)',
+            boxShadow: isHovering 
+              ? '0 0 20px rgba(0,200,83,0.2), inset 0 0 10px rgba(0,200,83,0.05)' 
+              : '0 0 10px rgba(0,200,83,0.1)'
           }}
         >
           {/* Track Glow Lines */}
