@@ -25,33 +25,29 @@ import {
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Logo Component with glow
+// Logo Component - Compatto
 const CityLogo = () => (
-  <div className="relative flex items-center gap-3">
-    {/* Logo with glow */}
+  <div className="flex items-center gap-2">
     <div className="relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-plos-primary/20 to-cyan-500/20 blur-xl rounded-full" />
       <img 
         src="/logo.png" 
         alt="Pure Life" 
-        className="relative h-10 w-auto"
+        className="h-7 sm:h-8 w-auto"
         onError={(e) => {
-          // Fallback to text logo if image not found
           e.target.style.display = 'none';
           e.target.nextSibling.style.display = 'flex';
         }}
       />
       <div 
-        className="hidden h-10 w-10 bg-gradient-to-br from-plos-primary/30 to-cyan-500/20 border border-plos-primary/50 rounded-lg items-center justify-center backdrop-blur-sm"
+        className="hidden h-7 w-7 sm:h-8 sm:w-8 bg-gradient-to-br from-plos-primary/30 to-cyan-500/20 border border-plos-primary/50 rounded items-center justify-center"
       >
-        <span className="text-plos-primary font-heading font-bold text-lg">PL</span>
+        <span className="text-plos-primary font-heading font-bold text-sm">PL</span>
       </div>
     </div>
     <div>
-      <h1 className="font-heading text-xl tracking-wider">
+      <h1 className="font-heading text-sm sm:text-base tracking-wider">
         PURE LIFE <span className="text-plos-primary">CITY</span>
       </h1>
-      <p className="text-[10px] text-plos-text-muted tracking-[0.2em] uppercase">Portale Città</p>
     </div>
   </div>
 );
