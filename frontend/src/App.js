@@ -28,6 +28,7 @@ import NewFinePage from './pages/lspd/NewFinePage';
 // EMS
 import EMSDashboard from './pages/ems/EMSDashboard';
 import PatientsListPage from './pages/ems/PatientsListPage';
+import PatientDetailPage from './pages/ems/PatientDetailPage';
 import NewPatientPage from './pages/ems/NewPatientPage';
 import ReportsListPage from './pages/ems/ReportsListPage';
 
