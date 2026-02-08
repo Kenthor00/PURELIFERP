@@ -5,26 +5,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { DeleteModal, useDelete } from '../../components/DeleteModal';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { FileText, Plus, Search, Filter, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const WarrantsListPage = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
+  const { deleteResource, loading: deleteLoading } = useDelete();
+  
   const [warrants, setWarrants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showNewModal, setShowNewModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ open: false, item: null });
   const [newWarrant, setNewWarrant] = useState({
     suspect_name: '',
     suspect_identifier: '',
     reason: '',
     case_id: ''
   });
+  
+  // Check if user can delete
+  const canDelete = user?.sector === 'ADMIN' || user?.hierarchy_level >= 8;
 
   useEffect(() => {
     fetchWarrants();
