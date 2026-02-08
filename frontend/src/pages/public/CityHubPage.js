@@ -157,14 +157,15 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
 
   return (
     <div 
-      className={`fixed right-1 top-1/2 -translate-y-1/2 z-50 ${className}`}
+      className={`fixed right-2 sm:right-3 top-1/2 -translate-y-1/2 z-50 ${className}`}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      data-testid="premium-scrollbar"
     >
       {/* Scrollbar Container con glow effect */}
       <div 
         className={`relative transition-all duration-300 ${
-          isHovering || isDragging ? 'opacity-100' : 'opacity-70'
+          isHovering || isDragging ? 'opacity-100' : 'opacity-90'
         }`}
       >
         {/* Percentage Indicator */}
