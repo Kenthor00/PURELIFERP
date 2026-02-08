@@ -320,67 +320,52 @@ export const CityHubPage = () => {
             </div>
           </div>
 
-          {/* Events and News Grid */}
+          {/* Events and News Grid - Stack su mobile */}
           <div className="grid lg:grid-cols-3 gap-4">
             
             {/* Events */}
-            <div className="lg:col-span-2 bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-plos-border/30">
+            <div className="lg:col-span-2 bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-lg overflow-hidden">
+              <div className="flex items-center justify-between p-3 border-b border-plos-border/30">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-blue-500/20 rounded-lg">
-                    <Calendar size={16} className="text-blue-400" />
+                  <div className="p-1 bg-blue-500/20 rounded">
+                    <Calendar size={14} className="text-blue-400" />
                   </div>
-                  <div>
-                    <h2 className="font-heading text-base tracking-wider">EVENTI IN CITTÀ</h2>
-                    <p className="text-[9px] text-plos-text-muted tracking-wider">Prossimi appuntamenti</p>
-                  </div>
+                  <h2 className="font-heading text-sm tracking-wider">EVENTI</h2>
                 </div>
                 <button
                   onClick={() => navigate('/city/events')}
-                  className="text-plos-primary text-[10px] tracking-wider hover:underline flex items-center gap-1"
+                  className="text-plos-primary text-[9px] tracking-wider hover:underline flex items-center gap-0.5"
                 >
-                  TUTTI <ChevronRight size={12} />
+                  TUTTI <ChevronRight size={10} />
                 </button>
               </div>
               
-              <div className="p-4">
+              <div className="p-3">
                 {events.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar size={32} className="mx-auto mb-3 text-plos-text-muted/30" />
-                    <p className="text-plos-text-muted text-sm">Nessun evento in programma</p>
+                  <div className="text-center py-4">
+                    <Calendar size={20} className="mx-auto mb-1.5 text-plos-text-muted/30" />
+                    <p className="text-plos-text-muted text-xs">Nessun evento</p>
                   </div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {events.slice(0, 4).map((event) => (
                       <div
                         key={event.id}
                         onClick={() => navigate(`/city/events/${event.id}`)}
-                        className="group relative bg-black/30 border border-plos-border/30 rounded-lg overflow-hidden hover:border-blue-500/30 transition-all cursor-pointer"
+                        className="group bg-black/30 border border-plos-border/30 rounded overflow-hidden hover:border-blue-500/30 transition-all cursor-pointer"
                         data-testid={`event-${event.id}`}
                       >
-                        {event.image_url && (
-                          <div
-                            className="h-24 bg-cover bg-center"
-                            style={{ backgroundImage: `url(${event.image_url})` }}
-                          >
-                            <div className="h-full bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                          </div>
-                        )}
-                        <div className="p-3">
-                          <span className="inline-block px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-[9px] font-heading tracking-wider rounded">
+                        <div className="p-2.5">
+                          <span className="inline-block px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-[8px] font-heading tracking-wider rounded">
                             {event.category?.toUpperCase() || 'EVENTO'}
                           </span>
-                          <h3 className="font-medium text-sm mt-1.5 group-hover:text-plos-primary transition-colors line-clamp-2">
+                          <h3 className="font-medium text-xs mt-1 group-hover:text-plos-primary transition-colors line-clamp-2">
                             {event.title}
                           </h3>
-                          <div className="flex items-center gap-3 mt-2 text-[10px] text-plos-text-muted">
-                            <span className="flex items-center gap-1">
-                              <Clock size={10} className="text-blue-400" />
+                          <div className="flex items-center gap-2 mt-1.5 text-[9px] text-plos-text-muted">
+                            <span className="flex items-center gap-0.5">
+                              <Clock size={9} className="text-blue-400" />
                               {formatEventDate(event.event_date)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin size={10} className="text-blue-400" />
-                              {event.location}
                             </span>
                           </div>
                         </div>
@@ -392,50 +377,43 @@ export const CityHubPage = () => {
             </div>
 
             {/* Media Panel - Weazel News */}
-            <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-plos-border/30">
+            <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-lg overflow-hidden">
+              <div className="flex items-center justify-between p-3 border-b border-plos-border/30">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-red-500/20 rounded-lg relative">
-                    <Tv size={16} className="text-red-400" />
-                    <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                  <div className="p-1 bg-red-500/20 rounded relative">
+                    <Tv size={14} className="text-red-400" />
+                    <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                   </div>
-                  <div>
-                    <h2 className="font-heading text-base tracking-wider">WEAZEL NEWS</h2>
-                    <p className="text-[9px] text-plos-text-muted tracking-wider">Media cittadino</p>
-                  </div>
+                  <h2 className="font-heading text-sm tracking-wider">NEWS</h2>
                 </div>
               </div>
               
               <div className="divide-y divide-plos-border/20">
                 {breakingNews.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <Tv size={28} className="mx-auto mb-2 text-plos-text-muted/30" />
-                    <p className="text-plos-text-muted text-sm">Nessuna news recente</p>
+                  <div className="p-4 text-center">
+                    <Tv size={20} className="mx-auto mb-1.5 text-plos-text-muted/30" />
+                    <p className="text-plos-text-muted text-xs">Nessuna news</p>
                   </div>
                 ) : (
                   breakingNews.map((article) => (
                     <div
                       key={article.id}
                       onClick={() => navigate(`/city/news/${article.id}`)}
-                      className="p-3 hover:bg-white/[0.02] cursor-pointer transition-all group"
+                      className="p-2.5 hover:bg-white/[0.02] cursor-pointer transition-all group"
                     >
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[8px] font-heading tracking-wider rounded">
+                      <div className="flex items-center gap-1 mb-1">
+                        <span className="px-1 py-0.5 bg-red-500/20 text-red-400 text-[7px] font-heading tracking-wider rounded">
                           {article.category?.toUpperCase() || 'NEWS'}
                         </span>
                         {article.is_breaking && (
-                          <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 text-[8px] font-heading tracking-wider rounded animate-pulse">
+                          <span className="px-1 py-0.5 bg-yellow-500/20 text-yellow-400 text-[7px] font-heading rounded animate-pulse">
                             LIVE
                           </span>
                         )}
                       </div>
-                      <h3 className="text-sm font-medium group-hover:text-plos-primary transition-colors line-clamp-2">
+                      <h3 className="text-xs font-medium group-hover:text-plos-primary transition-colors line-clamp-2">
                         {article.title}
                       </h3>
-                      <p className="text-[10px] text-plos-text-muted mt-1.5 flex items-center gap-1">
-                        <Clock size={9} />
-                        {new Date(article.published_at || article.created_at).toLocaleDateString('it-IT')}
-                      </p>
                     </div>
                   ))
                 )}
