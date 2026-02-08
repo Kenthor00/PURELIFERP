@@ -160,6 +160,15 @@ const ReportsListPage = () => {
                 >
                   <Eye size={18} className="text-plos-primary" />
                 </button>
+                {canDelete && (
+                  <button
+                    onClick={() => setDeleteModal({ open: true, item: report })}
+                    className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
+                    title="Elimina referto"
+                  >
+                    <Trash2 size={18} className="text-red-400" />
+                  </button>
+                )}
               </div>
             </div>
           ))}
