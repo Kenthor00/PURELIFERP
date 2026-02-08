@@ -121,7 +121,7 @@ const WarrantsListPage = () => {
 
       {/* Warrants List */}
       {loading ? (
-        <div className="text-center py-8">Caricamento...</div>
+        <ListSkeleton rows={5} />
       ) : filteredWarrants.length === 0 ? (
         <div className="text-center py-8 text-plos-text-muted">Nessun mandato trovato</div>
       ) : (
