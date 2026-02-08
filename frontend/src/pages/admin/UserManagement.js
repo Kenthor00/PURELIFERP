@@ -1,15 +1,24 @@
 /**
- * PURE LIFE OS - User Management Page (Admin)
- * Gestione completa utenti per amministratori
+ * PURE LIFE OS 3.0 - User Management Page (Admin)
+ * WOW PASS - Premium UI Design
  */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import {
+  OsPanel,
+  OsSectionHeader,
+  OsStatCard,
+  OsListRow,
+  OsBadge,
+  OsEmptyState,
+} from '../../components/os/OsComponents';
+import { ListSkeleton } from '../../components/ui/Skeleton';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { 
   Users, UserPlus, Search, Filter, MoreVertical, 
   Lock, Unlock, Key, History, Activity, Edit, XCircle, CheckCircle,
-  Trash2, AlertTriangle
+  Trash2, AlertTriangle, Shield
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -395,136 +404,147 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="space-y-6 p-6" data-testid="user-management">
+    <div className="space-y-6" data-testid="user-management">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-white tracking-wider flex items-center gap-3">
-            <Users className="w-8 h-8 text-plos-primary" />
-            GESTIONE UTENTI
-          </h1>
-          <p className="text-plos-text-secondary mt-1">
-            {users.length} utenti totali
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+            <Users className="text-purple-400" size={24} />
+          </div>
+          <div>
+            <h1 className="text-xl lg:text-2xl font-heading font-bold tracking-wide">
+              GESTIONE <span className="text-purple-400">UTENTI</span>
+            </h1>
+            <p className="text-plos-text-muted text-sm mt-0.5">
+              {users.length} utenti totali | {users.filter(u => u.is_active).length} attivi
+            </p>
+          </div>
         </div>
         <button
           onClick={() => { resetForm(); setShowCreateModal(true); }}
-          className="px-4 py-2 bg-gradient-to-r from-plos-primary to-plos-accent text-black font-semibold rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+          className="flex items-center gap-2 px-4 py-2.5 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg text-plos-primary font-heading text-sm transition-all"
           data-testid="create-user-btn"
         >
           <UserPlus size={18} />
-          Nuovo Utente
+          NUOVO UTENTE
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="glass-card rounded-xl p-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-plos-text-secondary" size={18} />
-            <input
-              type="text"
-              placeholder="Cerca per nome o email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-plos-surface border border-plos-border rounded-lg text-white placeholder-plos-text-secondary focus:border-plos-primary focus:outline-none"
-            />
-          </div>
-          
-          {/* Sector Filter */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setSelectedSector('all')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                selectedSector === 'all'
-                  ? 'bg-plos-primary text-black'
-                  : 'bg-plos-surface text-plos-text-secondary hover:text-white'
-              }`}
-            >
-              Tutti
-            </button>
-            {sectors.map(sector => (
-              <button
-                key={sector}
-                onClick={() => setSelectedSector(sector)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  selectedSector === sector
-                    ? 'bg-plos-primary text-black'
-                    : 'bg-plos-surface text-plos-text-secondary hover:text-white'
-                }`}
-              >
-                {sector}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      {/* Stats per settore */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
         {sectors.map(sector => {
           const count = users.filter(u => u.sector === sector).length;
+          const colors = {
+            LSPD: 'blue', EMS: 'red', GOV: 'orange', NEWS: 'green',
+            DISPATCH: 'orange', CIVIL: 'default', ADMIN: 'purple'
+          };
           return (
-            <div key={sector} className="glass-card rounded-lg p-3 text-center">
-              <div className={`w-8 h-8 mx-auto rounded ${getSectorColor(sector)} flex items-center justify-center text-white font-bold text-sm mb-1`}>
-                {count}
-              </div>
-              <p className="text-plos-text-secondary text-xs">{sector}</p>
-            </div>
+            <OsStatCard
+              key={sector}
+              icon={Shield}
+              label={sector}
+              value={count}
+              color={colors[sector] || 'default'}
+              onClick={() => setSelectedSector(sector)}
+              className={selectedSector === sector ? 'ring-2 ring-plos-primary' : ''}
+            />
           );
         })}
       </div>
 
+      {/* Search & Filter */}
+      <div className="flex gap-4 flex-wrap">
+        <div className="flex-1 min-w-[250px] relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-plos-text-muted" size={18} />
+          <input
+            type="text"
+            placeholder="Cerca per nome o email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-plos-surface border border-plos-border rounded-lg text-white placeholder-plos-text-muted focus:border-plos-primary focus:outline-none transition-all"
+            data-testid="user-search"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setSelectedSector('all')}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              selectedSector === 'all'
+                ? 'bg-plos-primary/20 border border-plos-primary/50 text-plos-primary'
+                : 'bg-plos-surface border border-plos-border text-plos-text-secondary hover:text-white'
+            }`}
+          >
+            Tutti
+          </button>
+        </div>
+      </div>
+
       {/* Users Table */}
-      <div className="glass-card rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-plos-surface/50 border-b border-plos-border">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Utente</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Settore</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Grado</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Livello</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Capo</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Stato</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Ultimo Accesso</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-plos-text-secondary">Azioni</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-plos-border">
-              {loading ? (
+      <OsPanel>
+        <OsSectionHeader
+          icon={Users}
+          title={`UTENTI (${filteredUsers.length})`}
+          color="purple"
+        />
+        
+        {loading ? (
+          <div className="p-4"><ListSkeleton rows={8} /></div>
+        ) : filteredUsers.length === 0 ? (
+          <OsEmptyState
+            icon={Users}
+            title="Nessun utente trovato"
+            description="Prova a modificare i filtri di ricerca"
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-plos-surface/30 border-b border-plos-border/30">
                 <tr>
-                  <td colSpan="8" className="px-4 py-8 text-center text-plos-text-secondary">
-                    Caricamento...
-                  </td>
+                  <th className="px-4 py-3 text-left text-[10px] font-heading text-plos-text-muted tracking-wider">UTENTE</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-heading text-plos-text-muted tracking-wider">SETTORE</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-heading text-plos-text-muted tracking-wider">GRADO</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-heading text-plos-text-muted tracking-wider">LVL</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-heading text-plos-text-muted tracking-wider">STATO</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-heading text-plos-text-muted tracking-wider">ULTIMO ACCESSO</th>
+                  <th className="px-4 py-3 text-left text-[10px] font-heading text-plos-text-muted tracking-wider">AZIONI</th>
                 </tr>
-              ) : filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan="8" className="px-4 py-8 text-center text-plos-text-secondary">
-                    Nessun utente trovato
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map(u => (
-                  <tr key={u.id} className="hover:bg-plos-surface/30 transition-colors">
+              </thead>
+              <tbody className="divide-y divide-plos-border/20">
+                {filteredUsers.map((u, index) => (
+                  <tr 
+                    key={u.id} 
+                    className="hover:bg-plos-surface/20 transition-colors group"
+                    style={{ animationDelay: `${index * 30}ms` }}
+                  >
                     <td className="px-4 py-3">
-                      <div>
-                        <p className="text-white font-medium">{u.game_name || 'N/A'}</p>
-                        <p className="text-plos-text-secondary text-xs">{u.email}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-plos-primary/20 border border-plos-primary/30 flex items-center justify-center text-xs font-bold text-plos-primary">
+                          {u.game_name?.charAt(0) || '?'}
+                        </div>
+                        <div>
+                          <p className="text-white font-medium text-sm">{u.game_name || 'N/A'}</p>
+                          <p className="text-plos-text-muted text-[10px]">{u.email}</p>
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium text-white ${getSectorColor(u.sector)}`}>
+                      <OsBadge variant={
+                        u.sector === 'LSPD' ? 'info' :
+                        u.sector === 'EMS' ? 'danger' :
+                        u.sector === 'ADMIN' ? 'purple' :
+                        u.sector === 'GOV' ? 'warning' : 'default'
+                      }>
                         {u.sector}
-                      </span>
+                      </OsBadge>
                     </td>
-                    <td className="px-4 py-3 text-white text-sm">{u.grade}</td>
-                    <td className="px-4 py-3 text-white text-sm">{u.hierarchy_level}</td>
+                    <td className="px-4 py-3 text-white text-sm">{u.grade || '-'}</td>
                     <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 bg-plos-surface border border-plos-border rounded text-xs text-white font-mono">
+                        {u.hierarchy_level}
+                      </span>
                       {u.is_sector_chief && (
-                        <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded">
-                          Capo
+                        <span className="ml-1 px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 text-[10px] rounded">
+                          CAPO
                         </span>
                       )}
                     </td>
@@ -532,96 +552,93 @@ const UserManagement = () => {
                       <div className="flex items-center gap-2">
                         {u.is_active ? (
                           <span className="flex items-center gap-1 text-green-400 text-xs">
-                            <CheckCircle size={14} />
+                            <CheckCircle size={12} />
                             Attivo
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-red-400 text-xs">
-                            <XCircle size={14} />
+                            <XCircle size={12} />
                             Inattivo
                           </span>
                         )}
                         {u.is_locked && (
-                          <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-xs rounded">
-                            <Lock size={12} />
-                          </span>
+                          <Lock size={12} className="text-red-400" />
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-plos-text-secondary text-xs">
+                    <td className="px-4 py-3 text-plos-text-muted text-xs">
                       {u.last_login ? new Date(u.last_login).toLocaleString('it-IT', {
                         day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                       }) : 'Mai'}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => openEditModal(u)}
-                          className="p-1.5 rounded hover:bg-plos-surface transition-colors text-plos-text-secondary hover:text-white"
+                          className="p-1.5 rounded-lg hover:bg-plos-surface transition-colors text-plos-text-muted hover:text-white"
                           title="Modifica"
                         >
-                          <Edit size={16} />
+                          <Edit size={14} />
                         </button>
                         <button
                           onClick={() => openResetPasswordModal(u)}
-                          className="p-1.5 rounded hover:bg-plos-surface transition-colors text-plos-text-secondary hover:text-white"
+                          className="p-1.5 rounded-lg hover:bg-plos-surface transition-colors text-plos-text-muted hover:text-white"
                           title="Reset Password"
                         >
-                          <Key size={16} />
+                          <Key size={14} />
                         </button>
                         <button
                           onClick={() => openAccessHistory(u)}
-                          className="p-1.5 rounded hover:bg-plos-surface transition-colors text-plos-text-secondary hover:text-white"
+                          className="p-1.5 rounded-lg hover:bg-plos-surface transition-colors text-plos-text-muted hover:text-white"
                           title="Storico Accessi"
                         >
-                          <History size={16} />
+                          <History size={14} />
                         </button>
                         <button
                           onClick={() => openActivityLog(u)}
-                          className="p-1.5 rounded hover:bg-plos-surface transition-colors text-plos-text-secondary hover:text-white"
+                          className="p-1.5 rounded-lg hover:bg-plos-surface transition-colors text-plos-text-muted hover:text-white"
                           title="Log Azioni"
                         >
-                          <Activity size={16} />
+                          <Activity size={14} />
                         </button>
                         {u.is_locked && (
                           <button
                             onClick={() => unlockUser(u.id)}
-                            className="p-1.5 rounded hover:bg-orange-500/20 transition-colors text-orange-400"
+                            className="p-1.5 rounded-lg hover:bg-orange-500/20 transition-colors text-orange-400"
                             title="Sblocca Account"
                           >
-                            <Unlock size={16} />
+                            <Unlock size={14} />
                           </button>
                         )}
                         <button
                           onClick={() => toggleUserStatus(u.id, u.is_active)}
-                          className={`p-1.5 rounded transition-colors ${
+                          className={`p-1.5 rounded-lg transition-colors ${
                             u.is_active
                               ? 'hover:bg-red-500/20 text-red-400'
                               : 'hover:bg-green-500/20 text-green-400'
                           }`}
                           title={u.is_active ? 'Disattiva' : 'Riattiva'}
                         >
-                          {u.is_active ? <XCircle size={16} /> : <CheckCircle size={16} />}
+                          {u.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
                         </button>
-                        {/* Pulsante Elimina Definitivamente (solo per admin level 10) */}
                         {user?.hierarchy_level >= 10 && u.id !== user?.id && (
                           <button
                             onClick={() => openDeleteModal(u)}
-                            className="p-1.5 rounded hover:bg-red-600/30 transition-colors text-red-500"
+                            className="p-1.5 rounded-lg hover:bg-red-600/30 transition-colors text-red-500"
                             title="Elimina Definitivamente"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={14} />
                           </button>
                         )}
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </OsPanel>
 
       {/* Create User Modal */}
       {showCreateModal && (
