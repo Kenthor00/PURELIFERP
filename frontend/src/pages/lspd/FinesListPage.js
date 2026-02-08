@@ -218,6 +218,25 @@ const FinesListPage = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, item: null })}
+        onConfirm={async (options) => {
+          const result = await deleteResource('fine', deleteModal.item?.id, options);
+          if (result.success) {
+            setFines(prev => prev.filter(f => f.id !== deleteModal.item?.id));
+            setDeleteModal({ open: false, item: null });
+            toast.success('Multa eliminata');
+          }
+        }}
+        resourceType="fine"
+        resourceName={`${deleteModal.item?.citizen_name} - €${deleteModal.item?.amount}`}
+        resourceId={deleteModal.item?.id}
+        allowPermanent={true}
+        loading={deleteLoading}
+      />
     </div>
   );
 };
