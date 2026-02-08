@@ -195,45 +195,59 @@ export const LSPDDashboard = () => {
       </div>
 
       {/* Content Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6 mt-6">
         {/* Recent Cases */}
-        <div className="card-tactical p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-lg tracking-wider flex items-center gap-2">
-              <FileText size={18} className="text-blue-500" />
+        <div className="bg-gradient-to-br from-plos-surface to-plos-bg border border-plos-border rounded-lg overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-plos-border/50 bg-blue-500/5">
+            <h2 className="font-heading text-sm tracking-wider flex items-center gap-2">
+              <div className="p-1.5 bg-blue-500/20 rounded">
+                <FileText size={14} className="text-blue-400" />
+              </div>
               CASI RECENTI
             </h2>
             <button
               onClick={() => navigate('/lspd/cases')}
-              className="text-plos-primary text-xs hover:underline"
+              className="text-plos-primary text-[10px] tracking-wider hover:underline flex items-center gap-1"
             >
-              Vedi tutti
+              VEDI TUTTI <ChevronRight size={12} />
             </button>
           </div>
           
-          <div className="space-y-2">
+          <div className="divide-y divide-plos-border/30">
             {recentCases.length === 0 ? (
-              <p className="text-plos-text-muted text-sm text-center py-4">
-                Nessun caso recente
-              </p>
+              <div className="p-8 text-center">
+                <FileText size={32} className="mx-auto mb-3 text-plos-text-muted/50" />
+                <p className="text-plos-text-muted text-sm">Nessun caso recente</p>
+                <button
+                  onClick={() => navigate('/lspd/cases/new')}
+                  className="mt-3 text-xs text-plos-primary hover:underline"
+                >
+                  + Crea primo caso
+                </button>
+              </div>
             ) : (
-              recentCases.map((c) => (
+              recentCases.map((c, i) => (
                 <div
                   key={c.id}
                   onClick={() => {
                     play('click');
                     navigate(`/lspd/cases/${c.id}`);
                   }}
-                  className="p-3 bg-black/30 border border-plos-border hover:border-plos-primary cursor-pointer transition-colors"
+                  className="p-4 hover:bg-white/[0.02] cursor-pointer transition-all duration-200 group"
                   data-testid={`case-${c.id}`}
+                  style={{ animationDelay: `${i * 50}ms` }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="mono text-xs text-plos-text-secondary">{c.case_number}</p>
-                      <p className="text-sm font-medium mt-1">{c.title}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="mono text-[10px] text-plos-text-muted tracking-wider">{c.case_number}</p>
+                      <p className="text-sm font-medium mt-1 truncate group-hover:text-plos-primary transition-colors">{c.title}</p>
                     </div>
-                    <span className={`status-badge status-${c.status}`}>
-                      {c.status}
+                    <span className={`flex-shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${
+                      c.status === 'open' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                      c.status === 'closed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                      'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                    }`}>
+                      {c.status?.toUpperCase()}
                     </span>
                   </div>
                 </div>
@@ -243,11 +257,21 @@ export const LSPDDashboard = () => {
         </div>
 
         {/* Timeline */}
-        <div className="card-tactical p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-lg tracking-wider flex items-center gap-2">
-              <Clock size={18} className="text-plos-primary" />
+        <div className="bg-gradient-to-br from-plos-surface to-plos-bg border border-plos-border rounded-lg overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-plos-border/50 bg-plos-primary/5">
+            <h2 className="font-heading text-sm tracking-wider flex items-center gap-2">
+              <div className="p-1.5 bg-plos-primary/20 rounded">
+                <Clock size={14} className="text-plos-primary" />
+              </div>
               ATTIVITÀ RECENTE
+            </h2>
+            <button
+              onClick={() => navigate('/timeline')}
+              className="text-plos-primary text-[10px] tracking-wider hover:underline flex items-center gap-1"
+            >
+              TIMELINE <ChevronRight size={12} />
+            </button>
+          </div>
             </h2>
             <button
               onClick={() => navigate('/timeline')}
