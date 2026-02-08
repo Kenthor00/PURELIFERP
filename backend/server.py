@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 import time
 
 from database import get_db, engine, async_session, run_auto_migrations, check_tables_exist
-from auth import get_current_user, verify_token
+from auth import get_current_user, decode_token
 from sse_manager import sse_manager
 from outbox_worker import outbox_worker
 from cache import cache, get_cache_stats, clear_all_cache
