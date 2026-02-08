@@ -91,6 +91,10 @@ async def lifespan(app: FastAPI):
     outbox_task = asyncio.create_task(outbox_worker.start(interval=30))
     logger.info("Outbox Worker avviato")
     
+    # Start WebSocket heartbeat checker
+    heartbeat_task = asyncio.create_task(heartbeat_checker())
+    logger.info("WebSocket Heartbeat Checker avviato")
+    
     yield
     
     outbox_worker.stop()
@@ -98,6 +102,13 @@ async def lifespan(app: FastAPI):
         outbox_task.cancel()
         try:
             await outbox_task
+        except asyncio.CancelledError:
+            pass
+    
+    if heartbeat_task:
+        heartbeat_task.cancel()
+        try:
+            await heartbeat_task
         except asyncio.CancelledError:
             pass
     
