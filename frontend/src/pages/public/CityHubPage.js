@@ -1,7 +1,7 @@
 /**
  * PURE LIFE OS 3.0 - City Hub Page
  * Portale Cittadino Istituzionale Premium
- * Con supporto scroll per FiveM CEF browser
+ * Con Custom Scrollbar Premium per FiveM CEF browser
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -22,11 +22,252 @@ import {
   Briefcase,
   ArrowRight,
   Sparkles,
-  ChevronUp,
-  ChevronDown,
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+// ============================================
+// PREMIUM CUSTOM SCROLLBAR COMPONENT
+// Per compatibilità FiveM CEF Browser
+// ============================================
+const PremiumScrollbar = ({ containerRef, className = '' }) => {
+  const [thumbHeight, setThumbHeight] = useState(50);
+  const [thumbTop, setThumbTop] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [scrollPercent, setScrollPercent] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const trackRef = useRef(null);
+  const dragStartY = useRef(0);
+  const dragStartScrollTop = useRef(0);
+
+  // Calcola dimensioni thumb e posizione
+  const updateScrollbar = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const { scrollHeight, clientHeight, scrollTop } = container;
+    const scrollableHeight = scrollHeight - clientHeight;
+    
+    // Mostra scrollbar solo se c'è contenuto da scrollare
+    setIsVisible(scrollableHeight > 10);
+    
+    if (scrollableHeight <= 0) return;
+
+    // Calcola altezza thumb (minimo 40px, massimo 60% del track)
+    const trackHeight = clientHeight - 16; // 8px padding top + bottom
+    const ratio = clientHeight / scrollHeight;
+    const calculatedHeight = Math.max(40, Math.min(trackHeight * 0.6, trackHeight * ratio));
+    setThumbHeight(calculatedHeight);
+
+    // Calcola posizione thumb
+    const maxThumbTop = trackHeight - calculatedHeight;
+    const newThumbTop = (scrollTop / scrollableHeight) * maxThumbTop;
+    setThumbTop(newThumbTop);
+    
+    // Percentuale scroll
+    setScrollPercent(Math.round((scrollTop / scrollableHeight) * 100));
+  }, [containerRef]);
+
+  // Aggiorna scrollbar quando il container scrolla
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('scroll', updateScrollbar);
+    window.addEventListener('resize', updateScrollbar);
+    
+    // Update iniziale
+    const timer = setTimeout(updateScrollbar, 100);
+    
+    return () => {
+      container.removeEventListener('scroll', updateScrollbar);
+      window.removeEventListener('resize', updateScrollbar);
+      clearTimeout(timer);
+    };
+  }, [containerRef, updateScrollbar]);
+
+  // Handle drag start
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartY.current = e.clientY;
+    dragStartScrollTop.current = containerRef.current?.scrollTop || 0;
+    document.body.style.userSelect = 'none';
+  };
+
+  // Handle drag move
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragging || !containerRef.current || !trackRef.current) return;
+
+      const container = containerRef.current;
+      const track = trackRef.current;
+      const trackRect = track.getBoundingClientRect();
+      const trackHeight = trackRect.height - 16;
+      
+      const deltaY = e.clientY - dragStartY.current;
+      const scrollableHeight = container.scrollHeight - container.clientHeight;
+      const maxThumbTop = trackHeight - thumbHeight;
+      
+      const scrollDelta = (deltaY / maxThumbTop) * scrollableHeight;
+      container.scrollTop = dragStartScrollTop.current + scrollDelta;
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      document.body.style.userSelect = '';
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, containerRef, thumbHeight]);
+
+  // Handle click sul track per saltare alla posizione
+  const handleTrackClick = (e) => {
+    if (!containerRef.current || !trackRef.current) return;
+    
+    const track = trackRef.current;
+    const trackRect = track.getBoundingClientRect();
+    const clickY = e.clientY - trackRect.top - 8; // 8px padding
+    const trackHeight = trackRect.height - 16;
+    
+    const container = containerRef.current;
+    const scrollableHeight = container.scrollHeight - container.clientHeight;
+    const targetScroll = (clickY / trackHeight) * scrollableHeight;
+    
+    container.scrollTo({
+      top: targetScroll,
+      behavior: 'smooth'
+    });
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <div 
+      className={`fixed right-1 top-1/2 -translate-y-1/2 z-50 ${className}`}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      {/* Scrollbar Container con glow effect */}
+      <div 
+        className={`relative transition-all duration-300 ${
+          isHovering || isDragging ? 'opacity-100' : 'opacity-70'
+        }`}
+      >
+        {/* Percentage Indicator */}
+        <div 
+          className={`absolute -left-10 top-1/2 -translate-y-1/2 transition-all duration-300 ${
+            isHovering || isDragging ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
+          }`}
+        >
+          <div className="px-2 py-1 bg-black/80 border border-plos-primary/30 rounded text-[10px] font-mono text-plos-primary backdrop-blur-sm">
+            {scrollPercent}%
+          </div>
+        </div>
+
+        {/* Track Background */}
+        <div
+          ref={trackRef}
+          onClick={handleTrackClick}
+          className="relative w-3 rounded-full cursor-pointer transition-all duration-300"
+          style={{ 
+            height: 'calc(100vh - 32px)',
+            background: 'linear-gradient(180deg, rgba(0,200,83,0.05) 0%, rgba(0,0,0,0.3) 50%, rgba(0,200,83,0.05) 100%)',
+            border: '1px solid rgba(0,200,83,0.15)',
+            boxShadow: isHovering ? '0 0 20px rgba(0,200,83,0.1)' : 'none'
+          }}
+        >
+          {/* Track Glow Lines */}
+          <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-plos-primary/20 to-transparent rounded-t-full" />
+          <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-plos-primary/20 to-transparent rounded-b-full" />
+          
+          {/* Track Pattern */}
+          <div className="absolute inset-2 opacity-30">
+            {[...Array(20)].map((_, i) => (
+              <div 
+                key={i} 
+                className="w-full h-px bg-plos-primary/20 mb-4"
+                style={{ marginTop: i === 0 ? '4px' : '0' }}
+              />
+            ))}
+          </div>
+
+          {/* Thumb */}
+          <div
+            onMouseDown={handleMouseDown}
+            className={`absolute left-1/2 -translate-x-1/2 rounded-full cursor-grab transition-all duration-150 ${
+              isDragging ? 'cursor-grabbing scale-110' : ''
+            }`}
+            style={{
+              top: thumbTop + 8, // 8px padding
+              height: thumbHeight,
+              width: isHovering || isDragging ? '10px' : '8px',
+            }}
+          >
+            {/* Thumb Glow Background */}
+            <div 
+              className="absolute inset-0 rounded-full transition-all duration-300"
+              style={{
+                background: isDragging 
+                  ? 'linear-gradient(180deg, #00c853 0%, #00e676 50%, #00c853 100%)'
+                  : 'linear-gradient(180deg, rgba(0,200,83,0.8) 0%, rgba(0,230,118,0.9) 50%, rgba(0,200,83,0.8) 100%)',
+                boxShadow: isDragging
+                  ? '0 0 20px rgba(0,200,83,0.8), 0 0 40px rgba(0,200,83,0.4), inset 0 0 10px rgba(255,255,255,0.2)'
+                  : isHovering 
+                    ? '0 0 15px rgba(0,200,83,0.6), 0 0 30px rgba(0,200,83,0.3)'
+                    : '0 0 10px rgba(0,200,83,0.4)',
+              }}
+            />
+            
+            {/* Thumb Inner Glow Line */}
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 w-0.5 rounded-full bg-white/40"
+              style={{
+                top: '20%',
+                height: '60%',
+              }}
+            />
+            
+            {/* Thumb Top Cap */}
+            <div 
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)',
+              }}
+            />
+            
+            {/* Thumb Bottom Cap */}
+            <div 
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
+              style={{
+                background: 'radial-gradient(circle, rgba(0,200,83,0.6) 0%, transparent 70%)',
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Side Glow Effect */}
+        <div 
+          className={`absolute -left-1 top-0 bottom-0 w-1 rounded-full transition-opacity duration-300 ${
+            isDragging ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            background: 'linear-gradient(180deg, transparent 0%, rgba(0,200,83,0.3) 50%, transparent 100%)',
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 // Logo Component - Compatto
 const CityLogo = () => (
