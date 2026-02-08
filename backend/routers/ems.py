@@ -17,6 +17,7 @@ from schemas import (
 from auth import get_current_user, require_roles, UserRole
 from utils import generate_patient_number, generate_report_number, get_template, fill_template, MEDICAL_TEMPLATES
 from sse_manager import sse_manager
+from cache import ModuleCache
 
 router = APIRouter(prefix="/ems", tags=["EMS"])
 
