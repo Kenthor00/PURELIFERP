@@ -120,6 +120,9 @@ async def create_case(
     db.add(timeline_event)
     await db.commit()
     
+    # Invalidate stats cache
+    await ModuleCache.invalidate_stats("lspd")
+    
     await sse_manager.broadcast("case_created", {
         "case_id": case.id,
         "case_number": case.case_number,
