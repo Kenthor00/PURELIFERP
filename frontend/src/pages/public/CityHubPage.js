@@ -127,7 +127,7 @@ export const CityHubPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#080c0f] overflow-y-auto overflow-x-hidden" data-testid="city-hub-page">
+    <div className="bg-[#080c0f]" data-testid="city-hub-page" style={{ minHeight: 'auto' }}>
       {/* Institutional Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-plos-primary/[0.02] via-transparent to-cyan-500/[0.02]" />
