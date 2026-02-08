@@ -97,7 +97,7 @@ export const ServiceChatPage = () => {
     try {
       const res = await axios.get(
         `${API_URL}/api/chat/channels/${activeChannel.name}/messages?limit=50`,
-        { headers: authHeaders }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessages(res.data);
       setTimeout(scrollToBottom, 100);
