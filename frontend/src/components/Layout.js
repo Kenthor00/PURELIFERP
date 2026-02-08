@@ -293,6 +293,12 @@ export const Layout = ({ children }) => {
           {children}
         </main>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette 
+        isOpen={isCommandPaletteOpen} 
+        onClose={() => setCommandPaletteOpen(false)} 
+      />
     </div>
   );
 };
