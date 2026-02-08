@@ -1,3 +1,7 @@
+/**
+ * PURE LIFE OS 3.0 - City Hub Page
+ * Portale Cittadino Istituzionale Premium
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
@@ -14,9 +18,43 @@ import {
   Megaphone,
   CalendarDays,
   Tv,
+  Briefcase,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Logo Component with glow
+const CityLogo = () => (
+  <div className="relative flex items-center gap-3">
+    {/* Logo with glow */}
+    <div className="relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-plos-primary/20 to-cyan-500/20 blur-xl rounded-full" />
+      <img 
+        src="/logo.png" 
+        alt="Pure Life" 
+        className="relative h-10 w-auto"
+        onError={(e) => {
+          // Fallback to text logo if image not found
+          e.target.style.display = 'none';
+          e.target.nextSibling.style.display = 'flex';
+        }}
+      />
+      <div 
+        className="hidden h-10 w-10 bg-gradient-to-br from-plos-primary/30 to-cyan-500/20 border border-plos-primary/50 rounded-lg items-center justify-center backdrop-blur-sm"
+      >
+        <span className="text-plos-primary font-heading font-bold text-lg">PL</span>
+      </div>
+    </div>
+    <div>
+      <h1 className="font-heading text-xl tracking-wider">
+        PURE LIFE <span className="text-plos-primary">CITY</span>
+      </h1>
+      <p className="text-[10px] text-plos-text-muted tracking-[0.2em] uppercase">Portale Città</p>
+    </div>
+  </div>
+);
 
 export const CityHubPage = () => {
   const navigate = useNavigate();
@@ -25,13 +63,13 @@ export const CityHubPage = () => {
   const [activeAds, setActiveAds] = useState([]);
   const [events, setEvents] = useState([]);
   const [breakingNews, setBreakingNews] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
   useEffect(() => {
     fetchData();
     
-    // Rotate banner ads every 5 seconds
     const interval = setInterval(() => {
       setCurrentAdIndex(prev => (prev + 1) % Math.max(activeAds.length, 1));
     }, 5000);
@@ -41,15 +79,17 @@ export const CityHubPage = () => {
 
   const fetchData = async () => {
     try {
-      const [adsRes, eventsRes, newsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/city/ads/active?slot_type=premium_banner&limit=5`),
-        axios.get(`${API_URL}/api/city/events?limit=6`),
-        axios.get(`${API_URL}/api/news/breaking?limit=3`),
+      const [adsRes, eventsRes, newsRes, announcementsRes] = await Promise.all([
+        axios.get(`${API_URL}/api/city/ads/active?slot_type=premium_banner&limit=5`).catch(() => ({ data: [] })),
+        axios.get(`${API_URL}/api/city/events?limit=6`).catch(() => ({ data: [] })),
+        axios.get(`${API_URL}/api/news/breaking?limit=3`).catch(() => ({ data: [] })),
+        axios.get(`${API_URL}/api/city/announcements?limit=4`).catch(() => ({ data: [] })),
       ]);
       
       setActiveAds(adsRes.data);
       setEvents(eventsRes.data);
       setBreakingNews(newsRes.data);
+      setAnnouncements(Array.isArray(announcementsRes.data) ? announcementsRes.data : []);
     } catch (error) {
       console.error('Errore fetch city hub:', error);
     } finally {
@@ -60,9 +100,7 @@ export const CityHubPage = () => {
   const trackAdClick = async (adId, linkUrl) => {
     try {
       await axios.post(`${API_URL}/api/city/ads/${adId}/click`);
-      if (linkUrl) {
-        window.open(linkUrl, '_blank');
-      }
+      if (linkUrl) window.open(linkUrl, '_blank');
     } catch (error) {
       console.error('Error tracking click:', error);
     }
@@ -81,70 +119,56 @@ export const CityHubPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen tactical-bg flex items-center justify-center">
-        <div className="text-plos-primary animate-pulse font-heading text-xl">
-          CARICAMENTO CITY HUB...
+      <div className="min-h-screen bg-[#080c0f] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-plos-primary/20 flex items-center justify-center animate-pulse">
+            <Building2 size={32} className="text-plos-primary" />
+          </div>
+          <p className="text-plos-text-muted text-sm tracking-widest">CARICAMENTO PORTALE...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen tactical-bg" data-testid="city-hub-page">
+    <div className="min-h-screen bg-[#080c0f]" data-testid="city-hub-page">
+      {/* Institutional Background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-plos-primary/[0.02] via-transparent to-cyan-500/[0.02]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-plos-primary/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px]" />
+      </div>
+
       {/* Header */}
-      <header className="bg-plos-surface border-b border-plos-border">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-plos-primary/20 border border-plos-primary flex items-center justify-center">
-                <span className="text-plos-primary font-heading font-bold">PL</span>
-              </div>
-              <div>
-                <h1 className="font-heading text-xl tracking-wider">
-                  PURE LIFE <span className="text-plos-primary">CITY</span>
-                </h1>
-                <p className="text-xs text-plos-text-secondary">Portale Città</p>
-              </div>
-            </div>
+      <header className="relative bg-[#0a0f12]/90 backdrop-blur-xl border-b border-plos-border/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <CityLogo />
             
-            <nav className="flex items-center gap-4 flex-wrap">
+            <nav className="flex items-center gap-2 sm:gap-4 flex-wrap">
               <button
                 onClick={() => navigate('/city/announcements')}
-                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-plos-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-all"
               >
                 <Megaphone size={16} />
-                <span className="hidden sm:inline">Annunci</span>
+                <span>Annunci</span>
               </button>
               <button
                 onClick={() => navigate('/city/recruitment')}
-                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-plos-text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-all"
               >
-                <UserPlus size={16} />
-                <span className="hidden sm:inline">Lavora con noi</span>
-              </button>
-              <button
-                onClick={() => navigate('/city/appointments')}
-                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
-              >
-                <CalendarDays size={16} />
-                <span className="hidden sm:inline">Appuntamenti</span>
-              </button>
-              <button
-                onClick={() => navigate('/city/news')}
-                className="text-sm text-plos-text-secondary hover:text-plos-primary flex items-center gap-1"
-              >
-                <Newspaper size={16} />
-                <span className="hidden sm:inline">News</span>
+                <Briefcase size={16} />
+                <span>Lavoro</span>
               </button>
               <button
                 onClick={() => navigate('/login')}
-                className="btn-tactical text-sm"
+                className="px-4 py-2 text-sm font-heading text-plos-text-secondary hover:text-white border border-plos-border hover:border-plos-text-muted rounded-lg transition-all"
               >
                 ACCEDI
               </button>
               <button
                 onClick={() => navigate('/register')}
-                className="px-3 py-1.5 border border-plos-primary text-plos-primary hover:bg-plos-primary/10 text-sm font-heading transition-colors"
+                className="px-4 py-2 text-sm font-heading bg-plos-primary/10 text-plos-primary border border-plos-primary/50 hover:bg-plos-primary/20 rounded-lg transition-all"
                 data-testid="cityhub-register-btn"
               >
                 REGISTRATI
@@ -154,206 +178,358 @@ export const CityHubPage = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        {/* Breaking News Banner */}
-        {breakingNews.length > 0 && (
-          <div className="bg-red-500/10 border border-red-500 p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="text-red-500 animate-pulse" size={24} />
-              <div className="flex-1">
-                <span className="font-heading text-red-500 text-sm">BREAKING NEWS</span>
-                <h3 className="font-medium">{breakingNews[0].title}</h3>
-              </div>
-              <button
-                onClick={() => navigate(`/city/news/${breakingNews[0].id}`)}
-                className="text-red-500 hover:underline text-sm"
-              >
-                Leggi
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Premium Banner Ads */}
-        {activeAds.length > 0 && (
-          <div className="relative h-48 sm:h-64 overflow-hidden border border-plos-border">
-            {activeAds.map((ad, index) => (
-              <div
-                key={ad.id}
-                onClick={() => trackAdClick(ad.id, ad.link_url)}
-                className={`absolute inset-0 transition-opacity duration-500 cursor-pointer ${
-                  index === currentAdIndex ? 'opacity-100' : 'opacity-0'
-                }`}
-                style={{
-                  backgroundImage: `url(${ad.image_url})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <span className="text-xs text-plos-primary font-heading">SPONSOR</span>
-                  <h3 className="font-heading text-xl">{ad.title}</h3>
-                  {ad.description && (
-                    <p className="text-sm text-plos-text-secondary mt-1">{ad.description}</p>
-                  )}
+      <main className="relative">
+        {/* Hero Panel */}
+        <section className="relative py-16 sm:py-24 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="relative bg-gradient-to-br from-plos-surface/80 to-[#0a0f12]/90 backdrop-blur-xl border border-plos-border/50 rounded-2xl p-8 sm:p-12 overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-plos-primary/10 rounded-full blur-[80px]" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[60px]" />
+              
+              <div className="relative z-10 max-w-2xl">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles size={16} className="text-plos-primary" />
+                  <span className="text-[10px] tracking-[0.3em] text-plos-primary font-heading">SERVIZI DIGITALI</span>
+                </div>
+                
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-bold leading-tight mb-4">
+                  Benvenuto nel<br />
+                  <span className="text-plos-primary">Portale Cittadino</span>
+                </h2>
+                
+                <p className="text-plos-text-secondary text-lg mb-8 max-w-lg">
+                  Accedi ai servizi digitali della città. Consulta annunci, eventi, opportunità di lavoro e prenota appuntamenti con le istituzioni.
+                </p>
+                
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => navigate('/city/announcements')}
+                    className="group flex items-center gap-2 px-5 py-3 bg-plos-primary/10 border border-plos-primary/50 hover:bg-plos-primary/20 rounded-xl text-plos-primary font-heading text-sm transition-all"
+                  >
+                    <Megaphone size={18} />
+                    Annunci
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <button
+                    onClick={() => navigate('/city/events')}
+                    className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-xl text-white font-heading text-sm transition-all"
+                  >
+                    <Calendar size={18} />
+                    Eventi
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <button
+                    onClick={() => navigate('/city/recruitment')}
+                    className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-xl text-white font-heading text-sm transition-all"
+                  >
+                    <Briefcase size={18} />
+                    Lavoro
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <button
+                    onClick={() => navigate('/city/appointments')}
+                    className="group flex items-center gap-2 px-5 py-3 bg-white/5 border border-plos-border hover:border-plos-text-muted rounded-xl text-white font-heading text-sm transition-all"
+                  >
+                    <CalendarDays size={18} />
+                    Appuntamenti
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </div>
               </div>
-            ))}
-            
-            {/* Dots indicator */}
-            <div className="absolute bottom-2 right-4 flex gap-1">
-              {activeAds.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index === currentAdIndex ? 'bg-plos-primary' : 'bg-plos-text-muted'
-                  }`}
-                />
-              ))}
             </div>
           </div>
+        </section>
+
+        {/* Breaking News Banner */}
+        {breakingNews.length > 0 && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 backdrop-blur-sm">
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-red-500/20 rounded-lg">
+                  <AlertCircle className="text-red-400 animate-pulse" size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-heading text-red-400 text-[10px] tracking-wider">ULTIMA ORA</span>
+                  <h3 className="font-medium truncate">{breakingNews[0].title}</h3>
+                </div>
+                <button
+                  onClick={() => navigate(`/city/news/${breakingNews[0].id}`)}
+                  className="flex-shrink-0 px-4 py-2 text-red-400 border border-red-500/50 hover:bg-red-500/10 rounded-lg text-sm font-heading transition-all"
+                >
+                  Leggi
+                </button>
+              </div>
+            </div>
+          </section>
         )}
 
         {/* Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Events */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-xl tracking-wider flex items-center gap-2">
-                <Calendar className="text-plos-primary" />
-                EVENTI IN CITTÀ
-              </h2>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 space-y-8">
+          
+          {/* Announcements Section */}
+          <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-5 border-b border-plos-border/30">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <Megaphone size={18} className="text-purple-400" />
+                </div>
+                <div>
+                  <h2 className="font-heading text-lg tracking-wider">ANNUNCI</h2>
+                  <p className="text-[10px] text-plos-text-muted tracking-wider">Comunicazioni ufficiali</p>
+                </div>
+              </div>
               <button
-                onClick={() => navigate('/city/events')}
-                className="text-plos-primary text-sm hover:underline"
+                onClick={() => navigate('/city/announcements')}
+                className="text-plos-primary text-[11px] tracking-wider hover:underline flex items-center gap-1"
               >
-                Vedi tutti
+                VEDI TUTTI <ChevronRight size={14} />
               </button>
             </div>
             
-            <div className="grid sm:grid-cols-2 gap-4">
-              {events.length === 0 ? (
-                <p className="text-plos-text-muted col-span-2 text-center py-8">
-                  Nessun evento in programma
-                </p>
+            <div className="p-5">
+              {announcements.length === 0 ? (
+                <div className="text-center py-8">
+                  <Megaphone size={32} className="mx-auto mb-3 text-plos-text-muted/30" />
+                  <p className="text-plos-text-muted">Nessun annuncio disponibile</p>
+                </div>
               ) : (
-                events.map((event) => (
-                  <div
-                    key={event.id}
-                    onClick={() => navigate(`/city/events/${event.id}`)}
-                    className="card-tactical p-4 cursor-pointer group"
-                    data-testid={`event-${event.id}`}
-                  >
-                    {event.image_url && (
-                      <div
-                        className="h-32 mb-3 bg-cover bg-center"
-                        style={{ backgroundImage: `url(${event.image_url})` }}
-                      />
-                    )}
-                    <span className="text-xs text-plos-primary uppercase font-heading">
-                      {event.category}
-                    </span>
-                    <h3 className="font-medium mt-1 group-hover:text-plos-primary">
-                      {event.title}
-                    </h3>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-plos-text-secondary">
-                      <span className="flex items-center gap-1">
-                        <Clock size={12} />
-                        {formatEventDate(event.event_date)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin size={12} />
-                        {event.location}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* News Sidebar */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-xl tracking-wider flex items-center gap-2">
-                <Newspaper className="text-plos-primary" />
-                WEAZEL NEWS
-              </h2>
-              <button
-                onClick={() => navigate('/city/news')}
-                className="text-plos-primary text-sm hover:underline"
-              >
-                Tutte
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {breakingNews.length === 0 ? (
-                <p className="text-plos-text-muted text-center py-4">
-                  Nessuna news recente
-                </p>
-              ) : (
-                breakingNews.map((article) => (
-                  <div
-                    key={article.id}
-                    onClick={() => navigate(`/city/news/${article.id}`)}
-                    className="card-tactical p-3 cursor-pointer group"
-                  >
-                    <div className="flex items-start gap-3">
-                      {article.image_url && (
-                        <div
-                          className="w-16 h-16 flex-shrink-0 bg-cover bg-center"
-                          style={{ backgroundImage: `url(${article.image_url})` }}
-                        />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium group-hover:text-plos-primary line-clamp-2">
-                          {article.title}
-                        </h4>
-                        <p className="text-xs text-plos-text-muted mt-1">
-                          {new Date(article.published_at).toLocaleDateString('it-IT')}
-                        </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {announcements.slice(0, 4).map((announcement) => (
+                    <div
+                      key={announcement.id}
+                      className="group p-4 bg-black/20 border border-plos-border/30 rounded-xl hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/5 transition-all cursor-pointer"
+                      onClick={() => navigate(`/city/announcements/${announcement.id}`)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-1.5 bg-purple-500/10 rounded">
+                          <Megaphone size={14} className="text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] text-purple-400 font-heading tracking-wider">
+                            {announcement.category?.toUpperCase() || 'GENERALE'}
+                          </span>
+                          <h3 className="font-medium mt-1 group-hover:text-plos-primary transition-colors line-clamp-2">
+                            {announcement.title}
+                          </h3>
+                          <p className="text-xs text-plos-text-muted mt-2">
+                            {new Date(announcement.created_at).toLocaleDateString('it-IT')}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Standard Card Ads */}
-        <div className="grid sm:grid-cols-3 gap-4">
-          {activeAds.filter(ad => ad.slot_type === 'standard_card').slice(0, 3).map((ad) => (
-            <div
-              key={ad.id}
-              onClick={() => trackAdClick(ad.id, ad.link_url)}
-              className="card-tactical p-4 cursor-pointer"
-            >
-              <span className="text-xs text-plos-text-muted">Sponsor</span>
-              <h4 className="font-medium mt-1">{ad.title}</h4>
-              {ad.description && (
-                <p className="text-sm text-plos-text-secondary mt-1 line-clamp-2">
-                  {ad.description}
-                </p>
-              )}
+          {/* Events and News Grid */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            
+            {/* Events */}
+            <div className="lg:col-span-2 bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-2xl overflow-hidden">
+              <div className="flex items-center justify-between p-5 border-b border-plos-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <Calendar size={18} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <h2 className="font-heading text-lg tracking-wider">EVENTI IN CITTÀ</h2>
+                    <p className="text-[10px] text-plos-text-muted tracking-wider">Prossimi appuntamenti</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/city/events')}
+                  className="text-plos-primary text-[11px] tracking-wider hover:underline flex items-center gap-1"
+                >
+                  TUTTI GLI EVENTI <ChevronRight size={14} />
+                </button>
+              </div>
+              
+              <div className="p-5">
+                {events.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Calendar size={40} className="mx-auto mb-4 text-plos-text-muted/30" />
+                    <p className="text-plos-text-muted">Nessun evento in programma</p>
+                    <p className="text-plos-text-muted text-sm mt-1">Torna presto per nuovi eventi</p>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {events.slice(0, 4).map((event) => (
+                      <div
+                        key={event.id}
+                        onClick={() => navigate(`/city/events/${event.id}`)}
+                        className="group relative bg-black/30 border border-plos-border/30 rounded-xl overflow-hidden hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all cursor-pointer"
+                        data-testid={`event-${event.id}`}
+                      >
+                        {event.image_url && (
+                          <div
+                            className="h-32 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${event.image_url})` }}
+                          >
+                            <div className="h-full bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <span className="inline-block px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] font-heading tracking-wider rounded">
+                            {event.category?.toUpperCase() || 'EVENTO'}
+                          </span>
+                          <h3 className="font-medium mt-2 group-hover:text-plos-primary transition-colors line-clamp-2">
+                            {event.title}
+                          </h3>
+                          <div className="flex items-center gap-4 mt-3 text-xs text-plos-text-muted">
+                            <span className="flex items-center gap-1">
+                              <Clock size={12} className="text-blue-400" />
+                              {formatEventDate(event.event_date)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MapPin size={12} className="text-blue-400" />
+                              {event.location}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Hover button */}
+                        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="px-3 py-1.5 bg-blue-500/20 border border-blue-500/50 rounded text-blue-400 text-xs font-heading">
+                            DETTAGLI
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="bg-plos-surface border-t border-plos-border mt-12 py-6">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-plos-text-muted text-sm">
-            © 2026 PURE LIFE RP - Tutti i diritti riservati
-          </p>
-          <p className="text-plos-text-muted text-xs mt-1 mono">
-            PURE LIFE OS v1
-          </p>
-        </div>
-      </footer>
+            {/* Media Panel - Weazel News */}
+            <div className="bg-gradient-to-br from-plos-surface/60 to-transparent border border-plos-border/50 rounded-2xl overflow-hidden">
+              <div className="flex items-center justify-between p-5 border-b border-plos-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-500/20 rounded-lg relative">
+                    <Tv size={18} className="text-red-400" />
+                    <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  </div>
+                  <div>
+                    <h2 className="font-heading text-lg tracking-wider">WEAZEL NEWS</h2>
+                    <p className="text-[10px] text-plos-text-muted tracking-wider">Media cittadino</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="divide-y divide-plos-border/20">
+                {breakingNews.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Tv size={32} className="mx-auto mb-3 text-plos-text-muted/30" />
+                    <p className="text-plos-text-muted text-sm">Nessuna news recente</p>
+                  </div>
+                ) : (
+                  breakingNews.map((article) => (
+                    <div
+                      key={article.id}
+                      onClick={() => navigate(`/city/news/${article.id}`)}
+                      className="p-4 hover:bg-white/[0.02] cursor-pointer transition-all group"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-[9px] font-heading tracking-wider rounded">
+                          {article.category?.toUpperCase() || 'NEWS'}
+                        </span>
+                        {article.is_breaking && (
+                          <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-[9px] font-heading tracking-wider rounded animate-pulse">
+                            LIVE
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-medium group-hover:text-plos-primary transition-colors line-clamp-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-xs text-plos-text-muted mt-2 flex items-center gap-1">
+                        <Clock size={10} />
+                        {new Date(article.published_at || article.created_at).toLocaleDateString('it-IT')}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              <div className="p-4 border-t border-plos-border/30">
+                <button
+                  onClick={() => navigate('/city/news')}
+                  className="w-full py-2.5 text-center text-plos-primary text-sm font-heading tracking-wider hover:bg-plos-primary/10 rounded-lg transition-all flex items-center justify-center gap-2"
+                >
+                  TUTTE LE NEWS
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Banner Ads */}
+          {activeAds.length > 0 && (
+            <div className="relative h-48 sm:h-64 rounded-2xl overflow-hidden border border-plos-border/50">
+              {activeAds.map((ad, index) => (
+                <div
+                  key={ad.id}
+                  onClick={() => trackAdClick(ad.id, ad.link_url)}
+                  className={`absolute inset-0 transition-opacity duration-500 cursor-pointer ${
+                    index === currentAdIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  style={{
+                    backgroundImage: `url(${ad.image_url})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <span className="px-2 py-1 bg-plos-primary/20 text-plos-primary text-[10px] font-heading rounded">SPONSOR</span>
+                    <h3 className="font-heading text-2xl mt-2">{ad.title}</h3>
+                    {ad.description && (
+                      <p className="text-sm text-plos-text-secondary mt-1 line-clamp-2">{ad.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {/* Dots */}
+              <div className="absolute bottom-4 right-6 flex gap-2">
+                {activeAds.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentAdIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentAdIndex ? 'bg-plos-primary w-6' : 'bg-plos-text-muted/50 hover:bg-plos-text-muted'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t border-plos-border/30 bg-[#080c0f]/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-plos-primary/10 rounded-lg">
+                  <Building2 size={18} className="text-plos-primary" />
+                </div>
+                <div>
+                  <p className="font-heading text-sm">PURE LIFE CITY</p>
+                  <p className="text-[10px] text-plos-text-muted">© 2026 Tutti i diritti riservati</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-sm text-plos-text-muted">
+                <button onClick={() => navigate('/city/news')} className="hover:text-white transition-colors">News</button>
+                <button onClick={() => navigate('/city/events')} className="hover:text-white transition-colors">Eventi</button>
+                <button onClick={() => navigate('/city/announcements')} className="hover:text-white transition-colors">Annunci</button>
+                <button onClick={() => navigate('/login')} className="hover:text-plos-primary transition-colors">Accedi</button>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </main>
     </div>
   );
 };
