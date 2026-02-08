@@ -9,6 +9,7 @@ import axios from 'axios';
 
 import OSLayout from './components/OSLayout';
 import HealthBanner from './components/HealthBanner';
+import DebugPanel from './components/DebugPanel';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SetGameNamePage from './pages/SetGameNamePage';
