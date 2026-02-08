@@ -63,8 +63,6 @@ export const ServiceChatPage = () => {
   const inputRef = useRef(null);
   const pollRef = useRef(null);
   
-  const authHeaders = { Authorization: `Bearer ${token}` };
-  
   // Scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
