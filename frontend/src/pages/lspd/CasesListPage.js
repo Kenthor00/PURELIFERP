@@ -15,14 +15,21 @@ import {
 } from 'lucide-react';
 
 export const CasesListPage = () => {
-  const { api } = useAuth();
+  const { api, user } = useAuth();
   const { play } = useSound();
   const navigate = useNavigate();
+  const { deleteResource, loading: deleteLoading } = useDelete();
   
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = useState({ open: false, item: null });
+  
+  // Check if user can delete
+  const canDelete = user?.sector === 'ADMIN' || user?.level >= 8;
 
   useEffect(() => {
     fetchCases();
