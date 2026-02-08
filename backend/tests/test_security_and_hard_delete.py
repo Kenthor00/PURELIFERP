@@ -12,7 +12,9 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')
+if BASE_URL:
+    BASE_URL = BASE_URL.rstrip('/')
 
 # Test credentials
 ADMIN_EMAIL = "admin@purelife.rp"
