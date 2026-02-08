@@ -3,7 +3,7 @@ PURE LIFE OS - Main Server
 FastAPI Application con MySQL
 Sistema Operativo Governativo RP
 """
-from fastapi import FastAPI, APIRouter, Depends, Request, Response, HTTPException
+from fastapi import FastAPI, APIRouter, Depends, Request, Response, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -14,11 +14,14 @@ import asyncio
 from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import time
 
 from database import get_db, engine, async_session, run_auto_migrations, check_tables_exist
-from auth import get_current_user
+from auth import get_current_user, verify_token
 from sse_manager import sse_manager
 from outbox_worker import outbox_worker
+from cache import cache, get_cache_stats, clear_all_cache
+from websocket_engine import ws_manager, heartbeat_checker, WSEventType
 
 from routers import auth, lspd, ems, dispatch, timeline
 from routers import city, news, justice, chat
