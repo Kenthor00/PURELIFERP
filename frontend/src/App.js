@@ -45,6 +45,9 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import AuditDashboard from './pages/admin/AuditDashboard';
 
+// City Pulse (UNIQUE FEATURE)
+import CityPulsePage from './pages/CityPulsePage';
+
 // Sector Management (for sector chiefs)
 import SectorManagement from './pages/SectorManagement';
 
