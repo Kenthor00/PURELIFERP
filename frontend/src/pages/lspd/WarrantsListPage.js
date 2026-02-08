@@ -145,6 +145,15 @@ const WarrantsListPage = () => {
                 <p className="text-xs text-plos-text-muted mt-1">
                   {new Date(warrant.created_at).toLocaleDateString('it-IT')}
                 </p>
+                {canDelete && (
+                  <button
+                    onClick={() => setDeleteModal({ open: true, item: warrant })}
+                    className="mt-2 p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded transition-all"
+                    title="Elimina mandato"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
             </div>
           ))}
