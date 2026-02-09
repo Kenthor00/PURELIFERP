@@ -489,12 +489,30 @@ export const CityHubPage = () => {
   const [searchParams] = useSearchParams();
   const scrollContainerRef = useRef(null);
   
+  // Rileva se siamo su FiveM CEF
+  const isFiveM = useFiveMDetection();
+  const [scrollbarWorking, setScrollbarWorking] = useState(true);
+  
   const [activeAds, setActiveAds] = useState([]);
   const [events, setEvents] = useState([]);
   const [breakingNews, setBreakingNews] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
+
+  // Verifica se la scrollbar custom funziona
+  useEffect(() => {
+    if (isFiveM) {
+      // Test se la scrollbar è interattiva dopo 2 secondi
+      const timer = setTimeout(() => {
+        const scrollbar = document.querySelector('[data-testid="premium-scrollbar"]');
+        if (!scrollbar) {
+          setScrollbarWorking(false);
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFiveM]);
 
   useEffect(() => {
     fetchData();
