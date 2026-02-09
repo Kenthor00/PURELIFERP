@@ -579,8 +579,19 @@ export const CityHubPage = () => {
 
   return (
     <div className="relative bg-[#080c0f]" style={{ height: '100vh', overflow: 'hidden', position: 'relative' }}>
-      {/* Premium Custom Scrollbar per FiveM CEF - Posizionata sopra il container */}
-      <PremiumScrollbar containerRef={scrollContainerRef} />
+      {/* Scroll Controls - Mostra scrollbar custom o pulsanti fallback */}
+      {scrollbarWorking ? (
+        <PremiumScrollbar containerRef={scrollContainerRef} />
+      ) : (
+        <ScrollButtons containerRef={scrollContainerRef} visible={true} />
+      )}
+      
+      {/* FiveM Mode Indicator (solo in development) */}
+      {process.env.NODE_ENV === 'development' && isFiveM && (
+        <div className="fixed top-2 left-2 z-50 px-2 py-1 bg-orange-500/20 border border-orange-500/50 rounded text-xs text-orange-400">
+          FiveM Mode {scrollbarWorking ? '+ Scrollbar' : '+ Buttons'}
+        </div>
+      )}
       
       {/* Scrollable Content Container */}
       <div 
