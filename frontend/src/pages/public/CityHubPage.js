@@ -2,6 +2,7 @@
  * PURE LIFE OS 3.0 - City Hub Page
  * Portale Cittadino Istituzionale Premium
  * Con Custom Scrollbar Premium per FiveM CEF browser
+ * E fallback pulsanti per compatibilità massima
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -22,9 +23,126 @@ import {
   Briefcase,
   ArrowRight,
   Sparkles,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+// ============================================
+// DETECT FiveM CEF BROWSER
+// ============================================
+const useFiveMDetection = () => {
+  const [isFiveM, setIsFiveM] = useState(false);
+  
+  useEffect(() => {
+    // Metodi per rilevare FiveM CEF:
+    // 1. User Agent
+    const ua = navigator.userAgent.toLowerCase();
+    const isCEF = ua.includes('cef') || ua.includes('fivem') || ua.includes('chromium embedded');
+    
+    // 2. Dimensioni tipiche di FiveM (lb-phone: 340x600, tablet: 800x600)
+    const isFiveMResolution = (window.innerWidth <= 800 && window.innerHeight <= 600);
+    
+    // 3. Verifica se GetParentResourceName esiste (API FiveM)
+    const hasFiveMAPI = typeof window.GetParentResourceName === 'function';
+    
+    // 4. Verifica se invokeNative esiste
+    const hasInvokeNative = typeof window.invokeNative === 'function';
+    
+    setIsFiveM(isCEF || hasFiveMAPI || hasInvokeNative || isFiveMResolution);
+    
+    // Debug log
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[FiveM Detection]', { isCEF, isFiveMResolution, hasFiveMAPI, hasInvokeNative });
+    }
+  }, []);
+  
+  return isFiveM;
+};
+
+// ============================================
+// SCROLL BUTTONS COMPONENT (Fallback per CEF)
+// ============================================
+const ScrollButtons = ({ containerRef, visible }) => {
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(true);
+  
+  const updateButtons = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    setCanScrollUp(container.scrollTop > 10);
+    setCanScrollDown(container.scrollTop < container.scrollHeight - container.clientHeight - 10);
+  }, [containerRef]);
+  
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    container.addEventListener('scroll', updateButtons);
+    updateButtons();
+    
+    return () => container.removeEventListener('scroll', updateButtons);
+  }, [containerRef, updateButtons]);
+  
+  const scrollBy = (direction) => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const scrollAmount = 200;
+    container.scrollTo({
+      top: container.scrollTop + (direction === 'down' ? scrollAmount : -scrollAmount),
+      behavior: 'smooth'
+    });
+  };
+  
+  if (!visible) return null;
+  
+  return (
+    <div 
+      className="absolute right-2 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3"
+      data-testid="scroll-buttons-fallback"
+    >
+      {/* Scroll Up */}
+      <button
+        onClick={() => scrollBy('up')}
+        disabled={!canScrollUp}
+        className={`p-3 rounded-xl border-2 transition-all duration-300 ${
+          canScrollUp
+            ? 'bg-plos-primary/20 border-plos-primary/60 text-plos-primary hover:bg-plos-primary/30 hover:scale-110 active:scale-95 shadow-lg shadow-plos-primary/20'
+            : 'bg-plos-surface/30 border-plos-border/30 text-plos-text-muted/30 cursor-not-allowed'
+        }`}
+        data-testid="scroll-up-btn"
+        title="Scorri su"
+      >
+        <ChevronUp size={24} strokeWidth={3} />
+      </button>
+      
+      {/* Scroll Indicator */}
+      <div className="flex flex-col items-center gap-1 py-2">
+        <div className={`w-1 h-1 rounded-full transition-colors ${canScrollUp ? 'bg-plos-primary' : 'bg-plos-border/30'}`} />
+        <div className="w-1 h-8 rounded-full bg-gradient-to-b from-plos-primary/60 to-plos-primary/20" />
+        <div className={`w-1 h-1 rounded-full transition-colors ${canScrollDown ? 'bg-plos-primary' : 'bg-plos-border/30'}`} />
+      </div>
+      
+      {/* Scroll Down */}
+      <button
+        onClick={() => scrollBy('down')}
+        disabled={!canScrollDown}
+        className={`p-3 rounded-xl border-2 transition-all duration-300 ${
+          canScrollDown
+            ? 'bg-plos-primary/20 border-plos-primary/60 text-plos-primary hover:bg-plos-primary/30 hover:scale-110 active:scale-95 shadow-lg shadow-plos-primary/20'
+            : 'bg-plos-surface/30 border-plos-border/30 text-plos-text-muted/30 cursor-not-allowed'
+        }`}
+        data-testid="scroll-down-btn"
+        title="Scorri giù"
+      >
+        <ChevronDown size={24} strokeWidth={3} />
+      </button>
+    </div>
+  );
+};
 
 // ============================================
 // PREMIUM CUSTOM SCROLLBAR COMPONENT
