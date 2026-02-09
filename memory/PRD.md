@@ -288,6 +288,7 @@ React 18 + TailwindCSS
 
 | Data | Versione | Modifiche |
 |------|----------|-----------|
+| 2026-02-08 | 3.0.8 | **FIVEM CEF AUTO-FALLBACK**: Aggiunto rilevamento automatico browser FiveM CEF con fallback a pulsanti di scroll se scrollbar non funziona. Hook `useFiveMDetection()` rileva UA, API FiveM, risoluzione schermo |
 | 2026-02-08 | 3.0.7 | **BUG FIX SPRINT**: 7 bug risolti - Chat cambio canale, EMS PatientDetailPage, EMS Report modal premium, Giustizia Verdetti/Archivio toast info, LSPD Elimina Tutto attività, City Pulse mappa dati reali API /dispatch/zones/activity |
 | 2026-02-08 | 3.0.6 | **SCROLLBAR CUSTOM PREMIUM**: Implementata scrollbar personalizzata per il Portale Pubblico (CityHubPage) compatibile con FiveM CEF browser. Design futuristico con glow al neon, drag del thumb, indicatore percentuale, click sul track. Testata su desktop, tablet (800x600) e lb-phone (340x600) |
 | 2026-02-08 | 3.0.5 | **FIX SSE OFFLINE**: Corretto indicatore SSE che mostrava "OFFLINE". Migliorata gestione errori QUIC e riconnessione automatica |
