@@ -771,3 +771,62 @@ class PaginatedResponse(BaseModel):
 # Rebuild models
 CaseDetailResponse.model_rebuild()
 PatientDetailResponse.model_rebuild()
+
+
+# ==========================================
+# POI (Map Points of Interest) SCHEMAS
+# ==========================================
+
+class POICategory(str, Enum):
+    GOVERNO = "governo"
+    POLIZIA = "polizia"
+    OSPEDALE = "ospedale"
+    COMMERCIALE = "commerciale"
+    RESIDENZIALE = "residenziale"
+    INDUSTRIALE = "industriale"
+    INTRATTENIMENTO = "intrattenimento"
+    SERVIZI = "servizi"
+    ALTRO = "altro"
+
+
+class POIBase(BaseModel):
+    name: str
+    x_percent: float = Field(..., ge=0, le=100)
+    y_percent: float = Field(..., ge=0, le=100)
+    category: POICategory = POICategory.ALTRO
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    is_public: bool = True
+
+
+class POICreate(POIBase):
+    pass
+
+
+class POIUpdate(BaseModel):
+    name: Optional[str] = None
+    x_percent: Optional[float] = Field(None, ge=0, le=100)
+    y_percent: Optional[float] = Field(None, ge=0, le=100)
+    category: Optional[POICategory] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    is_public: Optional[bool] = None
+    is_active: Optional[bool] = None
+
+
+class POIResponse(POIBase):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    is_active: bool
+    created_by: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
