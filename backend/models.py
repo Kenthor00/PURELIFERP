@@ -841,6 +841,8 @@ class LegalCase(Base):
     status = Column(Enum(LegalCaseStatus), default=LegalCaseStatus.DRAFT, index=True)
     plaintiff_name = Column(String(100), nullable=True)
     defendant_name = Column(String(100), nullable=True)
+    # Campo avvocato (sostituisce "attore" nella UI)
+    lawyer_name = Column(String(100), nullable=True)  # Nome avvocato assegnato
     lawyer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     prosecutor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     related_case_id = Column(Integer, ForeignKey("cases.id"), nullable=True)
