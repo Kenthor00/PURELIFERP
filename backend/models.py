@@ -55,10 +55,10 @@ class CaseStatus(str, enum.Enum):
 
 class WarrantStatus(str, enum.Enum):
     """Stati del mandato con ciclo di vita completo"""
-    OPEN = "open"           # Mandato attivo
-    EXECUTED = "executed"   # Eseguito
-    EXPIRED = "expired"     # Scaduto
-    CANCELLED = "cancelled" # Revocato
+    OPEN = "OPEN"           # Mandato attivo
+    EXECUTED = "EXECUTED"   # Eseguito
+    EXPIRED = "EXPIRED"     # Scaduto
+    CANCELLED = "CANCELLED" # Revocato
 
 
 class OutboxStatus(str, enum.Enum):
