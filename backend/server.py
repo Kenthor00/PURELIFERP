@@ -394,6 +394,10 @@ api_router.include_router(push.router)
 # FASE P1 - Admin Delete System
 api_router.include_router(admin_delete.router)
 
+# Map POI System
+from routers import poi
+api_router.include_router(poi.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
