@@ -6,9 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from typing import Optional, List
+from datetime import datetime, timezone
 
 from database import get_db
-from models import User, Case, CaseStatus, Warrant, Fine, Evidence, TimelineEvent, Outbox, OutboxStatus
+from models import User, Case, CaseStatus, Warrant, WarrantStatus, Fine, Evidence, TimelineEvent, Outbox, OutboxStatus
 from schemas import (
     CaseCreate, CaseUpdate, CaseResponse, CaseDetailResponse,
     WarrantCreate, WarrantResponse, FineCreate, FineResponse,
