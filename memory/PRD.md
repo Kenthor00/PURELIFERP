@@ -362,7 +362,41 @@ React 18 + TailwindCSS
 
 ### Nuovi File Creati
 - `/app/backend/routers/poi.py` - Router completo POI
+- `/app/backend/routers/nui_integration.py` - Router FiveM NUI Integration
+- `/app/frontend/src/context/NUIContext.js` - NUI Bridge postMessage
+- `/app/frontend/src/hooks/useNUIAuth.js` - Hook autenticazione NUI
 - `/app/backend/tests/test_iteration18.py` - 22 test backend
+
+### Iteration 19 - FiveM NUI Integration (10/02/2026)
+
+#### Auth Handshake System ✅
+- `POST /api/nui/handshake` - Riceve code da FiveM, valida, ritorna JWT short-lived (12 min)
+- `POST /api/nui/handshake/dev` - Dev mode per testing senza FiveM
+- `POST /api/nui/refresh` - Refresh token per sessioni NUI
+- Rate limiting per IP (10 req/60s, block 300s)
+- Code one-time con TTL 60s (validato da server FiveM)
+
+#### WebSocket Engine Potenziato ✅
+- Nuovi event types per NUI: `APPOINTMENT_*`, `NEWS_*`, `MARKETPLACE_*`, `DOCUMENT_*`, `WAYPOINT_SET`
+- Canali standard: `nui:notifications`, `nui:appointments`, `nui:news`, `nui:marketplace`, `nui:documents`
+- Helper functions per broadcast news, notifiche documento, waypoint
+
+#### NUI Bridge (Frontend) ✅
+- `NUIContext.js` - Comunicazione postMessage bidirezionale
+- Eventi INBOUND: `PLOS_HANDSHAKE`, `PLOS_PLAYER`, `PLOS_OK`, `PLOS_ERR`
+- Eventi OUTBOUND: `PLOS_GET_PLAYER`, `PLOS_SET_WAYPOINT`, `PLOS_NOTIFY`
+- Auto-detect ambiente FiveM NUI
+- Hooks: `useNUI`, `useNUIEvent`, `useWaypoint`, `useNUINotify`
+
+#### Token Short-Lived ✅
+- JWT access token: 12 minuti (configurabile via `NUI_TOKEN_EXPIRE_MINUTES`)
+- Auto-refresh ogni 10 minuti in background
+- Refresh token: 7 giorni
+
+#### Rate Limiting ✅
+- 10 richieste per 60 secondi per IP
+- Blocco automatico 5 minuti dopo violazione
+- Stats endpoint: `GET /api/nui/rate-limit/stats`
 
 ### Modifiche DB
 - `warrants.status` - Enum OPEN/EXECUTED/EXPIRED/CANCELLED
