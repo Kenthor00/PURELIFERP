@@ -261,7 +261,7 @@ async def revoke_warrant(
     current_user: User = Depends(require_roles(UserRole.POLICE)),
     db: AsyncSession = Depends(get_db)
 ):
-    """Revoca mandato"""
+    """Revoca mandato (legacy - usa /status per il nuovo sistema)"""
     result = await db.execute(select(Warrant).where(Warrant.id == warrant_id))
     warrant = result.scalar_one_or_none()
     
@@ -269,9 +269,111 @@ async def revoke_warrant(
         raise HTTPException(status_code=404, detail="Mandato non trovato")
     
     warrant.is_active = False
+    warrant.status = WarrantStatus.CANCELLED
+    warrant.cancelled_at = datetime.now(timezone.utc)
+    warrant.cancelled_by = current_user.id
     await db.commit()
     
     return MessageResponse(message="Mandato revocato con successo")
+
+
+@router.patch("/warrants/{warrant_id}/status", response_model=WarrantResponse)
+async def update_warrant_status(
+    warrant_id: int,
+    new_status: str,
+    reason: Optional[str] = None,
+    current_user: User = Depends(require_roles(UserRole.POLICE)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Aggiorna lo stato di un mandato con validazione delle transizioni.
+    
+    Transizioni valide:
+    - OPEN -> EXECUTED (mandato eseguito)
+    - OPEN -> EXPIRED (mandato scaduto)
+    - OPEN -> CANCELLED (mandato revocato)
+    - Non è possibile tornare a OPEN una volta cambiato
+    """
+    from models import WarrantStatus
+    
+    result = await db.execute(select(Warrant).where(Warrant.id == warrant_id))
+    warrant = result.scalar_one_or_none()
+    
+    if not warrant:
+        raise HTTPException(status_code=404, detail="Mandato non trovato")
+    
+    # Valida nuovo status
+    try:
+        target_status = WarrantStatus(new_status)
+    except ValueError:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Stato non valido. Stati ammessi: {[s.value for s in WarrantStatus]}"
+        )
+    
+    # Ottieni stato corrente (se non presente, assume OPEN se is_active)
+    current_status = warrant.status or (WarrantStatus.OPEN if warrant.is_active else WarrantStatus.CANCELLED)
+    
+    # Valida transizione
+    valid_transitions = {
+        WarrantStatus.OPEN: [WarrantStatus.EXECUTED, WarrantStatus.EXPIRED, WarrantStatus.CANCELLED],
+        WarrantStatus.EXECUTED: [],  # Stato finale
+        WarrantStatus.EXPIRED: [],   # Stato finale
+        WarrantStatus.CANCELLED: [], # Stato finale
+    }
+    
+    if target_status not in valid_transitions.get(current_status, []):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Transizione non valida: {current_status.value} -> {target_status.value}"
+        )
+    
+    # Applica transizione
+    warrant.status = target_status
+    
+    if target_status == WarrantStatus.EXECUTED:
+        warrant.executed = True
+        warrant.executed_at = datetime.now(timezone.utc)
+        warrant.executed_by = current_user.id
+        warrant.is_active = False
+    elif target_status == WarrantStatus.CANCELLED:
+        warrant.is_active = False
+        warrant.cancelled_at = datetime.now(timezone.utc)
+        warrant.cancelled_by = current_user.id
+        warrant.cancellation_reason = reason
+    elif target_status == WarrantStatus.EXPIRED:
+        warrant.is_active = False
+    
+    # Timeline event
+    status_labels = {
+        WarrantStatus.EXECUTED: "Eseguito",
+        WarrantStatus.EXPIRED: "Scaduto",
+        WarrantStatus.CANCELLED: "Revocato"
+    }
+    
+    timeline_event = TimelineEvent(
+        event_type="warrant_status_changed",
+        category="lspd",
+        title=f"Mandato {status_labels.get(target_status, target_status.value)}: {warrant.warrant_number}",
+        description=f"Da {current_user.game_name or current_user.email}. {reason or ''}".strip(),
+        entity_id=warrant.id,
+        entity_type="warrant",
+        user_id=current_user.id,
+        extra_data={"old_status": current_status.value, "new_status": target_status.value, "reason": reason}
+    )
+    db.add(timeline_event)
+    
+    await db.commit()
+    await db.refresh(warrant)
+    
+    await sse_manager.broadcast("warrant_status_changed", {
+        "warrant_id": warrant.id,
+        "warrant_number": warrant.warrant_number,
+        "old_status": current_status.value,
+        "new_status": target_status.value
+    }, roles={"police", "dispatch", "admin"})
+    
+    return warrant
 
 
 # ==========================================
@@ -280,17 +382,13 @@ async def revoke_warrant(
 
 @router.get("/fines", response_model=List[FineResponse])
 async def get_fines(
-    paid: Optional[bool] = None,
     search: Optional[str] = None,
     limit: int = Query(50, le=100),
     current_user: User = Depends(require_roles(UserRole.POLICE, UserRole.DISPATCH)),
     db: AsyncSession = Depends(get_db)
 ):
-    """Lista multe"""
+    """Lista multe - senza filtro pagata/non pagata"""
     query = select(Fine).order_by(desc(Fine.created_at))
-    
-    if paid is not None:
-        query = query.where(Fine.is_paid == paid)
     
     if search:
         search_filter = f"%{search}%"
@@ -357,6 +455,116 @@ async def create_fine(
     }, roles={"police", "dispatch", "admin"})
     
     return fine
+
+
+@router.put("/fines/{fine_id}", response_model=FineResponse)
+async def update_fine(
+    fine_id: int,
+    citizen_name: Optional[str] = None,
+    amount: Optional[float] = None,
+    reason: Optional[str] = None,
+    modification_reason: str = Query(..., description="Motivo della modifica (obbligatorio)"),
+    current_user: User = Depends(require_roles(UserRole.POLICE)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Modifica una multa esistente.
+    Solo il creatore o un superiore può modificare.
+    """
+    result = await db.execute(select(Fine).where(Fine.id == fine_id))
+    fine = result.scalar_one_or_none()
+    
+    if not fine:
+        raise HTTPException(status_code=404, detail="Multa non trovata")
+    
+    # Verifica permessi: creatore o superiore
+    is_owner = fine.issued_by == current_user.id
+    is_superior = current_user.hierarchy_level >= 7  # Comandante+
+    
+    if not is_owner and not is_superior:
+        raise HTTPException(
+            status_code=403, 
+            detail="Solo il creatore della multa o un superiore può modificarla"
+        )
+    
+    # Aggiorna campi
+    if citizen_name:
+        fine.citizen_name = citizen_name
+    if amount is not None:
+        fine.amount = amount
+    if reason:
+        fine.reason = reason
+    
+    fine.last_modified_by = current_user.id
+    fine.modification_reason = modification_reason
+    
+    timeline_event = TimelineEvent(
+        event_type="fine_modified",
+        category="lspd",
+        title=f"Multa modificata: {fine.fine_number}",
+        description=f"Modificata da {current_user.game_name or current_user.email}. Motivo: {modification_reason}",
+        entity_id=fine.id,
+        entity_type="fine",
+        user_id=current_user.id
+    )
+    db.add(timeline_event)
+    
+    await db.commit()
+    await db.refresh(fine)
+    
+    return fine
+
+
+@router.delete("/fines/{fine_id}", response_model=MessageResponse)
+async def delete_fine(
+    fine_id: int,
+    deletion_reason: str = Query(..., description="Motivo della cancellazione (obbligatorio)"),
+    current_user: User = Depends(require_roles(UserRole.POLICE)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Cancella una multa.
+    Solo il creatore o un superiore può cancellare.
+    """
+    result = await db.execute(select(Fine).where(Fine.id == fine_id))
+    fine = result.scalar_one_or_none()
+    
+    if not fine:
+        raise HTTPException(status_code=404, detail="Multa non trovata")
+    
+    # Verifica permessi: creatore o superiore
+    is_owner = fine.issued_by == current_user.id
+    is_superior = current_user.hierarchy_level >= 7  # Comandante+
+    
+    if not is_owner and not is_superior:
+        raise HTTPException(
+            status_code=403, 
+            detail="Solo il creatore della multa o un superiore può cancellarla"
+        )
+    
+    # Log timeline prima di eliminare
+    timeline_event = TimelineEvent(
+        event_type="fine_deleted",
+        category="lspd",
+        title=f"Multa eliminata: {fine.fine_number}",
+        description=f"Eliminata da {current_user.game_name or current_user.email}. Motivo: {deletion_reason}",
+        entity_id=fine.id,
+        entity_type="fine",
+        user_id=current_user.id,
+        extra_data={
+            "fine_number": fine.fine_number,
+            "citizen_name": fine.citizen_name,
+            "amount": fine.amount,
+            "reason": fine.reason,
+            "deletion_reason": deletion_reason
+        }
+    )
+    db.add(timeline_event)
+    
+    await db.delete(fine)
+    await db.commit()
+    
+    return MessageResponse(message=f"Multa {fine.fine_number} eliminata con successo")
 
 
 # ==========================================
