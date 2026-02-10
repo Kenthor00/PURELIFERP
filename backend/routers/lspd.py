@@ -601,8 +601,7 @@ async def add_evidence(
         evidence_type=request.evidence_type,
         title=request.title,
         description=request.description,
-        file_url=request.file_url,
-        extra_data=request.metadata_json
+        file_url=request.file_url
     )
     
     db.add(evidence)
