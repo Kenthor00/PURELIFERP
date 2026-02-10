@@ -312,7 +312,7 @@ async def nui_handshake(
         expires_in=NUI_TOKEN_EXPIRE_MINUTES * 60,
         user={
             "id": user.id,
-            "name": user.name,
+            "name": user.game_name,
             "game_name": user.game_name,
             "sector": user.sector.value,
             "grade": user.grade,
@@ -407,7 +407,7 @@ async def nui_handshake_dev(
         expires_in=NUI_TOKEN_EXPIRE_MINUTES * 60,
         user={
             "id": user.id,
-            "name": user.name,
+            "name": user.game_name,
             "game_name": user.game_name,
             "sector": user.sector.value,
             "grade": user.grade,
