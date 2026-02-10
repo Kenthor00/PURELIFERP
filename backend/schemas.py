@@ -228,10 +228,10 @@ class CaseDetailResponse(CaseResponse):
 # ==========================================
 
 class WarrantStatus(str, Enum):
-    OPEN = "open"
-    EXECUTED = "executed"
-    EXPIRED = "expired"
-    CANCELLED = "cancelled"
+    OPEN = "OPEN"
+    EXECUTED = "EXECUTED"
+    EXPIRED = "EXPIRED"
+    CANCELLED = "CANCELLED"
 
 
 class WarrantBase(BaseModel):
