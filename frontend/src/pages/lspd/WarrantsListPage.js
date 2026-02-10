@@ -216,7 +216,7 @@ const WarrantsListPage = () => {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-mono text-[10px] text-orange-400 tracking-wider">{warrant.warrant_number}</span>
                         <OsBadge variant={getStatusVariant(warrant)}>
-                          {getStatusLabel(warrant.status || (warrant.is_active ? 'open' : 'cancelled'))}
+                          {getStatusLabel(warrant.status || (warrant.is_active ? 'OPEN' : 'CANCELLED'))}
                         </OsBadge>
                       </div>
                       <p className="text-sm font-medium truncate">{warrant.suspect_name}</p>
