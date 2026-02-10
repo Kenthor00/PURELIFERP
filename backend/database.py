@@ -201,6 +201,8 @@ async def run_column_migrations():
         ("fines", "modification_reason", "TEXT NULL"),
         # LegalCase lawyer_name
         ("legal_cases", "lawyer_name", "VARCHAR(100) NULL"),
+        # User NUI fields
+        ("users", "created_via", "VARCHAR(50) NULL"),
     ]
     
     try:
