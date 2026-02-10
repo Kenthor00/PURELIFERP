@@ -421,6 +421,7 @@ class User(Base):
     lock_until = Column(DateTime, nullable=True)
     failed_login_attempts = Column(Integer, default=0)
     last_failed_login = Column(DateTime, nullable=True)
+    created_via = Column(String(50), nullable=True)  # 'web', 'fivem_nui', 'fivem_nui_dev', 'import'
     
     # Preferenze
     sound_enabled = Column(Boolean, default=True)
