@@ -301,44 +301,80 @@ React 18 + TailwindCSS
 
 ---
 
-## ✅ Stato Attuale (08/02/2026)
+## ✅ Stato Attuale (10/02/2026)
 
-**PURE LIFE OS 3.0.4 - UI WOW PASS COMPLETO**
+**PURE LIFE OS 3.1.0 - MAJOR UPDATE: Sistema RP Completo**
 
-### UI WOW PASS Completato (08/02/2026)
-**Tutte le pagine principali sono state ridisegnate con il design system premium:**
-- ✅ Justice Dashboard: OsStatCard, OsPanel, OsListRow, OsBadge, OsQuickAction
-- ✅ City Pulse: OsStatCard, OsPanel, OsSectionHeader, heatmap, feed
-- ✅ Fines List: OsPanel, OsListRow, OsBadge, ricerca, filtri
-- ✅ Warrants List: OsPanel, OsListRow, OsBadge, ricerca, filtri
-- ✅ Public Portal: Hero Panel, sezioni premium, branding istituzionale
-- ✅ ServiceChatPage: Sidebar premium, canali, messaggi, menzioni, azioni rapide
-- ✅ UserManagement: OsStatCard per settore, OsPanel, OsBadge, tabella premium
-- ✅ **Regressioni verificate**: LSPD, EMS, Admin, Dispatch funzionanti
-- ✅ **Test Rate**: 100% frontend tests passed (iteration_15, iteration_16)
+### Iteration 18 - Sistema RP Completo (10/02/2026)
 
-### Bug Critici Fixati (Audit 08/02/2026)
-1. ✅ AuditAction.DELETE → AuditAction.RESOURCE_DELETE
-2. ✅ log_audit parametri corretti (entity_type, entity_id, description, metadata)
-3. ✅ current_user.role → property retrocompatibile con sector
-4. ✅ SSE reconnect automatico dopo errore
-5. ✅ Delete universale esteso a EMS, Justice, Dispatch
+#### A) Prove legate ai Casi ✅
+- Tab "PROVE" nel dettaglio caso con conteggio
+- Modale per aggiunta prove con tipo (foto, video, documento, altro)
+- Grid view prove con delete
+- Endpoint: `GET/POST /lspd/evidence/{case_id}`, `DELETE /lspd/evidence/{id}`
 
-### Funzionalità UNICHE Implementate
-1. ⌘ **Command Palette** (Ctrl+K) - Navigazione rapida stile macOS/VS Code
-2. 🗺️ **City Pulse** - Centro di controllo con heatmap attività
-3. 🗑️ **Delete Universale** - Eliminazione risorse per admin/capi (COMPLETO)
-4. 🖥️ **UI OS-Style** - Layout sistema operativo con SystemBar e Sidebar
+#### B) Ciclo di Vita Mandati ✅
+- Stati: OPEN, EXECUTED, EXPIRED, CANCELLED
+- Endpoint: `PATCH /lspd/warrants/{id}/status` con validazione transizioni server-side
+- UI: Modal cambio stato con pulsanti "ESEGUITO", "SCADUTO", "REVOCA"
+- Badge dinamici colorati per ogni stato
 
-### Performance
-- Cache hit rate: 66.7%
-- API Stats: 47% più veloce con cache
-- Bundle gzip: 162KB
+#### C) ID Cittadino Opzionale ✅
+- Campo `citizen_identifier` reso opzionale nelle multe
+- Rimosso errore validazione per ID mancante
 
-### Test
-- Backend API: 100% funzionante
-- Frontend: Verificato con testing agent
-- Audit: `/app/AUDIT_REPORT.md`
+#### D) Modifica e Cancellazione Multe ✅
+- Endpoint: `PUT /lspd/fines/{id}` con `modification_reason` obbligatorio
+- Endpoint: `DELETE /lspd/fines/{id}` con `deletion_reason` obbligatorio
+- Permessi ownership: solo creatore o `hierarchy_level >= 7` (Comandante+)
+- UI: Icone Edit/Trash, modal con motivazione obbligatoria
+
+#### E) Selezione Pratiche in Nuova Udienza ✅
+- Lista pratiche con ricerca
+- Click per selezionare con checkbox
+- Auto-fill titolo udienza
+- Pulsante "Rimuovi selezione"
+
+#### F) Campo "Avvocato" in Nuova Pratica ✅
+- Sostituito "attore" con "avvocato"
+- Campo `lawyer_name` nel modello DB
+
+#### G) Lista Pratiche Fix ✅
+- Visualizzazione corretta di tutte le pratiche
+- Badge stato con colori
+
+#### H) Pratiche in Attesa Click Fix ✅
+- Click funzionante su card pratiche
+- Navigazione a dettaglio
+
+#### I) Editor Weazel News Fix ✅
+- Textarea con stili inline per evitare conflitti CSS
+- Input text funzionante correttamente
+
+#### J) Mappa Custom FiveM con POI ✅
+- Immagine mappa satellitare Los Santos ad alta risoluzione
+- Sistema POI completo con CRUD
+- 9 categorie POI (governo, polizia, ospedale, commerciale, residenziale, industriale, intrattenimento, servizi, altro)
+- Marker colorati con icone
+- Modalità modifica per utenti autorizzati (Admin, GOV lv3+, LSPD/EMS/Dispatch lv7+)
+- Filtro per categoria, toggle etichette
+- Tooltip hover con info POI
+
+### Nuovi File Creati
+- `/app/backend/routers/poi.py` - Router completo POI
+- `/app/backend/tests/test_iteration18.py` - 22 test backend
+
+### Modifiche DB
+- `warrants.status` - Enum OPEN/EXECUTED/EXPIRED/CANCELLED
+- `warrants.cancelled_at`, `cancelled_by`, `cancellation_reason` - Tracking revoca
+- `fines.updated_at`, `last_modified_by`, `modification_reason` - Tracking modifiche
+- `legal_cases.lawyer_name` - Nome avvocato
+- `map_pois` - Nuova tabella POI
+
+### Test Results (10/02/2026)
+- Backend: 22/22 test passati (100%)
+- Frontend: Tutte le funzionalità verificate (100%)
+- Bug fixati da testing agent: 2 (Evidence extra_data, EvidenceResponse schema)
 
 ---
 
