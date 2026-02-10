@@ -284,15 +284,24 @@ class FineCreate(FineBase):
     pass
 
 
+class FineUpdate(BaseModel):
+    """Schema per modificare una multa"""
+    citizen_name: Optional[str] = None
+    amount: Optional[float] = None
+    reason: Optional[str] = None
+    modification_reason: str  # Obbligatorio per tracciare il motivo
+
+
 class FineResponse(FineBase):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
     fine_number: str
-    is_paid: bool
     issued_by: int
-    paid_at: Optional[datetime] = None
     created_at: datetime
+    updated_at: Optional[datetime] = None
+    last_modified_by: Optional[int] = None
+    modification_reason: Optional[str] = None
 
 
 # ==========================================
