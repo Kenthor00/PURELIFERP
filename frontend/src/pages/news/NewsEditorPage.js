@@ -323,7 +323,7 @@ export const NewsEditorPage = () => {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
-              className="input-tactical w-full"
+              className="w-full px-4 py-3 bg-black/50 border border-plos-border rounded-lg text-white placeholder-plos-text-muted focus:outline-none focus:border-plos-primary focus:ring-1 focus:ring-plos-primary"
               placeholder="Titolo dell'articolo"
               data-testid="article-title-input"
             />
@@ -335,7 +335,7 @@ export const NewsEditorPage = () => {
               type="text"
               value={formData.subtitle}
               onChange={(e) => setFormData({...formData, subtitle: e.target.value})}
-              className="input-tactical w-full"
+              className="w-full px-4 py-3 bg-black/50 border border-plos-border rounded-lg text-white placeholder-plos-text-muted focus:outline-none focus:border-plos-primary focus:ring-1 focus:ring-plos-primary"
               placeholder="Sottotitolo opzionale"
             />
           </div>
