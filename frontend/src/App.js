@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SSEProvider } from './context/SSEContext';
 import { SoundProvider } from './context/SoundContext';
 import { HealthProvider } from './context/HealthContext';
+import { NUIProvider } from './context/NUIContext';
 import { Toaster } from 'sonner';
 import axios from 'axios';
 
