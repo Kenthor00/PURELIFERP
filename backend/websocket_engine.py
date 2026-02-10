@@ -318,6 +318,99 @@ async def send_stats_update(module: str, stats: dict) -> int:
     })
 
 
+# ==========================================
+# NUI/FiveM Helper Functions
+# ==========================================
+
+async def send_appointment_reminder(user_id: int, appointment: dict) -> bool:
+    """Invia reminder appuntamento"""
+    return await ws_manager.send_personal(user_id, {
+        "type": WSEventType.APPOINTMENT_REMINDER,
+        "data": {
+            "appointment": appointment,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    })
+
+
+async def send_appointment_notification(user_id: int, event_type: WSEventType, appointment: dict) -> bool:
+    """Invia notifica appuntamento (created/updated/cancelled)"""
+    return await ws_manager.send_personal(user_id, {
+        "type": event_type,
+        "data": {
+            "appointment": appointment,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    })
+
+
+async def broadcast_news(news: dict, breaking: bool = False) -> int:
+    """Broadcast notizia a tutti"""
+    event_type = WSEventType.NEWS_BREAKING if breaking else WSEventType.NEWS_PUBLISHED
+    return await ws_manager.broadcast_to_channel(NUIChannel.NEWS, {
+        "type": event_type,
+        "data": {
+            "news": news,
+            "breaking": breaking,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    })
+
+
+async def send_marketplace_notification(user_id: int, event_type: WSEventType, listing: dict) -> bool:
+    """Invia notifica marketplace"""
+    return await ws_manager.send_personal(user_id, {
+        "type": event_type,
+        "data": {
+            "listing": listing,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    })
+
+
+async def broadcast_marketplace_listing(listing: dict) -> int:
+    """Broadcast nuovo annuncio marketplace"""
+    return await ws_manager.broadcast_to_channel(NUIChannel.MARKETPLACE, {
+        "type": WSEventType.MARKETPLACE_LISTING,
+        "data": {
+            "listing": listing,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    })
+
+
+async def send_document_notification(user_id: int, event_type: WSEventType, document: dict) -> bool:
+    """Invia notifica documento"""
+    return await ws_manager.send_personal(user_id, {
+        "type": event_type,
+        "data": {
+            "document": document,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    })
+
+
+async def send_waypoint_to_user(user_id: int, x: float, y: float, label: str = None) -> bool:
+    """Invia waypoint a utente (verrà inoltrato a FiveM via NUI)"""
+    return await ws_manager.send_personal(user_id, {
+        "type": WSEventType.WAYPOINT_SET,
+        "data": {
+            "x": x,
+            "y": y,
+            "label": label,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    })
+
+
+async def sync_player_data(user_id: int, player_data: dict) -> bool:
+    """Sincronizza dati player (job, money, etc.)"""
+    return await ws_manager.send_personal(user_id, {
+        "type": WSEventType.PLAYER_DATA_SYNC,
+        "data": player_data
+    })
+
+
 # Background task per cleanup connessioni stale
 async def heartbeat_checker():
     """Verifica heartbeat e disconnette connessioni stale"""
