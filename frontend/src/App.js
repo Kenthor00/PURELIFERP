@@ -619,29 +619,31 @@ function App() {
   return (
     <BrowserRouter>
       <PhoneProvider>
-        <HealthProvider>
-          <AuthProvider>
-            <SoundProvider>
-              <SSEProvider>
-                <SSOHandler />
-                <HealthBanner />
-                <AppRoutes />
-                <Toaster
-                  position="top-right"
-                  toastOptions={{
-                    style: {
-                      background: '#121212',
-                      border: '1px solid #333333',
-                      color: '#FFFFFF',
-                      fontFamily: 'Inter, sans-serif',
-                    },
-                  }}
-                />
-                <DebugPanel />
-              </SSEProvider>
-            </SoundProvider>
-          </AuthProvider>
-        </HealthProvider>
+        <NUIProvider>
+          <HealthProvider>
+            <AuthProvider>
+              <SoundProvider>
+                <SSEProvider>
+                  <SSOHandler />
+                  <HealthBanner />
+                  <AppRoutes />
+                  <Toaster
+                    position="top-right"
+                    toastOptions={{
+                      style: {
+                        background: '#121212',
+                        border: '1px solid #333333',
+                        color: '#FFFFFF',
+                        fontFamily: 'Inter, sans-serif',
+                      },
+                    }}
+                  />
+                  <DebugPanel />
+                </SSEProvider>
+              </SoundProvider>
+            </AuthProvider>
+          </HealthProvider>
+        </NUIProvider>
       </PhoneProvider>
     </BrowserRouter>
   );
