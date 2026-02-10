@@ -41,6 +41,50 @@ class WSEventType(str, Enum):
     
     # Stats Update
     STATS_UPDATE = "stats_update"
+    
+    # ==========================================
+    # NUI/FiveM Specific Events
+    # ==========================================
+    
+    # Appointments/Calendar
+    APPOINTMENT_CREATED = "appointment_created"
+    APPOINTMENT_UPDATED = "appointment_updated"
+    APPOINTMENT_REMINDER = "appointment_reminder"
+    APPOINTMENT_CANCELLED = "appointment_cancelled"
+    
+    # News
+    NEWS_PUBLISHED = "news_published"
+    NEWS_BREAKING = "news_breaking"
+    
+    # Marketplace
+    MARKETPLACE_LISTING = "marketplace_listing"
+    MARKETPLACE_SOLD = "marketplace_sold"
+    MARKETPLACE_INTEREST = "marketplace_interest"
+    
+    # Documents
+    DOCUMENT_ISSUED = "document_issued"
+    DOCUMENT_VERIFIED = "document_verified"
+    DOCUMENT_REVOKED = "document_revoked"
+    
+    # City/Map
+    POI_CREATED = "poi_created"
+    POI_UPDATED = "poi_updated"
+    WAYPOINT_SET = "waypoint_set"
+    
+    # Player sync
+    PLAYER_DATA_SYNC = "player_data_sync"
+
+
+# Standard NUI Channels
+class NUIChannel:
+    """Canali standard per NUI subscriptions"""
+    NOTIFICATIONS = "nui:notifications"
+    APPOINTMENTS = "nui:appointments"
+    NEWS = "nui:news"
+    MARKETPLACE = "nui:marketplace"
+    DOCUMENTS = "nui:documents"
+    CITY_ALERTS = "nui:city_alerts"
+    SYSTEM = "nui:system"
 
 
 class ConnectionManager:
