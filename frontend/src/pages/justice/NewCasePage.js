@@ -1,12 +1,13 @@
 /**
  * Justice - New Case/Practice Page
  * Creazione nuova pratica giudiziaria
+ * Campo "avvocato" invece di "attore"
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
-import { Scale, FileText, ArrowLeft } from 'lucide-react';
+import { Scale, FileText, ArrowLeft, User } from 'lucide-react';
 
 const NewCasePage = () => {
   const { api } = useAuth();
@@ -15,8 +16,8 @@ const NewCasePage = () => {
   const [formData, setFormData] = useState({
     title: '',
     case_type: 'CIVIL',
-    plaintiff_name: '',
-    defendant_name: '',
+    lawyer_name: '',      // Avvocato (sostituisce attore)
+    defendant_name: '',   // Convenuto/Imputato
     description: ''
   });
 
@@ -31,7 +32,13 @@ const NewCasePage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/justice/cases', formData);
+      await api.post('/justice/cases', {
+        title: formData.title,
+        case_type: formData.case_type,
+        plaintiff_name: formData.lawyer_name, // Mappiamo a plaintiff per compatibilità
+        defendant_name: formData.defendant_name,
+        description: formData.description
+      });
       toast.success('Pratica creata con successo');
       navigate('/justice');
     } catch (error) {
@@ -64,7 +71,7 @@ const NewCasePage = () => {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
-              className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
+              className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg focus:border-plos-primary focus:outline-none"
               placeholder="Titolo della pratica"
               required
             />
@@ -75,7 +82,7 @@ const NewCasePage = () => {
             <select
               value={formData.case_type}
               onChange={(e) => setFormData({...formData, case_type: e.target.value})}
-              className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
+              className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg focus:border-plos-primary focus:outline-none"
               required
             >
               {caseTypes.map(type => (
@@ -86,13 +93,16 @@ const NewCasePage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-plos-text-secondary mb-1">ATTORE/RICORRENTE</label>
+              <label className="block text-sm text-plos-text-secondary mb-1 flex items-center gap-1">
+                <User size={14} />
+                AVVOCATO
+              </label>
               <input
                 type="text"
-                value={formData.plaintiff_name}
-                onChange={(e) => setFormData({...formData, plaintiff_name: e.target.value})}
-                className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
-                placeholder="Nome attore"
+                value={formData.lawyer_name}
+                onChange={(e) => setFormData({...formData, lawyer_name: e.target.value})}
+                className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg focus:border-plos-primary focus:outline-none"
+                placeholder="Nome avvocato assegnato"
               />
             </div>
             <div>
@@ -101,7 +111,7 @@ const NewCasePage = () => {
                 type="text"
                 value={formData.defendant_name}
                 onChange={(e) => setFormData({...formData, defendant_name: e.target.value})}
-                className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
+                className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg focus:border-plos-primary focus:outline-none"
                 placeholder="Nome convenuto"
               />
             </div>
@@ -112,7 +122,7 @@ const NewCasePage = () => {
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
-              className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg"
+              className="w-full px-3 py-2 bg-plos-surface border border-plos-border rounded-lg focus:border-plos-primary focus:outline-none"
               rows={4}
               placeholder="Descrizione della pratica..."
             />
@@ -122,7 +132,7 @@ const NewCasePage = () => {
             <button
               type="button"
               onClick={() => navigate('/justice')}
-              className="flex-1 px-4 py-2 bg-plos-surface rounded-lg"
+              className="flex-1 px-4 py-2 bg-plos-surface border border-plos-border rounded-lg hover:border-plos-text-muted transition-colors"
             >
               Annulla
             </button>
