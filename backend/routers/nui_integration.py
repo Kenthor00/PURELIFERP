@@ -260,7 +260,6 @@ async def nui_handshake(
         user = User(
             email=f"{player_data.identifier}@fivem.local",
             password_hash=hash_password(secrets.token_hex(16)),  # Random password
-            name=player_data.name,
             game_name=player_data.name,
             fivem_identifier=player_data.identifier,
             phone_number=player_data.phone_number,
