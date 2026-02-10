@@ -89,32 +89,32 @@ const WarrantsListPage = () => {
 
   const getStatusLabel = (status) => {
     const labels = {
-      'open': 'ATTIVO',
-      'executed': 'ESEGUITO',
-      'expired': 'SCADUTO',
-      'cancelled': 'REVOCATO'
+      'OPEN': 'ATTIVO',
+      'EXECUTED': 'ESEGUITO',
+      'EXPIRED': 'SCADUTO',
+      'CANCELLED': 'REVOCATO'
     };
     return labels[status] || status?.toUpperCase();
   };
 
   const getStatusVariant = (warrant) => {
-    const status = warrant.status || (warrant.is_active ? 'open' : 'cancelled');
+    const status = warrant.status || (warrant.is_active ? 'OPEN' : 'CANCELLED');
     const variants = {
-      'open': 'warning',
-      'executed': 'success',
-      'expired': 'muted',
-      'cancelled': 'danger'
+      'OPEN': 'warning',
+      'EXECUTED': 'success',
+      'EXPIRED': 'muted',
+      'CANCELLED': 'danger'
     };
     return variants[status] || 'muted';
   };
 
   const getStatusIcon = (warrant) => {
-    const status = warrant.status || (warrant.is_active ? 'open' : 'cancelled');
+    const status = warrant.status || (warrant.is_active ? 'OPEN' : 'CANCELLED');
     const icons = {
-      'open': <Clock className="text-orange-400" size={20} />,
-      'executed': <CheckCircle className="text-green-400" size={20} />,
-      'expired': <CalendarX className="text-gray-400" size={20} />,
-      'cancelled': <Ban className="text-red-400" size={20} />
+      'OPEN': <Clock className="text-orange-400" size={20} />,
+      'EXECUTED': <CheckCircle className="text-green-400" size={20} />,
+      'EXPIRED': <CalendarX className="text-gray-400" size={20} />,
+      'CANCELLED': <Ban className="text-red-400" size={20} />
     };
     return icons[status] || <Clock className="text-gray-400" size={20} />;
   };
@@ -124,13 +124,13 @@ const WarrantsListPage = () => {
       w.suspect_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       w.warrant_number?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const status = w.status || (w.is_active ? 'open' : 'cancelled');
+    const status = w.status || (w.is_active ? 'OPEN' : 'CANCELLED');
     const matchesStatus = statusFilter === 'all' || status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
 
-  const activeCount = warrants.filter(w => w.is_active || w.status === 'open').length;
+  const activeCount = warrants.filter(w => w.is_active || w.status === 'OPEN').length;
 
   return (
     <div className="space-y-6" data-testid="warrants-list-page">
