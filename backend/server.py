@@ -398,6 +398,10 @@ api_router.include_router(admin_delete.router)
 from routers import poi
 api_router.include_router(poi.router)
 
+# FiveM NUI Integration
+from routers import nui_integration
+api_router.include_router(nui_integration.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
