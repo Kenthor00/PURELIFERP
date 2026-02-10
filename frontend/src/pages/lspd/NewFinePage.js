@@ -96,25 +96,20 @@ const NewFinePage = () => {
             )}
           </div>
 
-          {/* Citizen ID */}
+          {/* Citizen ID - Opzionale */}
           <div>
             <label className="flex items-center gap-2 text-sm font-heading text-plos-text-secondary mb-2">
               <FileText size={14} />
-              ID CITTADINO *
+              ID CITTADINO <span className="text-plos-text-muted text-xs">(opzionale)</span>
             </label>
             <input
               type="text"
               value={form.citizen_identifier}
               onChange={(e) => setForm({ ...form, citizen_identifier: e.target.value })}
-              className={`w-full bg-plos-bg border ${errors.citizen_identifier ? 'border-red-500' : 'border-plos-border'} rounded px-4 py-3 focus:border-plos-primary focus:outline-none transition-colors`}
-              placeholder="Codice identificativo"
+              className="w-full bg-plos-bg border border-plos-border rounded px-4 py-3 focus:border-plos-primary focus:outline-none transition-colors"
+              placeholder="Patente, CF, o altro identificativo"
               data-testid="fine-citizen-id"
             />
-            {errors.citizen_identifier && (
-              <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                <AlertCircle size={12} /> {errors.citizen_identifier}
-              </p>
-            )}
           </div>
 
           {/* Reason */}
