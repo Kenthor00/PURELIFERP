@@ -227,6 +227,13 @@ class CaseDetailResponse(CaseResponse):
 # WARRANT SCHEMAS
 # ==========================================
 
+class WarrantStatus(str, Enum):
+    OPEN = "open"
+    EXECUTED = "executed"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+
 class WarrantBase(BaseModel):
     suspect_name: str
     suspect_identifier: Optional[str] = None
@@ -238,15 +245,25 @@ class WarrantCreate(WarrantBase):
     expires_at: Optional[datetime] = None
 
 
+class WarrantStatusUpdate(BaseModel):
+    """Schema per aggiornare solo lo stato del mandato"""
+    status: WarrantStatus
+    reason: Optional[str] = None  # Motivo del cambio stato
+
+
 class WarrantResponse(WarrantBase):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
     warrant_number: str
+    status: Optional[WarrantStatus] = None
     is_active: bool
     executed: bool = False
     issued_by: int
     expires_at: Optional[datetime] = None
+    executed_at: Optional[datetime] = None
+    cancelled_at: Optional[datetime] = None
+    cancellation_reason: Optional[str] = None
     created_at: datetime
 
 
