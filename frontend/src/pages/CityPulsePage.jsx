@@ -1,11 +1,12 @@
 /**
  * PURE LIFE OS 3.0 - City Pulse Dashboard
- * Centro di controllo con heatmap attività e metriche live
+ * Mappa Custom FiveM con Punti di Interesse (POI)
  * WOW PASS - Premium UI Design
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 import { StatsSkeleton, ListSkeleton } from '../components/ui/Skeleton';
 import {
   OsStatCard,
@@ -14,87 +15,121 @@ import {
   OsPageHeader,
 } from '../components/os/OsComponents';
 import {
-  Activity,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  Shield,
-  Heart,
-  Radio,
-  Newspaper,
-  Users,
-  MapPin,
-  Clock,
-  Zap,
-  Eye,
-  BarChart3,
-  RefreshCw,
+  Activity, Shield, Heart, Radio, MapPin, RefreshCw,
+  AlertTriangle, Plus, X, Edit, Trash2, Save, Building2,
+  Home, Store, Factory, Music, Wrench, ChevronDown, Eye, EyeOff
 } from 'lucide-react';
 
-// Zone della città (simulazione GTA map)
-const CITY_ZONES = [
-  { id: 'vinewood', name: 'Vinewood', x: 60, y: 15 },
-  { id: 'downtown', name: 'Downtown', x: 45, y: 45 },
-  { id: 'pillbox', name: 'Pillbox Hill', x: 50, y: 55 },
-  { id: 'vespucci', name: 'Vespucci', x: 25, y: 65 },
-  { id: 'la_mesa', name: 'La Mesa', x: 70, y: 50 },
-  { id: 'sandy', name: 'Sandy Shores', x: 75, y: 10 },
-  { id: 'paleto', name: 'Paleto Bay', x: 15, y: 5 },
-  { id: 'grapeseed', name: 'Grapeseed', x: 65, y: 8 },
-  { id: 'del_perro', name: 'Del Perro', x: 20, y: 50 },
-  { id: 'rockford', name: 'Rockford Hills', x: 35, y: 35 },
-];
+// Mappa FiveM ad alta risoluzione
+const FIVEM_MAP_URL = 'https://www.bragitoff.com/wp-content/uploads/2015/11/gta-v-satellite-map-8192x8192.jpg';
+
+// Icone POI per categoria
+const POI_ICONS = {
+  governo: Building2,
+  polizia: Shield,
+  ospedale: Heart,
+  commerciale: Store,
+  residenziale: Home,
+  industriale: Factory,
+  intrattenimento: Music,
+  servizi: Wrench,
+  altro: MapPin,
+};
+
+// Colori POI per categoria
+const POI_COLORS = {
+  governo: '#8B5CF6',
+  polizia: '#3B82F6',
+  ospedale: '#EF4444',
+  commerciale: '#10B981',
+  residenziale: '#F59E0B',
+  industriale: '#6B7280',
+  intrattenimento: '#EC4899',
+  servizi: '#06B6D4',
+  altro: '#9CA3AF',
+};
 
 export const CityPulsePage = () => {
   const { api, user } = useAuth();
+  const mapRef = useRef(null);
+  
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
-  const [activityFeed, setActivityFeed] = useState([]);
-  const [zoneActivity, setZoneActivity] = useState({});
+  const [pois, setPois] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showLabels, setShowLabels] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // POI Editor State
+  const [editMode, setEditMode] = useState(false);
+  const [poiModal, setPoiModal] = useState({ open: false, poi: null, isNew: false });
+  const [newPoiPosition, setNewPoiPosition] = useState(null);
+  const [poiForm, setPoiForm] = useState({
+    name: '',
+    category: 'altro',
+    description: '',
+    address: '',
+    phone: '',
+    is_public: true
+  });
 
-  // Fetch all data
+  // Check if user can manage POIs
+  const canManagePoi = user?.sector === 'ADMIN' || 
+    (user?.sector === 'GOV' && user?.hierarchy_level >= 3) ||
+    (['LSPD', 'EMS', 'DISPATCH'].includes(user?.sector) && user?.hierarchy_level >= 7);
+
+  // Fetch data
   const fetchData = async () => {
     try {
       setRefreshing(true);
       
-      // Fetch stats from all modules
-      const [lspdRes, emsRes, dispatchRes, justiceRes] = await Promise.all([
+      // Fetch stats
+      const [lspdRes, emsRes, dispatchRes] = await Promise.all([
         api.get('/lspd/stats').catch(() => ({ data: {} })),
         api.get('/ems/stats').catch(() => ({ data: {} })),
         api.get('/dispatch/stats').catch(() => ({ data: {} })),
-        api.get('/justice/stats').catch(() => ({ data: {} })),
       ]);
 
       setStats({
         lspd: lspdRes.data,
         ems: emsRes.data,
         dispatch: dispatchRes.data,
-        justice: justiceRes.data,
       });
 
-      // Fetch zone activity from real data (dispatch calls + LSPD cases)
+      // Fetch POIs
       try {
-        const zonesRes = await api.get('/dispatch/zones/activity');
-        setZoneActivity(zonesRes.data);
+        const poisRes = await api.get('/poi');
+        setPois(poisRes.data || []);
       } catch (err) {
-        console.error('Errore fetch zone activity:', err);
-        // Fallback: zone senza attività
-        const fallbackActivity = {};
-        CITY_ZONES.forEach(zone => {
-          fallbackActivity[zone.id] = { level: 0, incidents: 0, type: 'normale' };
-        });
-        setZoneActivity(fallbackActivity);
+        console.log('POI endpoint non disponibile, uso dati demo');
+        // Dati demo se API non disponibile
+        setPois([
+          { id: 1, name: 'Central LSPD', x_percent: 45, y_percent: 55, category: 'polizia', description: 'Stazione centrale di polizia' },
+          { id: 2, name: 'Pillbox Hospital', x_percent: 48, y_percent: 52, category: 'ospedale', description: 'Ospedale principale' },
+          { id: 3, name: 'City Hall', x_percent: 43, y_percent: 58, category: 'governo', description: 'Municipio di Los Santos' },
+          { id: 4, name: 'Maze Bank', x_percent: 46, y_percent: 50, category: 'commerciale', description: 'Grattacielo Maze Bank' },
+          { id: 5, name: 'Vanilla Unicorn', x_percent: 52, y_percent: 60, category: 'intrattenimento', description: 'Club notturno' },
+        ]);
       }
 
-      // Create activity feed
-      const feed = [
-        { id: 1, type: 'lspd', message: `${lspdRes.data.casi_aperti || 0} casi aperti`, time: 'Ora', icon: Shield },
-        { id: 2, type: 'dispatch', message: `${dispatchRes.data.chiamate_in_attesa || 0} chiamate in attesa`, time: '2m fa', icon: Radio },
-        { id: 3, type: 'ems', message: `${emsRes.data.referti_oggi || 0} interventi oggi`, time: '5m fa', icon: Heart },
-        { id: 4, type: 'justice', message: `${justiceRes.data.udienze_programmate || 0} udienze programmate`, time: '10m fa', icon: Activity },
-      ];
-      setActivityFeed(feed);
+      // Fetch categories
+      try {
+        const catRes = await api.get('/poi/categories');
+        setCategories(catRes.data?.categories || []);
+      } catch {
+        setCategories([
+          { value: 'governo', label: 'Edifici Governativi' },
+          { value: 'polizia', label: 'Stazioni LSPD' },
+          { value: 'ospedale', label: 'Strutture EMS' },
+          { value: 'commerciale', label: 'Attività Commerciali' },
+          { value: 'residenziale', label: 'Zone Residenziali' },
+          { value: 'industriale', label: 'Zone Industriali' },
+          { value: 'intrattenimento', label: 'Intrattenimento' },
+          { value: 'servizi', label: 'Servizi Pubblici' },
+          { value: 'altro', label: 'Altro' },
+        ]);
+      }
 
     } catch (error) {
       console.error('Errore fetch city pulse:', error);
@@ -106,9 +141,6 @@ export const CityPulsePage = () => {
 
   useEffect(() => {
     fetchData();
-    // Auto-refresh ogni 30 secondi
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   // Calcola livello di allerta città
@@ -128,25 +160,91 @@ export const CityPulsePage = () => {
     critico: { bg: 'bg-red-500/20', border: 'border-red-500/30', text: 'text-red-500', pulse: true },
   };
 
-  const getZoneColor = (level) => {
-    if (level > 70) return 'rgba(239, 68, 68, 0.7)'; // Red
-    if (level > 40) return 'rgba(251, 146, 60, 0.6)'; // Orange
-    return 'rgba(34, 197, 94, 0.4)'; // Green
+  // Filtra POI per categoria
+  const filteredPois = pois.filter(poi => 
+    selectedCategory === 'all' || poi.category === selectedCategory
+  );
+
+  // Gestione click sulla mappa per aggiungere POI
+  const handleMapClick = (e) => {
+    if (!editMode || !canManagePoi) return;
+    
+    const rect = mapRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    setNewPoiPosition({ x_percent: x, y_percent: y });
+    setPoiForm({
+      name: '',
+      category: 'altro',
+      description: '',
+      address: '',
+      phone: '',
+      is_public: true
+    });
+    setPoiModal({ open: true, poi: null, isNew: true });
+  };
+
+  // Salva POI
+  const handleSavePoi = async () => {
+    if (!poiForm.name) {
+      toast.error('Inserisci un nome per il POI');
+      return;
+    }
+
+    try {
+      if (poiModal.isNew && newPoiPosition) {
+        await api.post('/poi', {
+          ...poiForm,
+          x_percent: newPoiPosition.x_percent,
+          y_percent: newPoiPosition.y_percent
+        });
+        toast.success('POI creato con successo');
+      } else if (poiModal.poi) {
+        await api.put(`/poi/${poiModal.poi.id}`, poiForm);
+        toast.success('POI aggiornato con successo');
+      }
+      
+      setPoiModal({ open: false, poi: null, isNew: false });
+      setNewPoiPosition(null);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Errore nel salvataggio');
+    }
+  };
+
+  // Elimina POI
+  const handleDeletePoi = async (poiId) => {
+    if (!window.confirm('Sei sicuro di voler eliminare questo POI?')) return;
+    
+    try {
+      await api.delete(`/poi/${poiId}`);
+      toast.success('POI eliminato');
+      fetchData();
+    } catch (error) {
+      toast.error('Errore nell\'eliminazione');
+    }
+  };
+
+  // Edit POI
+  const handleEditPoi = (poi) => {
+    setPoiForm({
+      name: poi.name,
+      category: poi.category,
+      description: poi.description || '',
+      address: poi.address || '',
+      phone: poi.phone || '',
+      is_public: poi.is_public !== false
+    });
+    setPoiModal({ open: true, poi, isNew: false });
   };
 
   if (loading) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <OsPageHeader
-          icon={Activity}
-          title="CITY PULSE"
-          subtitle="Centro di Controllo Città"
-        />
+        <OsPageHeader icon={Activity} title="CITY PULSE" subtitle="Centro di Controllo Città" />
         <StatsSkeleton count={4} />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <OsPanel className="h-80"><ListSkeleton rows={5} /></OsPanel>
-          <OsPanel className="h-80"><ListSkeleton rows={5} /></OsPanel>
-        </div>
+        <div className="h-96"><ListSkeleton rows={8} /></div>
       </div>
     );
   }
@@ -164,18 +262,32 @@ export const CityPulsePage = () => {
               CITY <span className="text-plos-primary">PULSE</span>
             </h1>
             <p className="text-plos-text-muted text-sm mt-0.5">
-              Centro di Controllo Città
+              Mappa Attività & Punti di Interesse
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           {/* Alert Level Badge */}
           <div className={`px-4 py-2 rounded-lg ${alertColors[cityAlertLevel].bg} border ${alertColors[cityAlertLevel].border}`}>
             <span className={`font-heading text-sm tracking-wider ${alertColors[cityAlertLevel].text}`}>
               ALLERTA: {cityAlertLevel.toUpperCase()}
             </span>
           </div>
+
+          {/* Edit Mode Toggle */}
+          {canManagePoi && (
+            <button
+              onClick={() => setEditMode(!editMode)}
+              className={`px-4 py-2 rounded-lg font-heading text-sm transition-all ${
+                editMode 
+                  ? 'bg-plos-primary/20 border border-plos-primary text-plos-primary' 
+                  : 'bg-plos-surface border border-plos-border text-plos-text-secondary hover:border-plos-primary/50'
+              }`}
+            >
+              {editMode ? 'ESCI MODIFICA' : 'MODIFICA MAPPA'}
+            </button>
+          )}
 
           {/* Refresh Button */}
           <button
@@ -191,195 +303,279 @@ export const CityPulsePage = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <OsStatCard
-          icon={Shield}
-          label="CASI APERTI"
-          value={stats?.lspd?.casi_aperti || 0}
-          color="blue"
-          subtitle="LSPD"
-        />
-        <OsStatCard
-          icon={Radio}
-          label="IN ATTESA"
-          value={stats?.dispatch?.chiamate_in_attesa || 0}
-          color="orange"
-          subtitle="DISPATCH"
-        />
-        <OsStatCard
-          icon={Heart}
-          label="INTERVENTI OGGI"
-          value={stats?.ems?.referti_oggi || 0}
-          color="red"
-          subtitle="EMS"
-        />
-        <OsStatCard
-          icon={AlertTriangle}
-          label="EMERGENZE CRITICHE"
-          value={stats?.dispatch?.chiamate_p1 || 0}
-          color={stats?.dispatch?.chiamate_p1 > 0 ? 'red' : 'green'}
-          subtitle="PRIORITÀ 1"
-        />
+        <OsStatCard icon={Shield} label="CASI APERTI" value={stats?.lspd?.casi_aperti || 0} color="blue" subtitle="LSPD" />
+        <OsStatCard icon={Radio} label="IN ATTESA" value={stats?.dispatch?.chiamate_in_attesa || 0} color="orange" subtitle="DISPATCH" />
+        <OsStatCard icon={Heart} label="INTERVENTI OGGI" value={stats?.ems?.referti_oggi || 0} color="red" subtitle="EMS" />
+        <OsStatCard icon={AlertTriangle} label="EMERGENZE CRITICHE" value={stats?.dispatch?.chiamate_p1 || 0} color={stats?.dispatch?.chiamate_p1 > 0 ? 'red' : 'green'} subtitle="PRIORITÀ 1" />
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* City Heatmap */}
-        <OsPanel>
-          <OsSectionHeader
-            icon={MapPin}
-            title="MAPPA ATTIVITÀ"
-            color="plos-primary"
-          />
-          <div className="p-4">
-          
-          <div className="relative bg-slate-900/50 rounded-lg h-64 overflow-hidden">
-            {/* Grid Background */}
-            <div className="absolute inset-0 opacity-20">
-              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#00C853" strokeWidth="0.5"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" />
-              </svg>
-            </div>
+      {/* Main Map Section */}
+      <OsPanel>
+        <OsSectionHeader icon={MapPin} title="MAPPA LOS SANTOS" color="plos-primary">
+          {/* Controls */}
+          <div className="flex items-center gap-3">
+            {/* Category Filter */}
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-1.5 bg-black/30 border border-plos-border rounded-lg text-sm text-white"
+            >
+              <option value="all">Tutti i POI</option>
+              {categories.map(cat => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
+              ))}
+            </select>
 
-            {/* Zone Markers */}
-            {CITY_ZONES.map(zone => {
-              const activity = zoneActivity[zone.id] || { level: 0 };
+            {/* Toggle Labels */}
+            <button
+              onClick={() => setShowLabels(!showLabels)}
+              className="p-2 bg-black/30 border border-plos-border rounded-lg hover:border-plos-primary/50"
+              title={showLabels ? 'Nascondi etichette' : 'Mostra etichette'}
+            >
+              {showLabels ? <Eye size={16} /> : <EyeOff size={16} />}
+            </button>
+          </div>
+        </OsSectionHeader>
+
+        {/* Map Container */}
+        <div className="p-4">
+          {editMode && (
+            <div className="mb-4 p-3 bg-plos-primary/10 border border-plos-primary/30 rounded-lg text-sm text-plos-primary">
+              <strong>MODALITÀ MODIFICA:</strong> Clicca sulla mappa per aggiungere un nuovo POI
+            </div>
+          )}
+          
+          <div 
+            ref={mapRef}
+            className={`relative w-full rounded-lg overflow-hidden border border-plos-border ${editMode ? 'cursor-crosshair' : ''}`}
+            style={{ aspectRatio: '16/9' }}
+            onClick={handleMapClick}
+          >
+            {/* FiveM Map Image */}
+            <img 
+              src={FIVEM_MAP_URL} 
+              alt="Los Santos Map" 
+              className="absolute inset-0 w-full h-full object-cover"
+              draggable="false"
+            />
+
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+            {/* POI Markers */}
+            {filteredPois.map(poi => {
+              const Icon = POI_ICONS[poi.category] || MapPin;
+              const color = POI_COLORS[poi.category] || '#9CA3AF';
+              
               return (
                 <div
-                  key={zone.id}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
-                  style={{ left: `${zone.x}%`, top: `${zone.y}%` }}
-                  title={`${zone.name}: Attività ${activity.level}%`}
+                  key={poi.id}
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
+                  style={{ 
+                    left: `${poi.x_percent}%`, 
+                    top: `${poi.y_percent}%`,
+                    zIndex: 10
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (editMode && canManagePoi) {
+                      handleEditPoi(poi);
+                    }
+                  }}
                 >
-                  {/* Glow Effect */}
-                  <div
-                    className="absolute inset-0 rounded-full blur-xl"
-                    style={{
-                      width: `${30 + activity.level / 3}px`,
-                      height: `${30 + activity.level / 3}px`,
-                      backgroundColor: getZoneColor(activity.level),
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                  />
                   {/* Marker */}
-                  <div
-                    className="relative w-3 h-3 rounded-full border-2 border-white/50"
-                    style={{ backgroundColor: getZoneColor(activity.level) }}
-                  />
-                  {/* Label on hover */}
-                  <div className="absolute top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/90 px-2 py-1 rounded text-xs whitespace-nowrap z-10">
-                    <div className="font-medium">{zone.name}</div>
-                    <div className="text-slate-400">{activity.level}% attività</div>
+                  <div 
+                    className="p-2 rounded-full shadow-lg border-2 border-white/50 transition-transform hover:scale-125"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Icon size={14} className="text-white" />
+                  </div>
+                  
+                  {/* Label */}
+                  {showLabels && (
+                    <div className="absolute left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap">
+                      <span className="px-2 py-0.5 bg-black/80 text-white text-[10px] rounded font-medium">
+                        {poi.name}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Tooltip on hover */}
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                    <div className="bg-plos-surface border border-plos-border rounded-lg p-3 shadow-xl min-w-48">
+                      <p className="font-heading text-sm font-bold">{poi.name}</p>
+                      <p className="text-xs text-plos-text-muted capitalize">{poi.category}</p>
+                      {poi.description && (
+                        <p className="text-xs text-plos-text-secondary mt-1">{poi.description}</p>
+                      )}
+                      {editMode && canManagePoi && (
+                        <p className="text-xs text-plos-primary mt-2">Click per modificare</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
             })}
 
-            {/* Legend */}
-            <div className="absolute bottom-2 right-2 flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-plos-text-muted">Bassa</span>
+            {/* New POI Preview */}
+            {newPoiPosition && (
+              <div
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 animate-pulse"
+                style={{ 
+                  left: `${newPoiPosition.x_percent}%`, 
+                  top: `${newPoiPosition.y_percent}%`,
+                  zIndex: 20
+                }}
+              >
+                <div className="p-2 rounded-full bg-plos-primary border-2 border-white shadow-lg">
+                  <Plus size={14} className="text-white" />
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-orange-500" />
-                <span className="text-plos-text-muted">Media</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-plos-text-muted">Alta</span>
-              </div>
-            </div>
+            )}
           </div>
-          </div>
-        </OsPanel>
 
-        {/* Activity Feed */}
-        <OsPanel>
-          <OsSectionHeader
-            icon={Zap}
-            title="FEED ATTIVITÀ"
-            color="plos-primary"
-          />
-          <div className="p-4">
-          
-          <div className="space-y-3">
-            {activityFeed.map((item, index) => {
-              const Icon = item.icon;
+          {/* Legend */}
+          <div className="mt-4 flex flex-wrap gap-3">
+            {categories.slice(0, 5).map(cat => {
+              const Icon = POI_ICONS[cat.value] || MapPin;
               return (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-3 bg-black/30 border border-plos-border/30 rounded-lg hover:border-plos-border/50 transition-all"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                <div 
+                  key={cat.value} 
+                  className="flex items-center gap-2 text-xs text-plos-text-secondary cursor-pointer hover:text-white"
+                  onClick={() => setSelectedCategory(cat.value === selectedCategory ? 'all' : cat.value)}
                 >
-                  <div className={`p-2 rounded-lg ${
-                    item.type === 'lspd' ? 'bg-blue-500/20 border border-blue-500/30' :
-                    item.type === 'ems' ? 'bg-red-500/20 border border-red-500/30' :
-                    item.type === 'dispatch' ? 'bg-orange-500/20 border border-orange-500/30' :
-                    'bg-purple-500/20 border border-purple-500/30'
-                  }`}>
-                    <Icon size={16} className={
-                      item.type === 'lspd' ? 'text-blue-400' :
-                      item.type === 'ems' ? 'text-red-400' :
-                      item.type === 'dispatch' ? 'text-orange-400' :
-                      'text-purple-400'
-                    } />
+                  <div className="p-1 rounded" style={{ backgroundColor: `${POI_COLORS[cat.value]}33` }}>
+                    <Icon size={12} style={{ color: POI_COLORS[cat.value] }} />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white">{item.message}</p>
-                  </div>
-                  <span className="text-xs text-plos-text-muted">{item.time}</span>
+                  <span>{cat.label}</span>
                 </div>
               );
             })}
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mt-4 pt-4 border-t border-plos-border/30 grid grid-cols-2 gap-4">
-            <div className="text-center p-3 bg-plos-primary/5 border border-plos-primary/20 rounded-lg">
-              <div className="text-xl font-heading font-bold text-plos-primary">
-                {stats?.lspd?.mandati_attivi || 0}
-              </div>
-              <div className="text-[10px] text-plos-text-muted tracking-wider">MANDATI ATTIVI</div>
-            </div>
-            <div className="text-center p-3 bg-orange-500/5 border border-orange-500/20 rounded-lg">
-              <div className="text-xl font-heading font-bold text-orange-400">
-                {stats?.lspd?.multe_non_pagate || 0}
-              </div>
-              <div className="text-[10px] text-plos-text-muted tracking-wider">MULTE NON PAGATE</div>
-            </div>
-          </div>
-          </div>
-        </OsPanel>
-      </div>
-
-      {/* Bottom Stats Bar */}
-      <OsPanel className="p-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Users className="text-plos-text-muted" size={16} />
-              <span className="text-sm text-plos-text-muted">Utenti Online:</span>
-              <span className="text-sm font-bold text-plos-primary">-</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="text-plos-text-muted" size={16} />
-              <span className="text-sm text-plos-text-muted">Ultimo aggiornamento:</span>
-              <span className="text-sm font-bold text-white">
-                {new Date().toLocaleTimeString('it-IT')}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-[10px] text-plos-text-muted tracking-wider">
-            <Eye size={14} />
-            <span>PURE LIFE OS • City Pulse v3.0</span>
           </div>
         </div>
       </OsPanel>
+
+      {/* POI Modal */}
+      {poiModal.open && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-plos-surface border border-plos-border rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-heading font-bold">
+                {poiModal.isNew ? 'NUOVO POI' : 'MODIFICA POI'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setPoiModal({ open: false, poi: null, isNew: false });
+                  setNewPoiPosition(null);
+                }} 
+                className="p-1"
+              >
+                <X size={20} className="text-plos-text-muted" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-plos-text-muted mb-1">NOME *</label>
+                <input
+                  type="text"
+                  value={poiForm.name}
+                  onChange={(e) => setPoiForm({ ...poiForm, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-black/30 border border-plos-border rounded-lg text-white text-sm"
+                  placeholder="Nome del punto di interesse"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs text-plos-text-muted mb-1">CATEGORIA</label>
+                <select
+                  value={poiForm.category}
+                  onChange={(e) => setPoiForm({ ...poiForm, category: e.target.value })}
+                  className="w-full px-3 py-2 bg-black/30 border border-plos-border rounded-lg text-white text-sm"
+                >
+                  {categories.map(cat => (
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-xs text-plos-text-muted mb-1">DESCRIZIONE</label>
+                <textarea
+                  value={poiForm.description}
+                  onChange={(e) => setPoiForm({ ...poiForm, description: e.target.value })}
+                  className="w-full px-3 py-2 bg-black/30 border border-plos-border rounded-lg text-white text-sm"
+                  rows={2}
+                  placeholder="Descrizione opzionale..."
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-plos-text-muted mb-1">INDIRIZZO</label>
+                  <input
+                    type="text"
+                    value={poiForm.address}
+                    onChange={(e) => setPoiForm({ ...poiForm, address: e.target.value })}
+                    className="w-full px-3 py-2 bg-black/30 border border-plos-border rounded-lg text-white text-sm"
+                    placeholder="Indirizzo..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-plos-text-muted mb-1">TELEFONO</label>
+                  <input
+                    type="text"
+                    value={poiForm.phone}
+                    onChange={(e) => setPoiForm({ ...poiForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 bg-black/30 border border-plos-border rounded-lg text-white text-sm"
+                    placeholder="555-1234"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_public"
+                  checked={poiForm.is_public}
+                  onChange={(e) => setPoiForm({ ...poiForm, is_public: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="is_public" className="text-sm text-plos-text-secondary">
+                  Visibile a tutti (pubblico)
+                </label>
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                {!poiModal.isNew && (
+                  <button
+                    onClick={() => handleDeletePoi(poiModal.poi.id)}
+                    className="px-4 py-2 bg-red-500/20 border border-red-500/50 hover:bg-red-500/30 rounded-lg text-red-400"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setPoiModal({ open: false, poi: null, isNew: false });
+                    setNewPoiPosition(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-plos-surface border border-plos-border rounded-lg text-white"
+                >
+                  Annulla
+                </button>
+                <button
+                  onClick={handleSavePoi}
+                  className="flex-1 px-4 py-2 bg-plos-primary/20 border border-plos-primary/50 hover:bg-plos-primary/30 rounded-lg text-plos-primary font-heading flex items-center justify-center gap-2"
+                >
+                  <Save size={16} />
+                  SALVA
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
