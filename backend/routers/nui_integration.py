@@ -341,7 +341,7 @@ async def nui_handshake_dev(
     
     # Simula dati player per testing
     mock_players = {
-        'test-lspd': FiveM PlayerData(
+        'test-lspd': FiveMPlayerData(
             identifier='license:test-lspd-001',
             name='Officer Test',
             job='police',
@@ -349,7 +349,7 @@ async def nui_handshake_dev(
             job_grade_name='Sergeant',
             phone_number='555-0001'
         ),
-        'test-ems': FiveM PlayerData(
+        'test-ems': FiveMPlayerData(
             identifier='license:test-ems-001',
             name='Medic Test',
             job='ambulance',
@@ -357,7 +357,7 @@ async def nui_handshake_dev(
             job_grade_name='Paramedic',
             phone_number='555-0002'
         ),
-        'test-civil': FiveM PlayerData(
+        'test-civil': FiveMPlayerData(
             identifier='license:test-civil-001',
             name='Citizen Test',
             job='unemployed',
