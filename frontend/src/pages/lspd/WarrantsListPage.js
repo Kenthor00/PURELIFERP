@@ -236,7 +236,7 @@ const WarrantsListPage = () => {
                     </div>
                     
                     {/* Azioni */}
-                    {canManage && (warrant.is_active || warrant.status === 'open') && (
+                    {canManage && (warrant.is_active || warrant.status === 'OPEN') && (
                       <div className="relative group">
                         <button
                           onClick={() => setStatusModal({ open: true, warrant })}
