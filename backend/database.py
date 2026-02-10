@@ -177,8 +177,57 @@ async def run_auto_migrations() -> dict:
         result["success"] = True
         logger.info(f"Auto-migrations: tables_existed={result['tables_existed']}, success=True, sqlite={USING_SQLITE}")
         
+        # Run column migrations for new fields
+        await run_column_migrations()
+        
     except Exception as e:
         result["error"] = str(e)[:200]
         logger.error(f"Auto-migrations fallite: {e}")
     
     return result
+
+
+async def run_column_migrations():
+    """Aggiunge colonne mancanti alle tabelle esistenti (idempotente)"""
+    migrations = [
+        # Warrant status columns
+        ("warrants", "status", "VARCHAR(20) DEFAULT 'open'"),
+        ("warrants", "cancelled_at", "DATETIME NULL"),
+        ("warrants", "cancelled_by", "INT NULL"),
+        ("warrants", "cancellation_reason", "TEXT NULL"),
+        # Fine modification columns
+        ("fines", "updated_at", "DATETIME NULL"),
+        ("fines", "last_modified_by", "INT NULL"),
+        ("fines", "modification_reason", "TEXT NULL"),
+        # LegalCase lawyer_name
+        ("legal_cases", "lawyer_name", "VARCHAR(100) NULL"),
+    ]
+    
+    try:
+        async with async_session() as session:
+            for table, column, column_def in migrations:
+                try:
+                    if USING_SQLITE:
+                        # SQLite: check if column exists
+                        result = await session.execute(text(f"PRAGMA table_info({table})"))
+                        columns = [row[1] for row in result.fetchall()]
+                        if column not in columns:
+                            await session.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {column_def}"))
+                            logger.info(f"Aggiunta colonna {table}.{column}")
+                    else:
+                        # MySQL: check if column exists and add if not
+                        check_sql = text(f"""
+                            SELECT COUNT(*) FROM information_schema.COLUMNS 
+                            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '{table}' AND COLUMN_NAME = '{column}'
+                        """)
+                        result = await session.execute(check_sql)
+                        if result.scalar() == 0:
+                            await session.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {column_def}"))
+                            logger.info(f"Aggiunta colonna {table}.{column}")
+                except Exception as col_err:
+                    # Ignora errori se la colonna esiste già
+                    logger.debug(f"Colonna {table}.{column} skip: {col_err}")
+            
+            await session.commit()
+    except Exception as e:
+        logger.error(f"Errore column migrations: {e}")
