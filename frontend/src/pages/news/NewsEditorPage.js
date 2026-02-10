@@ -373,9 +373,10 @@ export const NewsEditorPage = () => {
             <textarea
               value={formData.content}
               onChange={(e) => setFormData({...formData, content: e.target.value})}
-              className="input-tactical w-full h-64"
+              className="w-full h-64 px-4 py-3 bg-black/50 border border-plos-border rounded-lg text-white placeholder-plos-text-muted focus:outline-none focus:border-plos-primary focus:ring-1 focus:ring-plos-primary resize-y"
               placeholder="Scrivi il contenuto dell'articolo..."
               data-testid="article-content-input"
+              style={{ minHeight: '200px' }}
             />
           </div>
           
