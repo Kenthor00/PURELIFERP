@@ -1428,3 +1428,57 @@ class PushSubscription(Base):
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id])
+
+
+
+# ==========================================
+# MAP POI (Punti di Interesse Custom)
+# ==========================================
+
+class POICategory(str, enum.Enum):
+    """Categorie POI per mappa custom"""
+    GOVERNO = "governo"
+    POLIZIA = "polizia"
+    OSPEDALE = "ospedale"
+    COMMERCIALE = "commerciale"
+    RESIDENZIALE = "residenziale"
+    INDUSTRIALE = "industriale"
+    INTRATTENIMENTO = "intrattenimento"
+    SERVIZI = "servizi"
+    ALTRO = "altro"
+
+
+class MapPOI(Base):
+    """Punto di interesse sulla mappa custom"""
+    __tablename__ = "map_pois"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Posizione sulla mappa (percentuali relative all'immagine)
+    x_percent = Column(Float, nullable=False)  # 0-100
+    y_percent = Column(Float, nullable=False)  # 0-100
+    
+    # Informazioni POI
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(Enum(POICategory), default=POICategory.ALTRO)
+    icon = Column(String(50), nullable=True)  # Nome icona lucide
+    color = Column(String(20), nullable=True)  # Colore hex o nome
+    
+    # Metadata
+    address = Column(String(200), nullable=True)
+    phone = Column(String(50), nullable=True)
+    website = Column(String(200), nullable=True)
+    
+    # Stato
+    is_active = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=True)  # Visibile a tutti o solo staff
+    
+    # Tracciamento
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Relationships
+    creator = relationship("User", foreign_keys=[created_by])
