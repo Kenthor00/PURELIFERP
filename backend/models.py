@@ -53,6 +53,14 @@ class CaseStatus(str, enum.Enum):
     ARCHIVED = "archived"
 
 
+class WarrantStatus(str, enum.Enum):
+    """Stati del mandato con ciclo di vita completo"""
+    OPEN = "open"           # Mandato attivo
+    EXECUTED = "executed"   # Eseguito
+    EXPIRED = "expired"     # Scaduto
+    CANCELLED = "cancelled" # Revocato
+
+
 class OutboxStatus(str, enum.Enum):
     PENDING = "pending"
     SENT = "sent"
@@ -603,10 +611,15 @@ class Warrant(Base):
     suspect_name = Column(String(100), nullable=False)
     suspect_identifier = Column(String(100), nullable=True)
     reason = Column(Text, nullable=False)
-    is_active = Column(Boolean, default=True)
-    executed = Column(Boolean, default=False)
+    # Ciclo di vita mandato
+    status = Column(Enum(WarrantStatus), default=WarrantStatus.OPEN, index=True)
+    is_active = Column(Boolean, default=True)  # Legacy, derivato da status
+    executed = Column(Boolean, default=False)  # Legacy, derivato da status
     executed_at = Column(DateTime, nullable=True)
     executed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    cancelled_at = Column(DateTime, nullable=True)
+    cancelled_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    cancellation_reason = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     expires_at = Column(DateTime, nullable=True)
     
@@ -625,10 +638,15 @@ class Fine(Base):
     citizen_identifier = Column(String(100), nullable=True)
     reason = Column(Text, nullable=False)
     amount = Column(Float, nullable=False)
-    is_paid = Column(Boolean, default=False)
-    paid_at = Column(DateTime, nullable=True)
+    # Rimosso stato pagata - ora è solo per tracciamento
+    is_paid = Column(Boolean, default=False)  # Legacy, non usato più nella UI
+    paid_at = Column(DateTime, nullable=True)  # Legacy
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     due_date = Column(DateTime, nullable=True)
+    # Per modifica - tracking
+    last_modified_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    modification_reason = Column(Text, nullable=True)
     
     case = relationship("Case", back_populates="fines")
     issued_by_user = relationship("User", back_populates="fines", foreign_keys=[issued_by])
