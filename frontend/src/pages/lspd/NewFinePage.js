@@ -23,7 +23,7 @@ const NewFinePage = () => {
   const validate = () => {
     const newErrors = {};
     if (!form.citizen_name.trim()) newErrors.citizen_name = 'Nome cittadino richiesto';
-    if (!form.citizen_identifier.trim()) newErrors.citizen_identifier = 'ID cittadino richiesto';
+    // citizen_identifier è opzionale - rimosso il controllo obbligatorio
     if (!form.reason.trim()) newErrors.reason = 'Motivazione richiesta';
     if (!form.amount || parseFloat(form.amount) <= 0) newErrors.amount = 'Importo valido richiesto';
     setErrors(newErrors);
