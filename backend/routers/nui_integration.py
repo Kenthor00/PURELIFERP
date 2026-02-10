@@ -162,7 +162,7 @@ async def validate_fivem_code(code: str) -> Optional[FiveMPlayerData]:
             if response.status_code == 200:
                 data = response.json()
                 if data.get("success"):
-                    return FiveM PlayerData(**data.get("player", {}))
+                    return FiveMPlayerData(**data.get("player", {}))
             
             logger.warning(f"FiveM handshake failed: {response.status_code} - {response.text}")
             return None
