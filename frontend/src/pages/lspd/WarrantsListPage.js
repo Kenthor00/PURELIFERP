@@ -178,10 +178,10 @@ const WarrantsListPage = () => {
           className="px-4 py-2.5 bg-plos-surface border border-plos-border rounded-lg text-white focus:border-plos-primary focus:outline-none transition-all"
         >
           <option value="all">Tutti gli stati</option>
-          <option value="open">Attivi</option>
-          <option value="executed">Eseguiti</option>
-          <option value="expired">Scaduti</option>
-          <option value="cancelled">Revocati</option>
+          <option value="OPEN">Attivi</option>
+          <option value="EXECUTED">Eseguiti</option>
+          <option value="EXPIRED">Scaduti</option>
+          <option value="CANCELLED">Revocati</option>
         </select>
       </div>
 
