@@ -130,26 +130,23 @@ export const LoginPage = () => {
           )}
 
           {/* System Status Alert */}
-          {loginDisabled && (
-            <div className="p-4 mb-4 bg-orange-500/10 border border-orange-500">
+          {(loginDisabled || dbWarning) && (
+            <div className={`p-4 mb-4 border ${loginDisabled ? 'bg-red-500/10 border-red-500' : 'bg-orange-500/10 border-orange-500'}`}>
               <div className="flex items-start gap-3">
                 {!isBackendAvailable ? (
-                  <Server className="text-orange-500 mt-0.5" size={20} />
+                  <Server className="text-red-500 mt-0.5" size={20} />
                 ) : (
                   <Database className="text-orange-500 mt-0.5" size={20} />
                 )}
                 <div>
-                  <p className="text-orange-500 font-heading text-sm">SISTEMA NON DISPONIBILE</p>
+                  <p className={`font-heading text-sm ${loginDisabled ? 'text-red-500' : 'text-orange-500'}`}>
+                    {loginDisabled ? 'BACKEND NON DISPONIBILE' : 'DATABASE TEMPORANEAMENTE OFFLINE'}
+                  </p>
                   <p className="text-plos-text-secondary text-xs mt-1">
                     {!isBackendAvailable 
                       ? 'Il server backend non è raggiungibile. Riprova tra qualche minuto.'
-                      : 'Il database non è raggiungibile. Il login è temporaneamente disabilitato.'}
+                      : 'Il database sta riconnettendosi. Puoi provare il login, ma alcune funzioni potrebbero essere limitate.'}
                   </p>
-                  {health.db?.error && (
-                    <p className="text-orange-400/70 text-xs mt-1 mono">
-                      {health.db.error}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
