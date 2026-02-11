@@ -387,6 +387,16 @@ async def update_warrant_status(
     await db.commit()
     await db.refresh(warrant)
     
+    # Audit log
+    await log_audit(
+        db, AuditAction.WARRANT_EXECUTE,
+        user=current_user,
+        entity_type="warrant",
+        entity_id=warrant.id,
+        description=f"Mandato {warrant.warrant_number}: {current_status.value} -> {target_status.value}",
+        metadata={"old_status": current_status.value, "new_status": target_status.value, "reason": reason}
+    )
+    
     await sse_manager.broadcast("warrant_status_changed", {
         "warrant_id": warrant.id,
         "warrant_number": warrant.warrant_number,
