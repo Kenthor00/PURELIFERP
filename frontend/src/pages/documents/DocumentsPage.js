@@ -706,7 +706,8 @@ export default function DocumentsPage() {
         isOpen={!!selectedDoc}
         onClose={() => setSelectedDoc(null)}
         api={api}
-        onUpdated={fetchData}
+        onUpdated={handleDocumentUpdated}
+        permissions={permissions}
       />
     </div>
   );
