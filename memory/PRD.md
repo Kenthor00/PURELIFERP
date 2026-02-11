@@ -1,7 +1,7 @@
 # PURE LIFE OS - PRD (Product Requirements Document)
-## Sistema Operativo Governativo RP v3.3.1
+## Sistema Operativo Governativo RP v3.4.0
 
-**Current Version:** v3.3.1  
+**Current Version:** v3.4.0  
 **Release Date:** 2026-02-11  
 **Status:** Production Ready
 
