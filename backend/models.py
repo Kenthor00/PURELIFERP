@@ -1483,3 +1483,260 @@ class MapPOI(Base):
     
     # Relationships
     creator = relationship("User", foreign_keys=[created_by])
+
+
+
+# ==========================================
+# AGENDA / APPOINTMENTS
+# ==========================================
+
+class AppointmentStatus(str, enum.Enum):
+    """Stati appuntamento"""
+    SCHEDULED = "scheduled"
+    CONFIRMED = "confirmed"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    NO_SHOW = "no_show"
+
+
+class AppointmentType(str, enum.Enum):
+    """Tipi di appuntamento"""
+    MEETING = "meeting"          # Riunione generica
+    HEARING = "hearing"          # Udienza tribunale
+    MEDICAL = "medical"          # Visita medica
+    INTERVIEW = "interview"      # Colloquio
+    TRAINING = "training"        # Formazione
+    INSPECTION = "inspection"    # Ispezione
+    OTHER = "other"
+
+
+class Appointment(Base):
+    """Appuntamenti/Eventi calendario"""
+    __tablename__ = "appointments"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Info base
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    appointment_type = Column(Enum(AppointmentType), default=AppointmentType.MEETING)
+    status = Column(Enum(AppointmentStatus), default=AppointmentStatus.SCHEDULED, index=True)
+    
+    # Timing
+    scheduled_at = Column(DateTime, nullable=False, index=True)
+    duration_minutes = Column(Integer, default=60)
+    end_at = Column(DateTime, nullable=True)  # Calcolato o override
+    
+    # Location
+    location = Column(String(200), nullable=True)  # Es: "Aula 1 - Tribunale"
+    location_coords_x = Column(Float, nullable=True)  # Per waypoint FiveM
+    location_coords_y = Column(Float, nullable=True)
+    
+    # Partecipanti
+    organizer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # participant_ids stored as JSON array of user IDs
+    participant_ids = Column(JSON, nullable=True)
+    
+    # Collegamento a pratiche/casi
+    legal_case_id = Column(Integer, ForeignKey("legal_cases.id"), nullable=True)
+    lspd_case_id = Column(Integer, ForeignKey("cases.id"), nullable=True)
+    
+    # Reminder settings (JSON: {"t_24h": true, "t_1h": true, "t_15m": true})
+    reminder_settings = Column(JSON, nullable=True)
+    reminder_sent = Column(JSON, nullable=True)  # Track quali reminder sono stati inviati
+    
+    # Discord webhook per reminder
+    discord_webhook_url = Column(String(500), nullable=True)
+    discord_notified = Column(Boolean, default=False)
+    
+    # Metadata
+    notes = Column(Text, nullable=True)
+    is_private = Column(Boolean, default=False)  # Solo organizzatore e partecipanti vedono
+    is_all_day = Column(Boolean, default=False)
+    color = Column(String(20), nullable=True)  # Per UI calendario
+    
+    # Audit
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    cancelled_at = Column(DateTime, nullable=True)
+    cancelled_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    cancellation_reason = Column(Text, nullable=True)
+    
+    # Relationships
+    organizer = relationship("User", foreign_keys=[organizer_id])
+
+
+# ==========================================
+# DOCUMENTS / QR VERIFICATION
+# ==========================================
+
+class DocumentType(str, enum.Enum):
+    """Tipi documento"""
+    ID_CARD = "id_card"              # Carta d'identità
+    DRIVERS_LICENSE = "drivers_license"  # Patente
+    WEAPON_LICENSE = "weapon_license"    # Porto d'armi
+    BUSINESS_LICENSE = "business_license"  # Licenza commerciale
+    MEDICAL_LICENSE = "medical_license"   # Licenza medica
+    PILOT_LICENSE = "pilot_license"       # Licenza pilota
+    FISHING_LICENSE = "fishing_license"   # Licenza pesca
+    HUNTING_LICENSE = "hunting_license"   # Licenza caccia
+    OTHER = "other"
+
+
+class DocumentStatus(str, enum.Enum):
+    """Stati documento"""
+    VALID = "valid"
+    EXPIRED = "expired"
+    SUSPENDED = "suspended"
+    REVOKED = "revoked"
+    PENDING = "pending"
+
+
+class Document(Base):
+    """Documenti verificabili con QR"""
+    __tablename__ = "documents"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Identificativo univoco per QR
+    verification_code = Column(String(64), unique=True, nullable=False, index=True)
+    
+    # Tipo e stato
+    document_type = Column(Enum(DocumentType), nullable=False)
+    status = Column(Enum(DocumentStatus), default=DocumentStatus.VALID, index=True)
+    
+    # Titolare
+    holder_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    holder_name = Column(String(100), nullable=False)  # Snapshot del nome
+    holder_identifier = Column(String(100), nullable=True)  # CF, patente, ecc
+    
+    # Validità
+    issued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=True)
+    
+    # Emittente
+    issued_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    issuing_authority = Column(String(100), nullable=True)  # Es: "LSPD", "DMV"
+    
+    # Dettagli specifici (JSON per flessibilità)
+    # Es: {"vehicle_classes": ["B", "A"], "restrictions": ["occhiali"]}
+    details = Column(JSON, nullable=True)
+    
+    # Per sospensione/revoca
+    suspended_at = Column(DateTime, nullable=True)
+    suspended_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    suspension_reason = Column(Text, nullable=True)
+    suspension_until = Column(DateTime, nullable=True)
+    
+    revoked_at = Column(DateTime, nullable=True)
+    revoked_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    revocation_reason = Column(Text, nullable=True)
+    
+    # QR scan tracking
+    last_verified_at = Column(DateTime, nullable=True)
+    verification_count = Column(Integer, default=0)
+    
+    # Audit
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    holder = relationship("User", foreign_keys=[holder_id])
+    issuer = relationship("User", foreign_keys=[issued_by])
+
+
+# ==========================================
+# MARKETPLACE / ANNUNCI
+# ==========================================
+
+class ListingCategory(str, enum.Enum):
+    """Categorie annunci"""
+    VEHICLES = "vehicles"
+    REAL_ESTATE = "real_estate"
+    JOBS = "jobs"
+    SERVICES = "services"
+
+
+class ListingStatus(str, enum.Enum):
+    """Stati annuncio"""
+    DRAFT = "draft"
+    PENDING = "pending"
+    ACTIVE = "active"
+    SOLD = "sold"
+    EXPIRED = "expired"
+    REMOVED = "removed"
+
+
+class MarketplaceListing(Base):
+    """Annunci marketplace"""
+    __tablename__ = "marketplace_listings"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Info base
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
+    category = Column(Enum(ListingCategory), nullable=False, index=True)
+    status = Column(Enum(ListingStatus), default=ListingStatus.PENDING, index=True)
+    
+    # Prezzo
+    price = Column(Float, nullable=True)  # Null = "Trattabile" o "Su richiesta"
+    price_negotiable = Column(Boolean, default=True)
+    currency = Column(String(10), default="$")
+    
+    # Contatto
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    contact_phone = Column(String(20), nullable=True)
+    contact_email = Column(String(255), nullable=True)
+    contact_discord = Column(String(100), nullable=True)
+    
+    # Media (JSON array di URL)
+    images = Column(JSON, nullable=True)
+    
+    # Location per immobili/veicoli
+    location = Column(String(200), nullable=True)
+    location_coords_x = Column(Float, nullable=True)
+    location_coords_y = Column(Float, nullable=True)
+    
+    # Dettagli specifici per categoria (JSON)
+    # Vehicles: {"make": "...", "model": "...", "year": 2024, "mileage": 1000}
+    # Real Estate: {"type": "apartment", "rooms": 3, "sqm": 100}
+    # Jobs: {"company": "...", "position": "...", "salary_range": "..."}
+    details = Column(JSON, nullable=True)
+    
+    # Visibilità
+    is_featured = Column(Boolean, default=False)
+    views_count = Column(Integer, default=0)
+    
+    # Timing
+    published_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    sold_at = Column(DateTime, nullable=True)
+    
+    # Audit
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    seller = relationship("User", foreign_keys=[seller_id])
+
+
+class MarketplaceInterest(Base):
+    """Manifestazioni di interesse su annunci"""
+    __tablename__ = "marketplace_interests"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    listing_id = Column(Integer, ForeignKey("marketplace_listings.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    message = Column(Text, nullable=True)
+    contact_phone = Column(String(20), nullable=True)
+    
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    listing = relationship("MarketplaceListing")
+    user = relationship("User")
