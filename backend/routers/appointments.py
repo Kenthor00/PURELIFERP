@@ -621,7 +621,7 @@ async def update_appointment(
     
     # Audit log
     await log_audit(
-        db, AuditAction.UPDATE,
+        db, AuditAction.APPOINTMENT_UPDATE,
         user=current_user,
         entity_type="appointment",
         entity_id=apt.id,
