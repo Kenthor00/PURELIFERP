@@ -99,18 +99,26 @@ export const HealthBanner = () => {
   }
 
   // Show error banner if DB or backend down
+  // Ma NON bloccare tutto se solo il DB è down - mostra warning invece di errore critico
+  const isCritical = !isBackendAvailable;
+  const isWarning = isBackendAvailable && !isDbAvailable;
+  
   return (
     <div 
-      className="fixed top-0 left-0 right-0 z-50 bg-red-900/95 border-b-2 border-red-500 px-4 py-3"
+      className={`fixed top-0 left-0 right-0 z-50 px-4 py-3 border-b-2 ${
+        isCritical 
+          ? 'bg-red-900/95 border-red-500' 
+          : 'bg-orange-900/95 border-orange-500'
+      }`}
       data-testid="health-banner"
     >
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="text-red-400 animate-pulse" size={24} />
+            <AlertTriangle className={`animate-pulse ${isCritical ? 'text-red-400' : 'text-orange-400'}`} size={24} />
             <div>
-              <p className="font-heading text-sm text-red-200 tracking-wider">
-                SISTEMA IN STATO DEGRADATO
+              <p className={`font-heading text-sm tracking-wider ${isCritical ? 'text-red-200' : 'text-orange-200'}`}>
+                {isCritical ? 'SISTEMA NON DISPONIBILE' : 'SISTEMA IN MODALITÀ LIMITATA'}
               </p>
               <div className="flex flex-wrap items-center gap-4 mt-1 text-xs">
                 {!isBackendAvailable && (
@@ -119,13 +127,10 @@ export const HealthBanner = () => {
                     Backend non disponibile
                   </span>
                 )}
-                {isBackendAvailable && !isDbAvailable && (
-                  <span className="flex items-center gap-1 text-red-300">
+                {isWarning && (
+                  <span className="flex items-center gap-1 text-orange-300">
                     <Database size={12} />
-                    Database non raggiungibile
-                    {health.db?.error && (
-                      <span className="text-red-400 ml-1">({health.db.error})</span>
-                    )}
+                    Database temporaneamente non raggiungibile
                   </span>
                 )}
                 {health.migrations?.status === 'missing' && (
@@ -139,15 +144,25 @@ export const HealthBanner = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <span className="text-xs text-red-300 hidden sm:inline">
-              Login disabilitato
-            </span>
+            {isCritical ? (
+              <span className="text-xs text-red-300 hidden sm:inline">
+                Login disabilitato
+              </span>
+            ) : (
+              <span className="text-xs text-orange-300 hidden sm:inline">
+                Alcune funzioni limitate
+              </span>
+            )}
             <button
               onClick={checkHealth}
-              className="p-2 border border-red-500 hover:bg-red-800 transition-colors"
+              className={`p-2 border transition-colors ${
+                isCritical 
+                  ? 'border-red-500 hover:bg-red-800' 
+                  : 'border-orange-500 hover:bg-orange-800'
+              }`}
               title="Riprova connessione"
             >
-              <RefreshCw size={16} className="text-red-300" />
+              <RefreshCw size={16} className={isCritical ? 'text-red-300' : 'text-orange-300'} />
             </button>
           </div>
         </div>
