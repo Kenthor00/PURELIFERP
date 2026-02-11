@@ -65,6 +65,9 @@ import AppointmentsPage from './pages/cityhub/AppointmentsPage';
 import AnnouncementsPage from './pages/cityhub/AnnouncementsPage';
 import AdvertisingPage from './pages/cityhub/AdvertisingPage';
 
+// Agenda (New Calendar System)
+import AgendaPage from './pages/AgendaPage';
+
 // Fase 4 - News Editor & Service Chat
 import NewsEditorPage from './pages/news/NewsEditorPage';
 import ServiceChatPage from './pages/ServiceChatPage';
