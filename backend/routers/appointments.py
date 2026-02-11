@@ -1,455 +1,781 @@
 """
-PURE LIFE OS - Appointments Router
-Sistema di appuntamenti tra cittadini e settori governativi
-Con notifiche real-time e calendario operativo
+PURE LIFE OS - Agenda / Appointments Router
+CRUD completo + Reminder + WebSocket + Discord Webhook
 """
-from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, and_
-from pydantic import BaseModel
+import os
+import httpx
+import secrets
+import logging
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List
-from datetime import datetime, timezone
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, and_, or_, desc
+from pydantic import BaseModel, Field
 
 from database import get_db
 from models import (
-    User, Sector, Appointment, AppointmentStatus, AuditAction, NotificationType
+    User, Sector, Appointment, AppointmentStatus, AppointmentType,
+    AuditLog, AuditAction, LegalCase, Case
 )
-from auth import get_current_user
-from services.audit_service import AuditService
-from routers.notifications import notify_sector_chiefs, notify_user
+from auth import get_current_user, require_roles, UserRole, log_audit
+from websocket_engine import (
+    ws_manager, WSEventType, NUIChannel,
+    send_appointment_notification, send_appointment_reminder
+)
 
-router = APIRouter(prefix="/appointments", tags=["Appuntamenti"])
-audit_service = AuditService()
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/appointments", tags=["Agenda"])
 
 
 # ==========================================
 # SCHEMAS
 # ==========================================
 
-class CreateAppointmentRequest(BaseModel):
-    target_sector: str
-    subject: str
-    description: str
-    preferred_date: Optional[str] = None
-    preferred_time: Optional[str] = None
-    urgency: str = "normal"
-
-
-class HandleAppointmentRequest(BaseModel):
-    status: str  # "accepted", "rejected", "completed", "cancelled"
+class AppointmentBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    appointment_type: AppointmentType = AppointmentType.MEETING
+    scheduled_at: datetime
+    duration_minutes: int = 60
+    location: Optional[str] = None
+    location_coords_x: Optional[float] = None
+    location_coords_y: Optional[float] = None
+    participant_ids: Optional[List[int]] = None
+    legal_case_id: Optional[int] = None
+    lspd_case_id: Optional[int] = None
+    reminder_settings: Optional[dict] = Field(default={"t_24h": True, "t_1h": True, "t_15m": True})
+    discord_webhook_url: Optional[str] = None
     notes: Optional[str] = None
-    scheduled_date: Optional[str] = None
+    is_private: bool = False
+    is_all_day: bool = False
+    color: Optional[str] = None
+
+
+class AppointmentCreate(AppointmentBase):
+    pass
+
+
+class AppointmentUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    appointment_type: Optional[AppointmentType] = None
+    status: Optional[AppointmentStatus] = None
+    scheduled_at: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    location: Optional[str] = None
+    location_coords_x: Optional[float] = None
+    location_coords_y: Optional[float] = None
+    participant_ids: Optional[List[int]] = None
+    reminder_settings: Optional[dict] = None
+    discord_webhook_url: Optional[str] = None
+    notes: Optional[str] = None
+    is_private: Optional[bool] = None
+    color: Optional[str] = None
 
 
 class AppointmentResponse(BaseModel):
     id: int
-    target_sector: str
-    requester_id: int
-    requester_game_name: str
-    requester_sector: str
-    subject: str
-    description: str
-    preferred_date: Optional[str]
-    preferred_time: Optional[str]
-    urgency: str
+    title: str
+    description: Optional[str]
+    appointment_type: str
     status: str
-    handler_id: Optional[int]
-    handler_game_name: Optional[str]
-    handler_notes: Optional[str]
-    scheduled_date: Optional[str]
-    created_at: str
-    updated_at: str
-
-
-# ==========================================
-# ENDPOINTS - REQUESTER
-# ==========================================
-
-@router.post("/request", response_model=AppointmentResponse)
-async def create_appointment(
-    data: CreateAppointmentRequest,
-    request: Request,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Richiedi un appuntamento con un settore"""
+    scheduled_at: datetime
+    duration_minutes: int
+    end_at: Optional[datetime]
+    location: Optional[str]
+    location_coords_x: Optional[float]
+    location_coords_y: Optional[float]
+    organizer_id: int
+    organizer_name: Optional[str] = None
+    participant_ids: Optional[List[int]]
+    legal_case_id: Optional[int]
+    lspd_case_id: Optional[int]
+    reminder_settings: Optional[dict]
+    notes: Optional[str]
+    is_private: bool
+    is_all_day: bool
+    color: Optional[str]
+    created_at: datetime
+    updated_at: datetime
     
-    # Valida settore target
+    class Config:
+        from_attributes = True
+
+
+class CalendarView(BaseModel):
+    """Vista calendario con eventi raggruppati"""
+    date: str
+    appointments: List[AppointmentResponse]
+
+
+# ==========================================
+# DISCORD WEBHOOK
+# ==========================================
+
+async def send_discord_reminder(appointment: Appointment, reminder_type: str):
+    """Invia reminder su Discord via webhook"""
+    if not appointment.discord_webhook_url:
+        return False
+    
     try:
-        target_sector = Sector(data.target_sector.upper())
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Settore non valido: {data.target_sector}")
-    
-    # Non può richiedere appuntamento con ADMIN o CIVIL
-    if target_sector in [Sector.ADMIN, Sector.CIVIL]:
-        raise HTTPException(status_code=400, detail="Non puoi richiedere appuntamenti con questo settore")
-    
-    # Valida urgenza
-    if data.urgency not in ["low", "normal", "high"]:
-        data.urgency = "normal"
-    
-    # Parse data preferita se fornita
-    preferred_date = None
-    if data.preferred_date:
-        try:
-            preferred_date = datetime.fromisoformat(data.preferred_date.replace("Z", "+00:00"))
-        except ValueError:
-            pass
-    
-    # Crea appuntamento
-    appointment = Appointment(
-        target_sector=target_sector.value,
-        requester_id=current_user.id,
-        requester_game_name=current_user.game_name or current_user.email,
-        requester_sector=current_user.sector.value,
-        subject=data.subject,
-        description=data.description,
-        preferred_date=preferred_date,
-        preferred_time=data.preferred_time,
-        urgency=data.urgency,
-        status=AppointmentStatus.PENDING.value
-    )
-    
-    db.add(appointment)
-    await db.commit()
-    await db.refresh(appointment)
-    
-    # Audit log
-    await audit_service.log(
-        db,
-        action=AuditAction.APPOINTMENT_CREATE,
-        user=current_user,
-        entity_type="appointment",
-        entity_id=appointment.id,
-        description=f"Richiesta appuntamento con {target_sector.value}: {data.subject}",
-        request=request
-    )
-    
-    # Notifica al settore
-    await notify_sector_chiefs(
-        db=db,
-        sector=target_sector.value,
-        notification_type=NotificationType.APPOINTMENT_NEW.value,
-        title="Nuova Richiesta Appuntamento",
-        message=f"{current_user.game_name} richiede un appuntamento: {data.subject}",
-        sender=current_user,
-        entity_type="appointment",
-        entity_id=appointment.id
-    )
-    
-    return _appointment_to_response(appointment)
+        # Formatta il messaggio embed
+        embed = {
+            "title": f"📅 Reminder: {appointment.title}",
+            "description": appointment.description or "Nessuna descrizione",
+            "color": 0x00ff9c,  # Verde PLOS
+            "fields": [
+                {
+                    "name": "⏰ Data/Ora",
+                    "value": appointment.scheduled_at.strftime("%d/%m/%Y alle %H:%M"),
+                    "inline": True
+                },
+                {
+                    "name": "⏱️ Durata",
+                    "value": f"{appointment.duration_minutes} minuti",
+                    "inline": True
+                },
+                {
+                    "name": "📍 Luogo",
+                    "value": appointment.location or "Non specificato",
+                    "inline": True
+                },
+                {
+                    "name": "🔔 Tipo Reminder",
+                    "value": reminder_type,
+                    "inline": True
+                }
+            ],
+            "footer": {
+                "text": "PURE LIFE OS - Agenda"
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Aggiungi link se è un'udienza
+        if appointment.legal_case_id:
+            embed["fields"].append({
+                "name": "⚖️ Pratica",
+                "value": f"ID: {appointment.legal_case_id}",
+                "inline": True
+            })
+        
+        payload = {
+            "username": "PURE LIFE OS",
+            "avatar_url": "https://i.imgur.com/YourLogo.png",
+            "embeds": [embed]
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(appointment.discord_webhook_url, json=payload)
+            return response.status_code == 204
+            
+    except Exception as e:
+        logger.error(f"Discord webhook error: {e}")
+        return False
 
 
-@router.get("/my-requests", response_model=List[AppointmentResponse])
-async def get_my_requests(
-    status: Optional[str] = None,
+# ==========================================
+# REMINDER SCHEDULER
+# ==========================================
+
+async def check_and_send_reminders(db: AsyncSession):
+    """
+    Controlla appuntamenti e invia reminder.
+    Chiamato periodicamente da un background task.
+    """
+    now = datetime.now(timezone.utc)
+    
+    # Trova appuntamenti con reminder da inviare
+    # T-24h, T-1h, T-15m
+    reminder_windows = [
+        ("t_24h", timedelta(hours=24), timedelta(hours=23, minutes=55)),
+        ("t_1h", timedelta(hours=1), timedelta(minutes=55)),
+        ("t_15m", timedelta(minutes=15), timedelta(minutes=10)),
+    ]
+    
+    for reminder_key, delta_start, delta_end in reminder_windows:
+        window_start = now + delta_end
+        window_end = now + delta_start
+        
+        # Query appuntamenti nella finestra
+        query = select(Appointment).where(
+            and_(
+                Appointment.status.in_([AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED]),
+                Appointment.scheduled_at >= window_start,
+                Appointment.scheduled_at <= window_end,
+            )
+        )
+        
+        result = await db.execute(query)
+        appointments = result.scalars().all()
+        
+        for apt in appointments:
+            # Check se reminder già inviato
+            sent = apt.reminder_sent or {}
+            settings = apt.reminder_settings or {}
+            
+            if settings.get(reminder_key) and not sent.get(reminder_key):
+                # Invia reminder
+                logger.info(f"Sending {reminder_key} reminder for appointment {apt.id}")
+                
+                # WebSocket notification all'organizzatore
+                await send_appointment_reminder(apt.organizer_id, {
+                    "id": apt.id,
+                    "title": apt.title,
+                    "scheduled_at": apt.scheduled_at.isoformat(),
+                    "location": apt.location,
+                    "reminder_type": reminder_key
+                })
+                
+                # WebSocket ai partecipanti
+                if apt.participant_ids:
+                    for pid in apt.participant_ids:
+                        await send_appointment_reminder(pid, {
+                            "id": apt.id,
+                            "title": apt.title,
+                            "scheduled_at": apt.scheduled_at.isoformat(),
+                            "location": apt.location,
+                            "reminder_type": reminder_key
+                        })
+                
+                # Discord webhook
+                reminder_labels = {
+                    "t_24h": "24 ore prima",
+                    "t_1h": "1 ora prima",
+                    "t_15m": "15 minuti prima"
+                }
+                await send_discord_reminder(apt, reminder_labels.get(reminder_key, reminder_key))
+                
+                # Marca come inviato
+                sent[reminder_key] = datetime.now(timezone.utc).isoformat()
+                apt.reminder_sent = sent
+                await db.commit()
+
+
+# ==========================================
+# ENDPOINTS
+# ==========================================
+
+@router.get("", response_model=List[AppointmentResponse])
+async def get_appointments(
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    status: Optional[AppointmentStatus] = None,
+    appointment_type: Optional[AppointmentType] = None,
+    include_private: bool = False,
+    limit: int = Query(100, le=500),
+    offset: int = 0,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Ottieni i tuoi appuntamenti richiesti"""
+    """
+    Lista appuntamenti con filtri.
+    Default: prossimi 30 giorni.
+    """
+    if not start_date:
+        start_date = datetime.now(timezone.utc)
+    if not end_date:
+        end_date = start_date + timedelta(days=30)
+    
     query = select(Appointment).where(
-        Appointment.requester_id == current_user.id
+        Appointment.scheduled_at >= start_date,
+        Appointment.scheduled_at <= end_date
     )
+    
+    # Filtro privacy: mostra solo appuntamenti dove utente è organizzatore o partecipante
+    if not include_private or current_user.sector not in [Sector.ADMIN, Sector.GOV]:
+        query = query.where(
+            or_(
+                Appointment.is_private == False,
+                Appointment.organizer_id == current_user.id,
+                # Participant check (JSON contains)
+                func.json_contains(Appointment.participant_ids, str(current_user.id))
+            )
+        )
     
     if status:
-        try:
-            status_enum = AppointmentStatus(status.lower())
-            query = query.where(Appointment.status == status_enum.value)
-        except ValueError:
-            pass
+        query = query.where(Appointment.status == status)
     
-    query = query.order_by(desc(Appointment.created_at))
+    if appointment_type:
+        query = query.where(Appointment.appointment_type == appointment_type)
+    
+    query = query.order_by(Appointment.scheduled_at).offset(offset).limit(limit)
     
     result = await db.execute(query)
     appointments = result.scalars().all()
-    return [_appointment_to_response(a) for a in appointments]
+    
+    # Enrich with organizer name
+    responses = []
+    for apt in appointments:
+        apt_dict = {
+            "id": apt.id,
+            "title": apt.title,
+            "description": apt.description,
+            "appointment_type": apt.appointment_type.value if apt.appointment_type else "meeting",
+            "status": apt.status.value if apt.status else "scheduled",
+            "scheduled_at": apt.scheduled_at,
+            "duration_minutes": apt.duration_minutes,
+            "end_at": apt.end_at or (apt.scheduled_at + timedelta(minutes=apt.duration_minutes)),
+            "location": apt.location,
+            "location_coords_x": apt.location_coords_x,
+            "location_coords_y": apt.location_coords_y,
+            "organizer_id": apt.organizer_id,
+            "organizer_name": apt.organizer.game_name if apt.organizer else None,
+            "participant_ids": apt.participant_ids,
+            "legal_case_id": apt.legal_case_id,
+            "lspd_case_id": apt.lspd_case_id,
+            "reminder_settings": apt.reminder_settings,
+            "notes": apt.notes,
+            "is_private": apt.is_private,
+            "is_all_day": apt.is_all_day,
+            "color": apt.color,
+            "created_at": apt.created_at,
+            "updated_at": apt.updated_at
+        }
+        responses.append(AppointmentResponse(**apt_dict))
+    
+    return responses
 
 
-@router.post("/{appointment_id}/cancel")
-async def cancel_appointment(
-    appointment_id: int,
-    request: Request,
+@router.get("/calendar/{year}/{month}")
+async def get_calendar_month(
+    year: int,
+    month: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Annulla un appuntamento (solo richiedente o handler)"""
+    """Vista calendario mensile"""
+    from calendar import monthrange
     
-    result = await db.execute(
-        select(Appointment).where(Appointment.id == appointment_id)
-    )
-    appointment = result.scalar_one_or_none()
+    start_date = datetime(year, month, 1, tzinfo=timezone.utc)
+    _, last_day = monthrange(year, month)
+    end_date = datetime(year, month, last_day, 23, 59, 59, tzinfo=timezone.utc)
     
-    if not appointment:
-        raise HTTPException(status_code=404, detail="Appuntamento non trovato")
-    
-    # Solo richiedente o handler può annullare
-    if current_user.id != appointment.requester_id and current_user.id != appointment.handler_id:
-        if current_user.sector != Sector.ADMIN:
-            raise HTTPException(status_code=403, detail="Non puoi annullare questo appuntamento")
-    
-    # Solo se pending o accepted
-    if appointment.status not in [AppointmentStatus.PENDING.value, AppointmentStatus.ACCEPTED.value]:
-        raise HTTPException(status_code=400, detail="Non puoi annullare questo appuntamento")
-    
-    appointment.status = AppointmentStatus.CANCELLED.value
-    appointment.updated_at = datetime.now(timezone.utc)
-    
-    await db.commit()
-    
-    # Audit log
-    await audit_service.log(
-        db,
-        action=AuditAction.APPOINTMENT_CANCEL,
-        user=current_user,
-        entity_type="appointment",
-        entity_id=appointment.id,
-        description=f"Appuntamento annullato: {appointment.subject}",
-        request=request
-    )
-    
-    return {"message": "Appuntamento annullato"}
-
-
-# ==========================================
-# ENDPOINTS - SECTOR MANAGEMENT
-# ==========================================
-
-@router.get("/sector/{sector}", response_model=List[AppointmentResponse])
-async def get_sector_appointments(
-    sector: str,
-    status: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Ottieni appuntamenti per un settore"""
-    
-    # Valida settore
-    try:
-        target_sector = Sector(sector.upper())
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Settore non valido: {sector}")
-    
-    # Verifica permessi
-    if current_user.sector != Sector.ADMIN:
-        if current_user.sector.value != target_sector.value:
-            raise HTTPException(status_code=403, detail="Puoi visualizzare solo appuntamenti del tuo settore")
-    
-    # Query
     query = select(Appointment).where(
-        Appointment.target_sector == target_sector.value
-    )
-    
-    if status:
-        try:
-            status_enum = AppointmentStatus(status.lower())
-            query = query.where(Appointment.status == status_enum.value)
-        except ValueError:
-            pass
-    
-    query = query.order_by(desc(Appointment.created_at))
+        Appointment.scheduled_at >= start_date,
+        Appointment.scheduled_at <= end_date,
+        or_(
+            Appointment.is_private == False,
+            Appointment.organizer_id == current_user.id,
+        )
+    ).order_by(Appointment.scheduled_at)
     
     result = await db.execute(query)
     appointments = result.scalars().all()
-    return [_appointment_to_response(a) for a in appointments]
-
-
-@router.put("/{appointment_id}/handle", response_model=AppointmentResponse)
-async def handle_appointment(
-    appointment_id: int,
-    data: HandleAppointmentRequest,
-    request: Request,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Gestisci un appuntamento (accetta, rifiuta, completa)"""
     
-    result = await db.execute(
-        select(Appointment).where(Appointment.id == appointment_id)
-    )
-    appointment = result.scalar_one_or_none()
-    
-    if not appointment:
-        raise HTTPException(status_code=404, detail="Appuntamento non trovato")
-    
-    # Verifica permessi
-    if current_user.sector != Sector.ADMIN:
-        if current_user.sector.value != appointment.target_sector:
-            raise HTTPException(status_code=403, detail="Puoi gestire solo appuntamenti del tuo settore")
-        if current_user.hierarchy_level < 3:
-            raise HTTPException(status_code=403, detail="Non hai i permessi per gestire appuntamenti")
-    
-    # Valida status
-    try:
-        new_status = AppointmentStatus(data.status.lower())
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Stato non valido: {data.status}")
-    
-    # Determina azione audit
-    if new_status == AppointmentStatus.ACCEPTED:
-        audit_action = AuditAction.APPOINTMENT_ACCEPT
-    elif new_status == AppointmentStatus.REJECTED:
-        audit_action = AuditAction.APPOINTMENT_REJECT
-    elif new_status == AppointmentStatus.COMPLETED:
-        audit_action = AuditAction.APPOINTMENT_COMPLETE
-    else:
-        audit_action = AuditAction.APPOINTMENT_CANCEL
-    
-    # Parse data schedulata
-    scheduled_date = None
-    if data.scheduled_date:
-        try:
-            scheduled_date = datetime.fromisoformat(data.scheduled_date.replace("Z", "+00:00"))
-        except ValueError:
-            pass
-    
-    # Aggiorna appuntamento
-    appointment.status = new_status.value
-    appointment.handler_id = current_user.id
-    appointment.handler_game_name = current_user.game_name
-    appointment.handler_notes = data.notes
-    if scheduled_date:
-        appointment.scheduled_date = scheduled_date
-    appointment.updated_at = datetime.now(timezone.utc)
-    
-    await db.commit()
-    await db.refresh(appointment)
-    
-    # Audit log
-    await audit_service.log(
-        db,
-        action=audit_action,
-        user=current_user,
-        entity_type="appointment",
-        entity_id=appointment.id,
-        description=f"Appuntamento {new_status.value}: {appointment.subject}",
-        request=request
-    )
-    
-    # Notifica al richiedente
-    notification_map = {
-        AppointmentStatus.ACCEPTED: (
-            NotificationType.APPOINTMENT_ACCEPTED.value,
-            "Appuntamento Confermato",
-            f"Il tuo appuntamento con {appointment.target_sector} è stato accettato"
-        ),
-        AppointmentStatus.REJECTED: (
-            NotificationType.APPOINTMENT_REJECTED.value,
-            "Appuntamento Rifiutato",
-            f"Il tuo appuntamento con {appointment.target_sector} non è stato accettato"
-        ),
-        AppointmentStatus.COMPLETED: (
-            NotificationType.APPOINTMENT_COMPLETED.value,
-            "Appuntamento Completato",
-            f"Il tuo appuntamento con {appointment.target_sector} è stato completato"
-        )
-    }
-    
-    if new_status in notification_map:
-        notif_type, notif_title, notif_message = notification_map[new_status]
-        await notify_user(
-            db=db,
-            user_id=appointment.requester_id,
-            notification_type=notif_type,
-            title=notif_title,
-            message=notif_message,
-            sender=current_user,
-            entity_type="appointment",
-            entity_id=appointment.id
-        )
-    
-    return _appointment_to_response(appointment)
-
-
-@router.get("/calendar/{sector}")
-async def get_sector_calendar(
-    sector: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Calendario appuntamenti accettati per un settore"""
-    
-    # Valida settore
-    try:
-        target_sector = Sector(sector.upper())
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Settore non valido: {sector}")
-    
-    # Verifica permessi
-    if current_user.sector != Sector.ADMIN:
-        if current_user.sector != target_sector:
-            raise HTTPException(status_code=403, detail="Puoi visualizzare solo il calendario del tuo settore")
-    
-    # Query appuntamenti accettati con data schedulata
-    result = await db.execute(
-        select(Appointment)
-        .where(Appointment.target_sector == target_sector.value)
-        .where(Appointment.status == AppointmentStatus.ACCEPTED.value)
-        .where(Appointment.scheduled_date != None)
-        .order_by(Appointment.scheduled_date)
-    )
-    appointments = result.scalars().all()
-    
-    return [_appointment_to_response(a) for a in appointments]
-
-
-@router.get("/stats")
-async def get_appointment_stats(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Statistiche appuntamenti"""
-    
-    # Admin vede tutto, altri solo il proprio settore
-    if current_user.sector == Sector.ADMIN:
-        base_query = select(Appointment)
-    else:
-        base_query = select(Appointment).where(
-            Appointment.target_sector == current_user.sector.value
-        )
-    
-    # Conta per stato
-    pending = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.PENDING.value)
-    )
-    accepted = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.ACCEPTED.value)
-    )
-    completed = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.COMPLETED.value)
-    )
-    rejected = await db.execute(
-        base_query.where(Appointment.status == AppointmentStatus.REJECTED.value)
-    )
+    # Raggruppa per giorno
+    calendar = {}
+    for apt in appointments:
+        day_key = apt.scheduled_at.strftime("%Y-%m-%d")
+        if day_key not in calendar:
+            calendar[day_key] = []
+        calendar[day_key].append({
+            "id": apt.id,
+            "title": apt.title,
+            "appointment_type": apt.appointment_type.value if apt.appointment_type else "meeting",
+            "status": apt.status.value if apt.status else "scheduled",
+            "scheduled_at": apt.scheduled_at.isoformat(),
+            "duration_minutes": apt.duration_minutes,
+            "location": apt.location,
+            "color": apt.color,
+            "is_all_day": apt.is_all_day
+        })
     
     return {
-        "pending": len(pending.scalars().all()),
-        "accepted": len(accepted.scalars().all()),
-        "completed": len(completed.scalars().all()),
-        "rejected": len(rejected.scalars().all())
+        "year": year,
+        "month": month,
+        "days": calendar
     }
 
 
-# ==========================================
-# HELPERS
-# ==========================================
+@router.get("/week")
+async def get_calendar_week(
+    date: Optional[datetime] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Vista calendario settimanale"""
+    if not date:
+        date = datetime.now(timezone.utc)
+    
+    # Trova inizio settimana (lunedì)
+    start_of_week = date - timedelta(days=date.weekday())
+    start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_week = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59)
+    
+    query = select(Appointment).where(
+        Appointment.scheduled_at >= start_of_week,
+        Appointment.scheduled_at <= end_of_week,
+        or_(
+            Appointment.is_private == False,
+            Appointment.organizer_id == current_user.id,
+        )
+    ).order_by(Appointment.scheduled_at)
+    
+    result = await db.execute(query)
+    appointments = result.scalars().all()
+    
+    # Raggruppa per giorno
+    week = {}
+    for i in range(7):
+        day = start_of_week + timedelta(days=i)
+        day_key = day.strftime("%Y-%m-%d")
+        week[day_key] = []
+    
+    for apt in appointments:
+        day_key = apt.scheduled_at.strftime("%Y-%m-%d")
+        if day_key in week:
+            week[day_key].append({
+                "id": apt.id,
+                "title": apt.title,
+                "appointment_type": apt.appointment_type.value if apt.appointment_type else "meeting",
+                "status": apt.status.value if apt.status else "scheduled",
+                "scheduled_at": apt.scheduled_at.isoformat(),
+                "duration_minutes": apt.duration_minutes,
+                "location": apt.location,
+                "color": apt.color
+            })
+    
+    return {
+        "start_date": start_of_week.strftime("%Y-%m-%d"),
+        "end_date": end_of_week.strftime("%Y-%m-%d"),
+        "days": week
+    }
 
-def _appointment_to_response(apt: Appointment) -> AppointmentResponse:
+
+@router.get("/{appointment_id}", response_model=AppointmentResponse)
+async def get_appointment(
+    appointment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Dettaglio singolo appuntamento"""
+    result = await db.execute(select(Appointment).where(Appointment.id == appointment_id))
+    apt = result.scalar_one_or_none()
+    
+    if not apt:
+        raise HTTPException(status_code=404, detail="Appuntamento non trovato")
+    
+    # Check accesso
+    if apt.is_private and apt.organizer_id != current_user.id:
+        if not (apt.participant_ids and current_user.id in apt.participant_ids):
+            if current_user.sector not in [Sector.ADMIN, Sector.GOV]:
+                raise HTTPException(status_code=403, detail="Appuntamento privato")
+    
     return AppointmentResponse(
         id=apt.id,
-        target_sector=apt.target_sector,
-        requester_id=apt.requester_id,
-        requester_game_name=apt.requester_game_name,
-        requester_sector=apt.requester_sector,
-        subject=apt.subject,
+        title=apt.title,
         description=apt.description,
-        preferred_date=apt.preferred_date.isoformat() if apt.preferred_date else None,
-        preferred_time=apt.preferred_time,
-        urgency=apt.urgency,
-        status=apt.status,
-        handler_id=apt.handler_id,
-        handler_game_name=apt.handler_game_name,
-        handler_notes=apt.handler_notes,
-        scheduled_date=apt.scheduled_date.isoformat() if apt.scheduled_date else None,
-        created_at=apt.created_at.isoformat() if apt.created_at else "",
-        updated_at=apt.updated_at.isoformat() if apt.updated_at else ""
+        appointment_type=apt.appointment_type.value if apt.appointment_type else "meeting",
+        status=apt.status.value if apt.status else "scheduled",
+        scheduled_at=apt.scheduled_at,
+        duration_minutes=apt.duration_minutes,
+        end_at=apt.end_at or (apt.scheduled_at + timedelta(minutes=apt.duration_minutes)),
+        location=apt.location,
+        location_coords_x=apt.location_coords_x,
+        location_coords_y=apt.location_coords_y,
+        organizer_id=apt.organizer_id,
+        organizer_name=apt.organizer.game_name if apt.organizer else None,
+        participant_ids=apt.participant_ids,
+        legal_case_id=apt.legal_case_id,
+        lspd_case_id=apt.lspd_case_id,
+        reminder_settings=apt.reminder_settings,
+        notes=apt.notes,
+        is_private=apt.is_private,
+        is_all_day=apt.is_all_day,
+        color=apt.color,
+        created_at=apt.created_at,
+        updated_at=apt.updated_at
     )
+
+
+@router.post("", response_model=AppointmentResponse)
+async def create_appointment(
+    request: AppointmentCreate,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Crea nuovo appuntamento"""
+    # Calcola end_at
+    end_at = request.scheduled_at + timedelta(minutes=request.duration_minutes)
+    
+    apt = Appointment(
+        title=request.title,
+        description=request.description,
+        appointment_type=request.appointment_type,
+        scheduled_at=request.scheduled_at,
+        duration_minutes=request.duration_minutes,
+        end_at=end_at,
+        location=request.location,
+        location_coords_x=request.location_coords_x,
+        location_coords_y=request.location_coords_y,
+        organizer_id=current_user.id,
+        participant_ids=request.participant_ids,
+        legal_case_id=request.legal_case_id,
+        lspd_case_id=request.lspd_case_id,
+        reminder_settings=request.reminder_settings,
+        discord_webhook_url=request.discord_webhook_url,
+        notes=request.notes,
+        is_private=request.is_private,
+        is_all_day=request.is_all_day,
+        color=request.color
+    )
+    
+    db.add(apt)
+    await db.commit()
+    await db.refresh(apt)
+    
+    # Audit log
+    await log_audit(
+        db, AuditAction.CREATE,
+        user=current_user,
+        entity_type="appointment",
+        entity_id=apt.id,
+        description=f"Creato appuntamento: {apt.title}",
+        metadata={"scheduled_at": apt.scheduled_at.isoformat(), "location": apt.location}
+    )
+    
+    # WebSocket notification
+    await send_appointment_notification(current_user.id, WSEventType.APPOINTMENT_CREATED, {
+        "id": apt.id,
+        "title": apt.title,
+        "scheduled_at": apt.scheduled_at.isoformat()
+    })
+    
+    # Notify participants
+    if apt.participant_ids:
+        for pid in apt.participant_ids:
+            await send_appointment_notification(pid, WSEventType.APPOINTMENT_CREATED, {
+                "id": apt.id,
+                "title": apt.title,
+                "scheduled_at": apt.scheduled_at.isoformat(),
+                "organizer": current_user.game_name
+            })
+    
+    return AppointmentResponse(
+        id=apt.id,
+        title=apt.title,
+        description=apt.description,
+        appointment_type=apt.appointment_type.value,
+        status=apt.status.value,
+        scheduled_at=apt.scheduled_at,
+        duration_minutes=apt.duration_minutes,
+        end_at=apt.end_at,
+        location=apt.location,
+        location_coords_x=apt.location_coords_x,
+        location_coords_y=apt.location_coords_y,
+        organizer_id=apt.organizer_id,
+        organizer_name=current_user.game_name,
+        participant_ids=apt.participant_ids,
+        legal_case_id=apt.legal_case_id,
+        lspd_case_id=apt.lspd_case_id,
+        reminder_settings=apt.reminder_settings,
+        notes=apt.notes,
+        is_private=apt.is_private,
+        is_all_day=apt.is_all_day,
+        color=apt.color,
+        created_at=apt.created_at,
+        updated_at=apt.updated_at
+    )
+
+
+@router.put("/{appointment_id}", response_model=AppointmentResponse)
+async def update_appointment(
+    appointment_id: int,
+    request: AppointmentUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Modifica appuntamento"""
+    result = await db.execute(select(Appointment).where(Appointment.id == appointment_id))
+    apt = result.scalar_one_or_none()
+    
+    if not apt:
+        raise HTTPException(status_code=404, detail="Appuntamento non trovato")
+    
+    # Solo organizzatore o admin può modificare
+    if apt.organizer_id != current_user.id and current_user.sector != Sector.ADMIN:
+        raise HTTPException(status_code=403, detail="Solo l'organizzatore può modificare")
+    
+    # Store old values for audit
+    old_values = {
+        "title": apt.title,
+        "scheduled_at": apt.scheduled_at.isoformat() if apt.scheduled_at else None,
+        "status": apt.status.value if apt.status else None
+    }
+    
+    # Apply updates
+    update_data = request.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(apt, field, value)
+    
+    # Ricalcola end_at se necessario
+    if request.scheduled_at or request.duration_minutes:
+        apt.end_at = apt.scheduled_at + timedelta(minutes=apt.duration_minutes)
+    
+    await db.commit()
+    await db.refresh(apt)
+    
+    # Audit log
+    await log_audit(
+        db, AuditAction.UPDATE,
+        user=current_user,
+        entity_type="appointment",
+        entity_id=apt.id,
+        description=f"Modificato appuntamento: {apt.title}",
+        metadata={"old": old_values, "new": update_data}
+    )
+    
+    # WebSocket notification
+    await send_appointment_notification(apt.organizer_id, WSEventType.APPOINTMENT_UPDATED, {
+        "id": apt.id,
+        "title": apt.title,
+        "scheduled_at": apt.scheduled_at.isoformat()
+    })
+    
+    if apt.participant_ids:
+        for pid in apt.participant_ids:
+            await send_appointment_notification(pid, WSEventType.APPOINTMENT_UPDATED, {
+                "id": apt.id,
+                "title": apt.title,
+                "scheduled_at": apt.scheduled_at.isoformat()
+            })
+    
+    return AppointmentResponse(
+        id=apt.id,
+        title=apt.title,
+        description=apt.description,
+        appointment_type=apt.appointment_type.value,
+        status=apt.status.value,
+        scheduled_at=apt.scheduled_at,
+        duration_minutes=apt.duration_minutes,
+        end_at=apt.end_at,
+        location=apt.location,
+        location_coords_x=apt.location_coords_x,
+        location_coords_y=apt.location_coords_y,
+        organizer_id=apt.organizer_id,
+        participant_ids=apt.participant_ids,
+        legal_case_id=apt.legal_case_id,
+        lspd_case_id=apt.lspd_case_id,
+        reminder_settings=apt.reminder_settings,
+        notes=apt.notes,
+        is_private=apt.is_private,
+        is_all_day=apt.is_all_day,
+        color=apt.color,
+        created_at=apt.created_at,
+        updated_at=apt.updated_at
+    )
+
+
+@router.delete("/{appointment_id}")
+async def cancel_appointment(
+    appointment_id: int,
+    reason: str = Query(None, description="Motivo cancellazione"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Cancella appuntamento"""
+    result = await db.execute(select(Appointment).where(Appointment.id == appointment_id))
+    apt = result.scalar_one_or_none()
+    
+    if not apt:
+        raise HTTPException(status_code=404, detail="Appuntamento non trovato")
+    
+    # Solo organizzatore o admin può cancellare
+    if apt.organizer_id != current_user.id and current_user.sector != Sector.ADMIN:
+        raise HTTPException(status_code=403, detail="Solo l'organizzatore può cancellare")
+    
+    apt.status = AppointmentStatus.CANCELLED
+    apt.cancelled_at = datetime.now(timezone.utc)
+    apt.cancelled_by = current_user.id
+    apt.cancellation_reason = reason
+    
+    await db.commit()
+    
+    # Audit log
+    await log_audit(
+        db, AuditAction.RESOURCE_DELETE,
+        user=current_user,
+        entity_type="appointment",
+        entity_id=apt.id,
+        description=f"Cancellato appuntamento: {apt.title}",
+        metadata={"reason": reason}
+    )
+    
+    # WebSocket notification
+    await send_appointment_notification(apt.organizer_id, WSEventType.APPOINTMENT_CANCELLED, {
+        "id": apt.id,
+        "title": apt.title,
+        "reason": reason
+    })
+    
+    if apt.participant_ids:
+        for pid in apt.participant_ids:
+            await send_appointment_notification(pid, WSEventType.APPOINTMENT_CANCELLED, {
+                "id": apt.id,
+                "title": apt.title,
+                "reason": reason
+            })
+    
+    return {"message": "Appuntamento cancellato", "id": appointment_id}
+
+
+@router.post("/{appointment_id}/confirm")
+async def confirm_appointment(
+    appointment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Conferma partecipazione a un appuntamento"""
+    result = await db.execute(select(Appointment).where(Appointment.id == appointment_id))
+    apt = result.scalar_one_or_none()
+    
+    if not apt:
+        raise HTTPException(status_code=404, detail="Appuntamento non trovato")
+    
+    if apt.status == AppointmentStatus.SCHEDULED:
+        apt.status = AppointmentStatus.CONFIRMED
+        await db.commit()
+    
+    return {"message": "Partecipazione confermata", "id": appointment_id}
+
+
+@router.post("/test-reminder/{appointment_id}")
+async def test_reminder(
+    appointment_id: int,
+    reminder_type: str = Query("t_15m", description="Tipo reminder: t_24h, t_1h, t_15m"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Test invio reminder (solo per debug)"""
+    result = await db.execute(select(Appointment).where(Appointment.id == appointment_id))
+    apt = result.scalar_one_or_none()
+    
+    if not apt:
+        raise HTTPException(status_code=404, detail="Appuntamento non trovato")
+    
+    # WebSocket
+    await send_appointment_reminder(apt.organizer_id, {
+        "id": apt.id,
+        "title": apt.title,
+        "scheduled_at": apt.scheduled_at.isoformat(),
+        "location": apt.location,
+        "reminder_type": reminder_type
+    })
+    
+    # Discord
+    reminder_labels = {
+        "t_24h": "24 ore prima",
+        "t_1h": "1 ora prima",
+        "t_15m": "15 minuti prima"
+    }
+    discord_sent = await send_discord_reminder(apt, reminder_labels.get(reminder_type, reminder_type))
+    
+    return {
+        "message": "Test reminder inviato",
+        "websocket_sent": True,
+        "discord_sent": discord_sent
+    }
