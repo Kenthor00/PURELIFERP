@@ -434,6 +434,10 @@ api_router.include_router(appointments.router)
 from routers import admin_rbac
 api_router.include_router(admin_rbac.router)
 
+# Documents System (QR Verification)
+from routers import documents
+api_router.include_router(documents.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
