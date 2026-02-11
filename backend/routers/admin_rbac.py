@@ -73,8 +73,8 @@ class PermissionResponse(BaseModel):
     name: str
     description: Optional[str]
     category: str
-    is_dangerous: bool
-    requires_audit: bool
+    is_dangerous: Optional[bool] = False
+    requires_audit: Optional[bool] = True
     
     class Config:
         from_attributes = True
