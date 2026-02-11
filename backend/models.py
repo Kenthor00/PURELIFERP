@@ -227,6 +227,15 @@ class AuditAction(str, enum.Enum):
     JOB_CHANGE = "job_change"
     AUDIT_EXPORT = "audit_export"
     
+    # Documenti
+    DOC_CREATE = "doc_create"
+    DOC_UPDATE = "doc_update"
+    DOC_SUSPEND = "doc_suspend"
+    DOC_REVOKE = "doc_revoke"
+    DOC_REACTIVATE = "doc_reactivate"
+    DOC_VERIFY = "doc_verify"
+    DOC_RENEWAL = "doc_renewal"
+    
     # Chat
     MESSAGE_SEND = "message_send"
     CHANNEL_CREATE = "channel_create"
@@ -234,6 +243,24 @@ class AuditAction(str, enum.Enum):
     # Sistema
     SYSTEM_BOOTSTRAP = "system_bootstrap"
     EXPORT_DATA = "export_data"
+
+
+class DocumentStatus(str, enum.Enum):
+    """Stati documento"""
+    VALID = "VALID"
+    SUSPENDED = "SUSPENDED"
+    REVOKED = "REVOKED"
+    EXPIRED = "EXPIRED"
+
+
+class DocumentEventType(str, enum.Enum):
+    """Tipi evento documento"""
+    CREATED = "CREATED"
+    UPDATED = "UPDATED"
+    STATUS_CHANGE = "STATUS_CHANGE"
+    VERIFIED = "VERIFIED"
+    RENEWAL = "RENEWAL"
+    NOTE_ADDED = "NOTE_ADDED"
 
 
 # ==========================================
