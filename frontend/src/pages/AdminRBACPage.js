@@ -17,7 +17,8 @@ import {
   Users, Shield, Briefcase, Lock, Settings, Search,
   ChevronRight, ChevronDown, Plus, Edit, Trash2, Save,
   AlertTriangle, Check, X, Download, Filter, RefreshCw,
-  UserPlus, UserMinus, Key, History, Building2, BadgeCheck
+  UserPlus, UserMinus, Key, History, Building2, BadgeCheck,
+  Database, Play, Eye, Loader2, CheckCircle2, XCircle, ArrowRightLeft
 } from 'lucide-react';
 
 // Traduzioni categorie
