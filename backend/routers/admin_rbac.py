@@ -873,7 +873,7 @@ async def get_audit_log_full(
             "entity_type": log.entity_type,
             "entity_id": log.entity_id,
             "description": log.description,
-            "metadata": log.metadata,
+            "metadata": dict(log.metadata) if log.metadata and isinstance(log.metadata, dict) else None,
             "timestamp": log.timestamp
         }
         for log in logs
