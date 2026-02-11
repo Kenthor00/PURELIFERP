@@ -202,16 +202,132 @@ JOB_CATEGORY_MAP = {
 class RBACSyncService:
     """Servizio per sincronizzazione Job/Gradi da FiveM"""
     
-    def __init__(self, fivem_db_url: Optional[str] = None):
+    def __init__(self, fivem_db_url: Optional[str] = None, use_env_config: bool = True):
         """
         Inizializza il servizio di sync.
         
         Args:
             fivem_db_url: URL del database FiveM (es. mysql://user:pass@host/essentialmode)
-                         Se None, usa la stessa connessione del backend
+                         Se None, usa configurazione da .env o stessa connessione backend
+            use_env_config: Se True, tenta di usare configurazione da variabili d'ambiente
         """
         self.fivem_db_url = fivem_db_url
+        self.env_config = FiveMDbConfig.from_env() if use_env_config else None
         self._last_report: Optional[SyncReport] = None
+        self._fivem_engine = None
+        self._connection_source = "manual"
+    
+    def get_env_config(self) -> Optional[FiveMDbConfig]:
+        """Restituisce la configurazione env corrente"""
+        return self.env_config
+    
+    def is_env_config_active(self) -> bool:
+        """Verifica se la configurazione env è attiva e valida"""
+        return self.env_config is not None and self.env_config.is_valid()
+    
+    async def test_connection(self) -> Dict[str, Any]:
+        """
+        Testa la connessione al database FiveM.
+        
+        Returns:
+            Dict con risultato test: success, message, framework_detected
+        """
+        try:
+            db_url = self._get_effective_db_url()
+            if not db_url:
+                return {
+                    "success": False,
+                    "message": "Nessuna configurazione database disponibile",
+                    "connection_source": None
+                }
+            
+            # Mask password nei log
+            masked_url = self._mask_password_in_url(db_url)
+            logger.info(f"Testing FiveM DB connection: {masked_url}")
+            
+            # Crea engine temporaneo per test
+            engine = create_async_engine(
+                db_url,
+                pool_pre_ping=True,
+                pool_size=1,
+                max_overflow=0,
+                pool_timeout=10
+            )
+            
+            async with engine.begin() as conn:
+                # Test connessione con query semplice
+                result = await conn.execute(text("SELECT 1"))
+                result.fetchone()
+                
+                # Rileva framework
+                framework, detection_msg = await self._detect_framework_raw(conn)
+            
+            await engine.dispose()
+            
+            return {
+                "success": True,
+                "message": f"Connessione riuscita - {detection_msg}",
+                "framework_detected": framework,
+                "connection_source": self._connection_source
+            }
+            
+        except Exception as e:
+            error_msg = str(e)
+            # Mask password negli errori
+            if self.env_config and self.env_config.password:
+                error_msg = error_msg.replace(self.env_config.password, "***")
+            logger.error(f"FiveM DB connection test failed: {error_msg}")
+            return {
+                "success": False,
+                "message": f"Errore connessione: {error_msg}",
+                "connection_source": self._connection_source
+            }
+    
+    def _get_effective_db_url(self) -> Optional[str]:
+        """
+        Determina quale URL database usare, in ordine di priorità:
+        1. URL manuale passato al costruttore
+        2. Configurazione da variabili d'ambiente
+        3. None (userà il database backend)
+        """
+        if self.fivem_db_url:
+            self._connection_source = "manual"
+            return self.fivem_db_url
+        
+        if self.env_config and self.env_config.is_valid():
+            self._connection_source = "env"
+            return self.env_config.get_connection_url()
+        
+        self._connection_source = "backend"
+        return None
+    
+    def _mask_password_in_url(self, url: str) -> str:
+        """Maschera la password in un URL database"""
+        import re
+        return re.sub(r'://([^:]+):([^@]+)@', r'://\1:***@', url)
+    
+    async def _detect_framework_raw(self, conn) -> Tuple[str, str]:
+        """Rileva framework su una connessione raw"""
+        # Check ESX
+        try:
+            result = await conn.execute(text("SHOW TABLES LIKE 'job_grades'"))
+            if result.fetchone():
+                result = await conn.execute(text("DESCRIBE job_grades"))
+                columns = [row[0] for row in result.fetchall()]
+                if 'job' in columns and 'grade' in columns:
+                    return ('esx', 'Rilevato ESX Framework (tabella job_grades)')
+        except:
+            pass
+        
+        # Check QBCore
+        try:
+            result = await conn.execute(text("SHOW TABLES LIKE 'qb_%'"))
+            if result.fetchall():
+                return ('qbcore', 'Rilevato QBCore Framework')
+        except:
+            pass
+        
+        return ('unknown', 'Framework non rilevato')
     
     async def detect_framework(self, db: AsyncSession) -> Tuple[str, str]:
         """
