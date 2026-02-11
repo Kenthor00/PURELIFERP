@@ -430,6 +430,10 @@ api_router.include_router(nui_integration.router)
 from routers import appointments
 api_router.include_router(appointments.router)
 
+# RBAC Admin System
+from routers import admin_rbac
+api_router.include_router(admin_rbac.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
