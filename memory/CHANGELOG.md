@@ -1,5 +1,31 @@
 # PURE LIFE OS - Changelog
 
+## [v3.3.0] - 2026-02-11
+
+### 🎯 P1 Admin - Sistema RBAC Completo
+
+| Componente | Descrizione |
+|------------|-------------|
+| **Tabelle DB** | `jobs`, `job_grades`, `permissions`, `job_grade_permissions`, `user_permission_overrides`, `staff_roles`, `user_staff_roles` |
+| **Middleware** | `rbac.py` - RBACService con require_permission(), require_staff() |
+| **Router** | `/api/admin/rbac/*` - 15 endpoint per gestione completa |
+| **Frontend** | `AdminRBACPage.js` - UI 100% italiano con 5 tabs |
+
+#### Gerarchie Implementate (100% Italiane)
+- **LSPD**: 13 gradi (da Recluta a Capo della Polizia) in 5 categorie
+- **EMS**: 6 gradi (da Soccorritore a Direttore Sanitario)
+- **Giustizia**: 5 gradi (da Avvocato a Procuratore Generale)
+- **Weazel News**: 5 gradi (da Reporter a Direttore Editoriale)
+- **Meccanico/Taxi/etc**: Gerarchie realistiche complete
+
+#### Funzionalità
+- Assegnazione job/grado a utenti
+- Ruoli staff separati (Moderatore, Admin, Super Admin)
+- Override permessi con scadenza
+- Audit log completo con filtri ed export
+
+---
+
 ## [v3.2.0] - 2026-02-11
 
 ### 🎯 Sprint Bug Fix A-F (CHIUSO)
