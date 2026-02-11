@@ -597,10 +597,6 @@ export default function AdminRBACPage() {
         <OsPanel>
           <div className="flex items-center justify-between mb-4">
             <OsSectionHeader title="Registro Attività (Audit Log)" icon={History} />
-      {activeTab === 'audit' && (
-        <OsPanel>
-          <div className="flex items-center justify-between mb-4">
-            <OsSectionHeader title="Registro Attività (Audit Log)" icon={History} />
             <button
               onClick={() => fetchAuditLogs()}
               className="flex items-center gap-2 px-3 py-2 bg-plos-surface hover:bg-plos-hover rounded-lg text-sm"
