@@ -529,6 +529,7 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState([]);
   const [documentTypes, setDocumentTypes] = useState([]);
   const [stats, setStats] = useState(null);
+  const [permissions, setPermissions] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -543,19 +544,26 @@ export default function DocumentsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [docsRes, typesRes, statsRes] = await Promise.all([
+      const [docsRes, typesRes, statsRes, permsRes] = await Promise.all([
         api.get('/documents'),
         api.get('/documents/types'),
-        api.get('/documents/stats/summary').catch(() => ({ data: null }))
+        api.get('/documents/stats/summary').catch(() => ({ data: null })),
+        api.get('/documents/permissions/me').catch(() => ({ data: {} }))
       ]);
       setDocuments(docsRes.data.documents || []);
       setDocumentTypes(typesRes.data || []);
       setStats(statsRes.data);
+      setPermissions(permsRes.data || {});
     } catch (error) {
       toast.error('Errore nel caricamento documenti');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDocumentUpdated = (updatedDoc) => {
+    setDocuments(docs => docs.map(d => d.id === updatedDoc.id ? updatedDoc : d));
+    setSelectedDoc(updatedDoc);
   };
 
   const filteredDocs = documents.filter(doc => {
