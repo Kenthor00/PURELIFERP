@@ -374,6 +374,42 @@ function DocumentDetailModal({ doc, isOpen, onClose, api, onUpdated, permissions
               )}
             </div>
 
+            {/* Azioni Documento */}
+            {(canSuspend || canRevoke || canReactivate) && (
+              <div className="space-y-2">
+                <h3 className="font-heading font-bold text-sm">Azioni</h3>
+                <div className="flex flex-wrap gap-2">
+                  {canSuspend && (
+                    <button
+                      onClick={() => setActionModal({ open: true, type: 'suspend' })}
+                      className="flex items-center gap-2 px-3 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-sm"
+                    >
+                      <AlertTriangle size={16} />
+                      Sospendi
+                    </button>
+                  )}
+                  {canReactivate && (
+                    <button
+                      onClick={() => setActionModal({ open: true, type: 'reactivate' })}
+                      className="flex items-center gap-2 px-3 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-sm"
+                    >
+                      <CheckCircle2 size={16} />
+                      Riattiva
+                    </button>
+                  )}
+                  {canRevoke && (
+                    <button
+                      onClick={() => setActionModal({ open: true, type: 'revoke' })}
+                      className="flex items-center gap-2 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm"
+                    >
+                      <XCircle size={16} />
+                      Revoca
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* QR Code */}
             <div className="text-center">
               <button
@@ -419,6 +455,69 @@ function DocumentDetailModal({ doc, isOpen, onClose, api, onUpdated, permissions
             </div>
           </div>
         </div>
+
+        {/* Action Modal */}
+        {actionModal.open && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60">
+            <div className="bg-plos-background border border-plos-border rounded-xl w-full max-w-md p-6 m-4">
+              <h3 className="font-heading text-xl font-bold mb-4">
+                {actionModal.type === 'suspend' && '⚠️ Sospendi Documento'}
+                {actionModal.type === 'revoke' && '❌ Revoca Documento'}
+                {actionModal.type === 'reactivate' && '✅ Riattiva Documento'}
+              </h3>
+              
+              {actionModal.type === 'revoke' && (
+                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
+                  <p className="text-sm text-red-400">
+                    <strong>Attenzione:</strong> La revoca è un'azione permanente. 
+                    Il documento non potrà più essere riattivato.
+                  </p>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-plos-text-muted mb-2">
+                    Motivazione *
+                  </label>
+                  <textarea
+                    value={actionReason}
+                    onChange={e => setActionReason(e.target.value)}
+                    placeholder="Inserisci la motivazione dell'azione (min. 5 caratteri)"
+                    className="w-full p-3 bg-plos-surface border border-plos-border rounded-lg focus:border-plos-primary focus:outline-none resize-none"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setActionModal({ open: false, type: null }); setActionReason(''); }}
+                    className="flex-1 px-4 py-2 bg-plos-surface hover:bg-plos-hover rounded-lg"
+                    disabled={actionLoading}
+                  >
+                    Annulla
+                  </button>
+                  <button
+                    onClick={() => {
+                      const statusMap = { suspend: 'SUSPENDED', revoke: 'REVOKED', reactivate: 'VALID' };
+                      handleStatusChange(statusMap[actionModal.type]);
+                    }}
+                    disabled={actionLoading || actionReason.length < 5}
+                    className={`flex-1 px-4 py-2 font-bold rounded-lg disabled:opacity-50 ${
+                      actionModal.type === 'revoke' 
+                        ? 'bg-red-500 hover:bg-red-600 text-white' 
+                        : actionModal.type === 'suspend'
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-black'
+                        : 'bg-green-500 hover:bg-green-600 text-white'
+                    }`}
+                  >
+                    {actionLoading ? 'Elaborazione...' : 'Conferma'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
