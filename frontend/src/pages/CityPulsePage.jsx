@@ -243,6 +243,23 @@ export const CityPulsePage = () => {
     setPoiModal({ open: true, poi, isNew: false });
   };
 
+  // Set waypoint per POI (FiveM NUI integration)
+  const handleSetWaypoint = (poi) => {
+    // Converti percentuale mappa in coordinate GTA V
+    // La mappa GTA V va da circa -3000 a 4500 in X e -3500 a 8000 in Y
+    // Approssimazione basata sulla percentuale della mappa
+    const gtaX = (poi.x_percent / 100) * 7500 - 3000;
+    const gtaY = (poi.y_percent / 100) * 11500 - 3500;
+    
+    const success = setMapWaypoint({ x: gtaX, y: gtaY }, poi.name);
+    
+    if (success) {
+      toast.success(`Waypoint impostato: ${poi.name}`);
+    } else if (!isNUI) {
+      toast.info(`Destinazione: ${poi.name}\n(Waypoint disponibile solo in-game)`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6 animate-fade-in">
