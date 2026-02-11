@@ -990,6 +990,146 @@ async def export_audit_log(
 
 
 # ==========================================
+# SYNC JOB/GRADI DA FIVEM (ESX/QBCORE)
+# ==========================================
+
+class SyncRequest(BaseModel):
+    """Richiesta sincronizzazione job/gradi"""
+    source: str = "auto"  # auto, esx, qbcore
+    mode: str = "merge"   # merge, strict
+    dry_run: bool = False
+    fivem_db_url: Optional[str] = None  # URL database FiveM esterno
+
+
+class SyncReportResponse(BaseModel):
+    """Risposta report sincronizzazione"""
+    timestamp: str
+    source: str
+    mode: str
+    dry_run: bool
+    framework_detected: Optional[str]
+    jobs_added: int = 0
+    jobs_updated: int = 0
+    jobs_skipped: int = 0
+    jobs_removed: int = 0
+    grades_added: int = 0
+    grades_updated: int = 0
+    grades_skipped: int = 0
+    grades_removed: int = 0
+    errors: List[str] = []
+    items: List[dict] = []
+    duration_ms: int = 0
+
+
+@router.post("/sync", response_model=SyncReportResponse)
+async def sync_jobs_from_fivem(
+    request: SyncRequest,
+    current_user: User = Depends(require_staff(min_level=2)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Sincronizza job e gradi da database FiveM (ESX/QBCore).
+    
+    - **source**: auto (rileva automaticamente), esx, qbcore
+    - **mode**: merge (aggiunge senza rimuovere), strict (rimuove non presenti)
+    - **dry_run**: se True, mostra preview senza applicare modifiche
+    - **fivem_db_url**: URL database FiveM esterno (opzionale, usa stesso DB se non specificato)
+    """
+    from services.rbac_sync import RBACSyncService, SyncSource, SyncMode
+    
+    # Valida parametri
+    try:
+        source = SyncSource(request.source)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Sorgente non valida: {request.source}")
+    
+    try:
+        mode = SyncMode(request.mode)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Modalità non valida: {request.mode}")
+    
+    # Avviso per modalità strict
+    if mode == SyncMode.STRICT and not request.dry_run:
+        logger.warning(f"SYNC STRICT MODE eseguito da {current_user.email}")
+    
+    # Crea servizio e esegui sync
+    sync_service = RBACSyncService(fivem_db_url=request.fivem_db_url)
+    
+    try:
+        report = await sync_service.sync_jobs(
+            db=db,
+            source=source,
+            mode=mode,
+            dry_run=request.dry_run,
+            user_id=current_user.id
+        )
+        
+        return SyncReportResponse(
+            timestamp=report.timestamp,
+            source=report.source,
+            mode=report.mode,
+            dry_run=report.dry_run,
+            framework_detected=report.framework_detected,
+            jobs_added=report.jobs_added,
+            jobs_updated=report.jobs_updated,
+            jobs_skipped=report.jobs_skipped,
+            jobs_removed=report.jobs_removed,
+            grades_added=report.grades_added,
+            grades_updated=report.grades_updated,
+            grades_skipped=report.grades_skipped,
+            grades_removed=report.grades_removed,
+            errors=report.errors,
+            items=report.items,
+            duration_ms=report.duration_ms
+        )
+    except Exception as e:
+        logger.error(f"Sync error: {e}")
+        raise HTTPException(status_code=500, detail=f"Errore durante la sincronizzazione: {str(e)}")
+
+
+@router.get("/sync/last-report", response_model=Optional[SyncReportResponse])
+async def get_last_sync_report(
+    current_user: User = Depends(require_staff(min_level=1)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Recupera l'ultimo report di sincronizzazione."""
+    from services.rbac_sync import sync_service
+    
+    report = sync_service.get_last_report()
+    if not report:
+        return None
+    
+    return SyncReportResponse(**report)
+
+
+@router.get("/sync/config")
+async def get_sync_config(
+    current_user: User = Depends(require_staff(min_level=1)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Configurazione disponibile per la sincronizzazione.
+    Restituisce le opzioni disponibili per sorgente e modalità.
+    """
+    return {
+        "sources": [
+            {"code": "auto", "name": "Rilevamento Automatico", "description": "Rileva automaticamente ESX o QBCore"},
+            {"code": "esx", "name": "ESX Framework", "description": "Database ESX (tabelle jobs, job_grades)"},
+            {"code": "qbcore", "name": "QBCore Framework", "description": "Database QBCore (tabella players JSON)"}
+        ],
+        "modes": [
+            {"code": "merge", "name": "Unione (Consigliato)", "description": "Aggiunge nuovi job, aggiorna label, non rimuove esistenti"},
+            {"code": "strict", "name": "Strict (Attenzione!)", "description": "Rimuove job non presenti nella sorgente - PERICOLOSO"}
+        ],
+        "info": {
+            "same_db_note": "Se non specifichi un URL database FiveM, il sync userà il database corrente.",
+            "dry_run_note": "Usa sempre la modalità 'Anteprima' prima di applicare modifiche reali.",
+            "italian_labels": "Le label vengono automaticamente tradotte in italiano dove possibile."
+        }
+    }
+
+
+# ==========================================
 # STATISTICHE
 # ==========================================
 
