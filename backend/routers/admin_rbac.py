@@ -998,7 +998,7 @@ class SyncRequest(BaseModel):
     source: str = "auto"  # auto, esx, qbcore
     mode: str = "merge"   # merge, strict
     dry_run: bool = False
-    fivem_db_url: Optional[str] = None  # URL database FiveM esterno
+    fivem_db_url: Optional[str] = None  # URL database FiveM esterno (opzionale se env configurato)
 
 
 class SyncReportResponse(BaseModel):
@@ -1019,6 +1019,73 @@ class SyncReportResponse(BaseModel):
     errors: List[str] = []
     items: List[dict] = []
     duration_ms: int = 0
+    connection_source: str = "manual"  # 'env', 'manual', 'backend'
+
+
+class FiveMDbStatusResponse(BaseModel):
+    """Stato configurazione database FiveM"""
+    env_configured: bool
+    env_enabled: bool
+    env_valid: bool
+    host: Optional[str] = None
+    port: Optional[int] = None
+    database: Optional[str] = None
+    user: Optional[str] = None
+    framework: Optional[str] = None
+    connection_test: Optional[dict] = None
+
+
+@router.get("/sync/env-status", response_model=FiveMDbStatusResponse)
+async def get_fivem_db_status(
+    current_user: User = Depends(require_staff(min_level=1)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Verifica lo stato della configurazione database FiveM da variabili d'ambiente.
+    Non espone credenziali sensibili.
+    """
+    from services.rbac_sync import RBACSyncService
+    
+    sync_service = RBACSyncService()
+    env_config = sync_service.get_env_config()
+    
+    if not env_config:
+        return FiveMDbStatusResponse(
+            env_configured=False,
+            env_enabled=False,
+            env_valid=False
+        )
+    
+    return FiveMDbStatusResponse(
+        env_configured=True,
+        env_enabled=env_config.enabled,
+        env_valid=env_config.is_valid(),
+        host=env_config.host if env_config.host else None,
+        port=env_config.port,
+        database=env_config.name if env_config.name else None,
+        user=env_config.user if env_config.user else None,
+        framework=env_config.framework
+    )
+
+
+@router.post("/sync/test-connection")
+async def test_fivem_db_connection(
+    fivem_db_url: Optional[str] = None,
+    current_user: User = Depends(require_staff(min_level=2)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Testa la connessione al database FiveM.
+    
+    Se fivem_db_url è fornito, testa quella connessione.
+    Altrimenti usa la configurazione da variabili d'ambiente.
+    """
+    from services.rbac_sync import RBACSyncService
+    
+    sync_service = RBACSyncService(fivem_db_url=fivem_db_url)
+    result = await sync_service.test_connection()
+    
+    return result
 
 
 @router.post("/sync", response_model=SyncReportResponse)
