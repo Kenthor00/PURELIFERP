@@ -40,7 +40,7 @@ class JobResponse(BaseModel):
     color: Optional[str]
     is_active: bool
     is_whitelisted: bool
-    max_employees: int
+    max_employees: Optional[int] = 0
     employee_count: Optional[int] = 0
     grades_count: Optional[int] = 0
     
