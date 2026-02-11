@@ -94,8 +94,6 @@ else:
         pool_timeout=30,           # Timeout per ottenere connessione dal pool
         connect_args={
             "connect_timeout": 10,
-            "read_timeout": 30,
-            "write_timeout": 30,
         }
     )
 
