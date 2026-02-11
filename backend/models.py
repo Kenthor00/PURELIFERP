@@ -577,7 +577,7 @@ class Document(Base):
     type_id = Column(Integer, ForeignKey("document_types.id"), nullable=False)
     
     # Dati cittadino
-    citizen_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    citizen_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     citizen_name = Column(String(100), nullable=False)
     citizen_surname = Column(String(100), nullable=False)
     citizen_dob = Column(DateTime, nullable=True)
@@ -585,7 +585,7 @@ class Document(Base):
     citizen_identifier = Column(String(50), nullable=True)  # Codice fiscale, ID RP, etc.
     
     # Emissione
-    issued_by = Column(Integer, ForeignKey("user.id"), nullable=False)
+    issued_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     issued_by_name = Column(String(100), nullable=False)
     issued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     issuing_office = Column(String(100), nullable=True)
@@ -597,7 +597,7 @@ class Document(Base):
     status = Column(Enum(DocumentStatus), default=DocumentStatus.VALID)
     status_reason = Column(Text, nullable=True)
     status_changed_at = Column(DateTime, nullable=True)
-    status_changed_by = Column(Integer, ForeignKey("user.id"), nullable=True)
+    status_changed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Dati aggiuntivi
     extra_data = Column(JSON, nullable=True)
