@@ -1,0 +1,269 @@
+{
+  "info": {
+    "name": "PURE LIFE OS v3.2.0 API Collection",
+    "description": "API Collection per test Sprint A-F + Fase 2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://fivem-integration.preview.emergentagent.com"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@purelife.rp\",\"password\":\"Admin@2026!\"}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": ["pm.environment.set('token', pm.response.json().access_token);"]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "A - Evidence CRUD",
+      "item": [
+        {
+          "name": "List Evidence for Case",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/lspd/evidence/18",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        },
+        {
+          "name": "Create Evidence",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/lspd/evidence",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"case_id\":18,\"evidence_type\":\"photo\",\"title\":\"Foto scena\",\"description\":\"Test evidence\"}"
+            }
+          }
+        },
+        {
+          "name": "Delete Evidence",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/lspd/evidence/{{evidenceId}}",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "B - Warrant Status",
+      "item": [
+        {
+          "name": "Create Warrant",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/lspd/warrants",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"warrant_type\":\"arrest\",\"suspect_name\":\"Test Subject\",\"reason\":\"Test warrant\",\"description\":\"For testing\"}"
+            }
+          }
+        },
+        {
+          "name": "Change Status to EXECUTED",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/lspd/warrants/{{warrantId}}/status?new_status=EXECUTED&reason=Test_execution",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        },
+        {
+          "name": "Change Status to CANCELLED",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/lspd/warrants/{{warrantId}}/status?new_status=CANCELLED&reason=Revocato",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "C - Fine Edit/Delete",
+      "item": [
+        {
+          "name": "Create Fine (no citizen_id)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/lspd/fines",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"citizen_name\":\"Test Citizen\",\"amount\":500,\"reason\":\"Test fine\",\"location\":\"Test location\"}"
+            }
+          }
+        },
+        {
+          "name": "Edit Fine (with reason)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/lspd/fines/{{fineId}}",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"amount\":750,\"modification_reason\":\"Importo aggiornato\"}"
+            }
+          }
+        },
+        {
+          "name": "Delete Fine (with reason)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/lspd/fines/{{fineId}}?deletion_reason=Annullata_per_errore",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "D - Justice Cases + Hearings",
+      "item": [
+        {
+          "name": "Create Legal Case (with lawyer_name)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/justice/cases",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Test Case\",\"case_type\":\"civil\",\"plaintiff_name\":\"Mario Rossi\",\"defendant_name\":\"Luigi Bianchi\",\"lawyer_name\":\"Avv. Test\",\"description\":\"Test case\"}"
+            }
+          }
+        },
+        {
+          "name": "Create Hearing (linked to case)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/justice/hearings",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"legal_case_id\":{{caseId}},\"title\":\"Test Hearing\",\"scheduled_date\":\"2026-03-01T10:00:00Z\",\"courtroom\":\"Aula 1\"}"
+            }
+          }
+        },
+        {
+          "name": "List Cases",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/justice/cases?limit=10",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "E - News/Weazel",
+      "item": [
+        {
+          "name": "Create Article",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/news/",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Test Article\",\"category\":\"cronaca\",\"content\":\"Test content for verification\",\"is_breaking\":false}"
+            }
+          }
+        },
+        {
+          "name": "List Articles",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/news/?limit=10",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "F - Appointments",
+      "item": [
+        {
+          "name": "Create Appointment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/appointments",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Test Meeting\",\"scheduled_at\":\"2026-02-20T14:00:00Z\",\"duration_minutes\":60,\"reminder_settings\":{\"t_24h\":true,\"t_1h\":true,\"t_15m\":false}}"
+            }
+          }
+        },
+        {
+          "name": "Week View",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointments/week",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        }
+      ]
+    },
+    {
+      "name": "G - Audit Log",
+      "item": [
+        {
+          "name": "Get Audit Log",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/audit?limit=20",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}]
+          }
+        }
+      ]
+    }
+  ]
+}
