@@ -1178,7 +1178,15 @@ async def get_sync_config(
     """
     Configurazione disponibile per la sincronizzazione.
     Restituisce le opzioni disponibili per sorgente e modalità.
+    Include stato della configurazione da variabili d'ambiente.
     """
+    from services.rbac_sync import RBACSyncService
+    
+    # Verifica configurazione env
+    sync_service = RBACSyncService()
+    env_config = sync_service.get_env_config()
+    env_active = sync_service.is_env_config_active()
+    
     return {
         "sources": [
             {"code": "auto", "name": "Rilevamento Automatico", "description": "Rileva automaticamente ESX o QBCore"},
@@ -1189,10 +1197,18 @@ async def get_sync_config(
             {"code": "merge", "name": "Unione (Consigliato)", "description": "Aggiunge nuovi job, aggiorna label, non rimuove esistenti"},
             {"code": "strict", "name": "Strict (Attenzione!)", "description": "Rimuove job non presenti nella sorgente - PERICOLOSO"}
         ],
+        "env_connection": {
+            "active": env_active,
+            "enabled": env_config.enabled if env_config else False,
+            "host": env_config.host if env_config and env_config.host else None,
+            "database": env_config.name if env_config and env_config.name else None,
+            "framework": env_config.framework if env_config else "auto"
+        },
         "info": {
-            "same_db_note": "Se non specifichi un URL database FiveM, il sync userà il database corrente.",
+            "same_db_note": "Se non specifichi un URL database FiveM, il sync userà la configurazione da variabili d'ambiente o il database corrente.",
             "dry_run_note": "Usa sempre la modalità 'Anteprima' prima di applicare modifiche reali.",
-            "italian_labels": "Le label vengono automaticamente tradotte in italiano dove possibile."
+            "italian_labels": "Le label vengono automaticamente tradotte in italiano dove possibile.",
+            "env_config_note": "Puoi configurare la connessione automatica nel file .env del backend (FIVEM_DB_*)"
         }
     }
 
