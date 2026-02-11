@@ -270,11 +270,11 @@ async def list_permissions(
     db: AsyncSession = Depends(get_db)
 ):
     """Lista permessi disponibili"""
-    query = select(Permission)
+    query = select(PermissionRecord)
     if category:
-        query = query.where(Permission.category == category)
+        query = query.where(PermissionRecord.category == category)
     
-    result = await db.execute(query.order_by(Permission.category, Permission.name))
+    result = await db.execute(query.order_by(PermissionRecord.category, Permission.name))
     return result.scalars().all()
 
 
@@ -285,7 +285,7 @@ async def list_permission_categories(
 ):
     """Lista categorie permessi"""
     result = await db.execute(
-        select(Permission.category).distinct().order_by(Permission.category)
+        select(PermissionRecord.category).distinct().order_by(PermissionRecord.category)
     )
     categories = result.scalars().all()
     
@@ -311,8 +311,8 @@ async def get_grade_permissions(
 ):
     """Lista permessi assegnati a un grado"""
     result = await db.execute(
-        select(Permission)
-        .join(JobGradePermission, JobGradePermission.permission_id == Permission.id)
+        select(PermissionRecord)
+        .join(JobGradePermission, JobGradePermission.permission_id == PermissionRecord.id)
         .where(JobGradePermission.job_grade_id == grade_id)
     )
     return result.scalars().all()
@@ -331,8 +331,8 @@ async def set_grade_permissions(
     
     # Salva old value per audit
     old_perms = await db.execute(
-        select(Permission.code)
-        .join(JobGradePermission, JobGradePermission.permission_id == Permission.id)
+        select(PermissionRecord.code)
+        .join(JobGradePermission, JobGradePermission.permission_id == PermissionRecord.id)
         .where(JobGradePermission.job_grade_id == request.job_grade_id)
     )
     old_perm_codes = list(old_perms.scalars().all())
@@ -814,7 +814,7 @@ async def get_user_permissions(
     detailed = []
     for perm_code in sorted(permissions):
         perm = await db.execute(
-            select(Permission).where(Permission.code == perm_code)
+            select(PermissionRecord).where(PermissionRecord.code == perm_code)
         )
         perm = perm.scalar_one_or_none()
         if perm:
