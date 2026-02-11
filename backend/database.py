@@ -207,7 +207,31 @@ async def run_column_migrations():
     
     # New tables to create
     new_tables = [
-        # Appointments table
+        # Appointment Requests table (legacy)
+        """
+        CREATE TABLE IF NOT EXISTS appointment_requests (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            target_sector VARCHAR(50) NOT NULL,
+            requester_id INT NOT NULL,
+            requester_game_name VARCHAR(100) NOT NULL,
+            requester_sector VARCHAR(50) NOT NULL,
+            subject VARCHAR(200) NOT NULL,
+            description TEXT NOT NULL,
+            preferred_date DATETIME,
+            preferred_time VARCHAR(50),
+            urgency VARCHAR(20) DEFAULT 'normal',
+            status VARCHAR(20) DEFAULT 'pending',
+            handler_id INT,
+            handler_game_name VARCHAR(100),
+            handler_notes TEXT,
+            scheduled_date DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_target_sector (target_sector),
+            INDEX idx_status (status)
+        )
+        """,
+        # Appointments table (new agenda system)
         """
         CREATE TABLE IF NOT EXISTS appointments (
             id INT PRIMARY KEY AUTO_INCREMENT,
