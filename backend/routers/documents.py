@@ -592,7 +592,7 @@ async def update_document(
         event_data={"old": old_values, "reason": data.modification_reason},
         reason=data.modification_reason,
         performed_by=current_user.id,
-        performed_by_name=current_user.name or current_user.email,
+        performed_by_name=current_user.game_name or current_user.email,
         ip_address=request.client.host if request.client else None
     )
     db.add(event)
@@ -663,7 +663,7 @@ async def change_document_status(
         new_status=data.new_status.value,
         reason=data.reason,
         performed_by=current_user.id,
-        performed_by_name=current_user.name or current_user.email,
+        performed_by_name=current_user.game_name or current_user.email,
         ip_address=request.client.host if request.client else None
     )
     db.add(event)
