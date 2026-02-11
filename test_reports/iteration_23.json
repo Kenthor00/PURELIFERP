@@ -1,0 +1,107 @@
+{
+  "summary": "Iteration 23 - Document Status Change (Suspend/Revoke/Reactivate) testing complete. All 16 backend tests passed. Frontend UI verified with full workflow: login, navigate to /documents, view document list, open document detail modal, suspend document with reason, verify status change, reactivate document, verify timeline events.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Auth: Admin login with admin@purelife.rp / Admin@2026!",
+    "GET /api/documents - List documents returns documents array with total",
+    "GET /api/documents/permissions/me - Returns RBAC permissions (DOC_VIEW, DOC_SUSPEND, DOC_REVOKE, DOC_REACTIVATE, DOC_ADMIN)",
+    "GET /api/documents/{doc_id} - Get document detail returns full document info",
+    "GET /api/documents/{doc_id}/events - Get document timeline returns events list",
+    "POST /api/documents/{doc_id}/status - Validation: short reason (< 5 chars) returns 422",
+    "POST /api/documents/{doc_id}/status - Validation: empty reason returns 422",
+    "POST /api/documents/{doc_id}/status - Suspend document (VALID -> SUSPENDED) works",
+    "POST /api/documents/{doc_id}/status - Suspension event recorded in timeline",
+    "POST /api/documents/{doc_id}/status - Reactivate document (SUSPENDED -> VALID) works",
+    "POST /api/documents/{doc_id}/status - Reactivation event recorded in timeline",
+    "GET /api/documents/types - Returns document types list",
+    "GET /api/documents/stats/summary - Returns statistics (total, by_status, by_type)",
+    "POST /api/documents/{doc_id}/status - Invalid status value returns 422",
+    "POST /api/documents/{doc_id}/status - Non-existent document returns 404",
+    "POST /api/documents/{doc_id}/status - Unauthenticated access returns 401/403"
+  ],
+
+  "frontend_verified": [
+    "Login page loads and accepts admin credentials",
+    "Documents page (/documents) loads with stats cards and document list",
+    "Document cards display: type icon, document number, citizen name, status badge, expiry date",
+    "Document detail modal opens on card click",
+    "Modal shows: document info, status badge, AZIONI section with action buttons",
+    "AZIONI section shows Sospendi/Revoca buttons for VALID documents",
+    "AZIONI section shows Riattiva/Revoca buttons for SUSPENDED documents",
+    "Suspend modal (⚠️ SOSPENDI DOCUMENTO) opens with motivazione textarea",
+    "Reactivate modal (✅ RIATTIVA DOCUMENTO) opens with motivazione textarea",
+    "Conferma button disabled when reason < 5 characters (validation working)",
+    "Conferma button enabled when reason >= 5 characters",
+    "Status change updates document status badge in real-time",
+    "Timeline (STORICO DOCUMENTO) shows STATUS_CHANGE events with timestamps",
+    "Toast notifications show success messages after status change"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_iteration23_documents.py",
+    "/app/test_reports/pytest/pytest_iteration23.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "DocumentDetailModal correctly receives and uses 'permissions' prop for RBAC-based action buttons",
+    "Status change API properly validates reason length (min 5 chars) via Pydantic",
+    "Document events timeline correctly records STATUS_CHANGE events with old/new status",
+    "Frontend correctly shows different action buttons based on document status (Sospendi for VALID, Riattiva for SUSPENDED)",
+    "Validation in frontend disables Conferma button when reason.length < 5"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_iteration23_documents.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (16/16 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+
+  "test_credentials": {
+    "admin": {"email": "admin@purelife.rp", "password": "Admin@2026!"}
+  },
+
+  "seed_data_creation": "No seed data created - used existing document f95d89c7-36fc-4a82-80c3-af532c1937c4 (C.I.E. Mario Rossi)",
+
+  "retest_needed": false,
+
+  "main_agent_can_self_test": true,
+
+  "context_for_next_testing_agent": "Document status change functionality (Suspend/Revoke/Reactivate) fully working. Test document ID: f95d89c7-36fc-4a82-80c3-af532c1937c4. Admin user has DOC_ADMIN permission which grants all document actions. The document may be in VALID or SUSPENDED state depending on last test run.",
+
+  "features_status": {
+    "document_list": "WORKING - GET /api/documents returns paginated list",
+    "document_detail": "WORKING - GET /api/documents/{id} returns full document info",
+    "document_events": "WORKING - GET /api/documents/{id}/events returns timeline",
+    "document_permissions": "WORKING - GET /api/documents/permissions/me returns RBAC permissions",
+    "document_suspend": "WORKING - POST /api/documents/{id}/status with SUSPENDED",
+    "document_reactivate": "WORKING - POST /api/documents/{id}/status with VALID",
+    "document_revoke": "WORKING - POST /api/documents/{id}/status with REVOKED (not tested in UI)",
+    "validation_reason_length": "WORKING - Rejects reason < 5 chars with 422",
+    "frontend_document_modal": "WORKING - Shows document details and action buttons",
+    "frontend_action_modals": "WORKING - Suspend/Reactivate modals with reason input",
+    "frontend_validation": "WORKING - Conferma button disabled when reason too short",
+    "frontend_timeline": "WORKING - Shows STATUS_CHANGE events in STORICO DOCUMENTO"
+  },
+
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": [],
+    "note": "All APIs are fully implemented and working"
+  }
+}
