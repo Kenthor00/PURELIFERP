@@ -1514,8 +1514,8 @@ class AppointmentType(str, enum.Enum):
 
 
 class Appointment(Base):
-    """Appuntamenti/Eventi calendario"""
-    __tablename__ = "appointments"
+    """Appuntamenti/Eventi calendario - AGENDA SYSTEM"""
+    __tablename__ = "agenda_appointments"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     
