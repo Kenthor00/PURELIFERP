@@ -1,0 +1,241 @@
+/* PLOS Bridge - NUI Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: transparent;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* ============================================
+   CONTAINER
+============================================ */
+
+#plos-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+#plos-container.hidden {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ============================================
+   FRAME WRAPPER - TABLET MODE
+============================================ */
+
+#plos-frame-wrapper {
+    position: relative;
+    width: 90%;
+    height: 90%;
+    max-width: 1400px;
+    max-height: 900px;
+    background: #0a0a0f;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 
+        0 0 0 2px rgba(0, 255, 156, 0.3),
+        0 25px 50px -12px rgba(0, 0, 0, 0.8),
+        0 0 100px rgba(0, 255, 156, 0.1);
+    animation: scaleIn 0.3s ease;
+}
+
+/* PHONE MODE */
+#plos-container.phone-mode #plos-frame-wrapper {
+    width: 375px;
+    height: 700px;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 24px;
+    box-shadow: 
+        0 0 0 3px #1a1a2e,
+        0 0 0 5px rgba(0, 255, 156, 0.2),
+        0 25px 50px -12px rgba(0, 0, 0, 0.9);
+}
+
+#plos-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #0a0a0f;
+}
+
+/* ============================================
+   LOADING OVERLAY
+============================================ */
+
+#plos-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0f;
+    z-index: 10;
+}
+
+#plos-loading.hidden {
+    display: none;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(0, 255, 156, 0.1);
+    border-top-color: #00ff9c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+#plos-loading p {
+    color: #00ff9c;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* ============================================
+   ERROR OVERLAY
+============================================ */
+
+#plos-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0f;
+    z-index: 20;
+    padding: 20px;
+    text-align: center;
+}
+
+#plos-error.hidden {
+    display: none;
+}
+
+.error-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+#plos-error h2 {
+    color: #ff4757;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#plos-error p {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+#plos-error button {
+    padding: 12px 30px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#retry-btn {
+    background: #00ff9c;
+    color: #0a0a0f;
+}
+
+#retry-btn:hover {
+    background: #00cc7d;
+    transform: translateY(-2px);
+}
+
+#close-error-btn {
+    background: #2a2a3e;
+    color: #fff;
+}
+
+#close-error-btn:hover {
+    background: #3a3a4e;
+}
+
+/* ============================================
+   ANIMATIONS
+============================================ */
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   SCROLLBAR (per iframe se visibile)
+============================================ */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00ff9c;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00cc7d;
+}
