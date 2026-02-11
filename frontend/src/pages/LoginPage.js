@@ -19,8 +19,10 @@ export const LoginPage = () => {
 
   const from = location.state?.from?.pathname || '/';
   
-  // Check if login is allowed (disabled if DB down, but allowed if just needs seed - seed banner handles that)
-  const loginDisabled = !isBackendAvailable || !isDbAvailable;
+  // Login disabled ONLY if backend is completely unreachable
+  // If backend is ok but DB is down, allow login attempt - backend will return proper error
+  const loginDisabled = !isBackendAvailable;
+  const dbWarning = isBackendAvailable && !isDbAvailable;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
