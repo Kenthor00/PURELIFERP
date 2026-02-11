@@ -567,6 +567,7 @@ React 18 + TailwindCSS
 
 | Data | Versione | Modifiche |
 |------|----------|-----------|
+| 2026-02-11 | 3.3.2 | **FIVEM DB AUTO-CONNECTION**: Configurazione connessione automatica via .env (FIVEM_DB_*). Badge UI, test connessione, mascheramento password nei log. Documentazione RUNBOOK aggiornata |
 | 2026-02-11 | 3.3.1 | **P1.1 SYNC FIVEM**: Tab Sync nella pagina Admin RBAC per sincronizzare job/gradi da server ESX/QBCore. Supporto dry_run, modalità merge/strict, URL database esterno. 16/16 test backend + frontend 100% |
 | 2026-02-11 | 3.3.0 | **P1 ADMIN RBAC**: Pannello completo gestione ruoli e permessi. 6 tab: Lavori, Utenti, Permessi, Staff, Sync, Audit. Gerarchie job italiane. Middleware RBAC |
 | 2026-02-11 | 3.2.0 | **FASE 2 COMPLETATA**: Sistema Reminder Agenda con scheduler background (ogni 60s), notifiche WebSocket e Discord webhook. Audit Log integrato in appointments e LSPD (cases, warrants, fines). CityPulse POI click → waypoint con evento NUI PLOS_SET_WAYPOINT |
