@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS document_events (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
-    FOREIGN KEY (performed_by) REFERENCES user(id),
+    FOREIGN KEY (performed_by) REFERENCES users(id),
     INDEX idx_doc_events_document (document_id),
     INDEX idx_doc_events_type (event_type),
     INDEX idx_doc_events_date (created_at)
