@@ -501,41 +501,41 @@ class TestAppointmentTypes:
         assert data["appointment_type"] == "hearing"
         print(f"✓ Created hearing appointment ID: {data['id']}")
     
-    def test_create_interrogation_appointment(self, headers):
-        """Create interrogation type appointment"""
+    def test_create_interview_appointment(self, headers):
+        """Create interview type appointment"""
         tomorrow = datetime.now() + timedelta(days=7)
         scheduled_at = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0).isoformat()
         
         response = requests.post(f"{BASE_URL}/api/appointments", json={
-            "title": "TEST_Interrogatorio Sospetto",
-            "appointment_type": "interrogation",
+            "title": "TEST_Colloquio Candidato",
+            "appointment_type": "interview",
             "scheduled_at": scheduled_at,
             "duration_minutes": 60,
-            "location": "Sala Interrogatori LSPD"
+            "location": "Sala Colloqui LSPD"
         }, headers=headers)
         assert response.status_code == 200, f"Failed: {response.text}"
         
         data = response.json()
-        assert data["appointment_type"] == "interrogation"
-        print(f"✓ Created interrogation appointment ID: {data['id']}")
+        assert data["appointment_type"] == "interview"
+        print(f"✓ Created interview appointment ID: {data['id']}")
     
-    def test_create_patrol_appointment(self, headers):
-        """Create patrol type appointment"""
+    def test_create_training_appointment(self, headers):
+        """Create training type appointment"""
         tomorrow = datetime.now() + timedelta(days=8)
         scheduled_at = tomorrow.replace(hour=8, minute=0, second=0, microsecond=0).isoformat()
         
         response = requests.post(f"{BASE_URL}/api/appointments", json={
-            "title": "TEST_Pattuglia Zona Nord",
-            "appointment_type": "patrol",
+            "title": "TEST_Addestramento Reclute",
+            "appointment_type": "training",
             "scheduled_at": scheduled_at,
             "duration_minutes": 240,
-            "location": "Vinewood Hills"
+            "location": "Campo Addestramento"
         }, headers=headers)
         assert response.status_code == 200, f"Failed: {response.text}"
         
         data = response.json()
-        assert data["appointment_type"] == "patrol"
-        print(f"✓ Created patrol appointment ID: {data['id']}")
+        assert data["appointment_type"] == "training"
+        print(f"✓ Created training appointment ID: {data['id']}")
 
 
 if __name__ == "__main__":
