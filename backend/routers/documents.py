@@ -354,7 +354,7 @@ async def create_document(
         citizen_photo_url=data.citizen_photo_url,
         citizen_identifier=data.citizen_identifier,
         issued_by=current_user.id,
-        issued_by_name=current_user.name or current_user.email,
+        issued_by_name=current_user.game_name or current_user.email,
         issuing_office=data.issuing_office or doc_type.issuing_authority,
         expires_at=expires_at,
         extra_data=data.extra_data,
@@ -373,7 +373,7 @@ async def create_document(
         event_data={"type": doc_type.code, "number": document_number},
         new_status=DocumentStatus.VALID.value,
         performed_by=current_user.id,
-        performed_by_name=current_user.name or current_user.email,
+        performed_by_name=current_user.game_name or current_user.email,
         ip_address=request.client.host if request.client else None
     )
     db.add(event)
