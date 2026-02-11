@@ -970,10 +970,11 @@ class RecruitmentApplication(Base):
 
 
 # ==========================================
-# APPOINTMENTS (Appuntamenti)
+# APPOINTMENTS (Legacy - Richieste appuntamento)
+# Per compatibilità con sistema esistente, usiamo tabella separata
 # ==========================================
 
-class AppointmentStatus(str, enum.Enum):
+class AppointmentRequestStatus(str, enum.Enum):
     PENDING = "pending"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
@@ -981,8 +982,9 @@ class AppointmentStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
-class Appointment(Base):
-    __tablename__ = "appointments"
+class AppointmentRequest(Base):
+    """Richieste appuntamento (legacy system)"""
+    __tablename__ = "appointment_requests"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     
