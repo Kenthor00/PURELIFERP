@@ -98,6 +98,22 @@ async def lifespan(app: FastAPI):
     heartbeat_task = asyncio.create_task(heartbeat_checker())
     logger.info("WebSocket Heartbeat Checker avviato")
     
+    # Start Appointment Reminder Scheduler
+    async def reminder_scheduler():
+        """Background task che controlla e invia reminder ogni 60 secondi"""
+        while True:
+            try:
+                await asyncio.sleep(60)  # Check ogni minuto
+                async with async_session() as db:
+                    await check_and_send_reminders(db)
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Reminder scheduler error: {e}")
+    
+    reminder_task = asyncio.create_task(reminder_scheduler())
+    logger.info("Appointment Reminder Scheduler avviato")
+    
     yield
     
     outbox_worker.stop()
@@ -112,6 +128,13 @@ async def lifespan(app: FastAPI):
         heartbeat_task.cancel()
         try:
             await heartbeat_task
+        except asyncio.CancelledError:
+            pass
+    
+    if reminder_task:
+        reminder_task.cancel()
+        try:
+            await reminder_task
         except asyncio.CancelledError:
             pass
     
