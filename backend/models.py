@@ -1108,7 +1108,7 @@ class JobGrade(Base):
     )
 
 
-class Permission(Base):
+class PermissionRecord(Base):
     """Permessi disponibili nel sistema"""
     __tablename__ = "permissions"
     
