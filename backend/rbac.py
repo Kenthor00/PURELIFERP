@@ -180,6 +180,17 @@ class RBACService:
         return False
 
 
+async def has_permission(db: AsyncSession, user: User, permission_code: str) -> bool:
+    """
+    Wrapper semplice per verificare se un utente ha un permesso specifico.
+    
+    Usage:
+        if await has_permission(db, current_user, 'DOC_CREATE_ID'):
+            ...
+    """
+    return await RBACService.has_permission(db, user, permission_code)
+
+
 def require_permission(*permission_codes: str, require_all: bool = False):
     """
     Decorator per richiedere permessi specifici.
