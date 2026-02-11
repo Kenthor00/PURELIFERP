@@ -607,6 +607,16 @@ const AppRoutes = () => {
           }
         />
 
+        {/* Agenda (Calendar System) */}
+        <Route
+          path="/agenda"
+          element={
+            <ProtectedRoute>
+              <AgendaPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Set Game Name (required for first login) */}
         <Route path="/set-game-name" element={<SetGameNamePage />} />
 
