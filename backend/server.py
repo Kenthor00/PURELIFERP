@@ -402,6 +402,10 @@ api_router.include_router(poi.router)
 from routers import nui_integration
 api_router.include_router(nui_integration.router)
 
+# Agenda / Appointments
+from routers import appointments
+api_router.include_router(appointments.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
