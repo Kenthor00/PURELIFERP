@@ -53,6 +53,8 @@ const POI_COLORS = {
 
 export const CityPulsePage = () => {
   const { api, user } = useAuth();
+  const { isNUI } = useNUI();
+  const { setMapWaypoint } = useWaypoint();
   const mapRef = useRef(null);
   
   const [loading, setLoading] = useState(true);
