@@ -55,12 +55,12 @@ class JobGradeResponse(BaseModel):
     code: str
     name: str
     category: Optional[str]
-    salary: int
-    is_boss: bool
-    is_supervisor: bool
-    can_hire: bool
-    can_fire: bool
-    can_promote: bool
+    salary: Optional[int] = 0
+    is_boss: Optional[bool] = False
+    is_supervisor: Optional[bool] = False
+    can_hire: Optional[bool] = False
+    can_fire: Optional[bool] = False
+    can_promote: Optional[bool] = False
     employee_count: Optional[int] = 0
     
     class Config:
