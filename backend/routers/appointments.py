@@ -530,7 +530,7 @@ async def create_appointment(
     
     # Audit log
     await log_audit(
-        db, AuditAction.CREATE,
+        db, AuditAction.APPOINTMENT_CREATE,
         user=current_user,
         entity_type="appointment",
         entity_id=apt.id,
