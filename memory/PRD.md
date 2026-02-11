@@ -522,10 +522,24 @@ React 18 + TailwindCSS
 - [ ] Filtri e ricerca
 - [ ] Contatto venditore
 
-### P1 - Pannello Admin
-- [ ] Interfaccia gestione ruoli/permessi
-- [ ] Visualizzazione completa audit log
-- [ ] Dashboard statistiche sistema
+### P1 - Pannello Admin RBAC ✅ (11/02/2026)
+- ✅ Interfaccia gestione ruoli/permessi - Pagina `/admin/rbac` con 6 tab
+- ✅ Gestione Job italiani (LSPD, EMS, Governo, etc.)
+- ✅ Gestione Gradi per ogni job
+- ✅ Matrice permessi per categoria
+- ✅ Ruoli Staff con livelli
+- ✅ Override permessi per utente
+- ✅ Audit log delle azioni RBAC
+
+### P1.1 - Sincronizzazione Automatica Job/Gradi ✅ (11/02/2026)
+- ✅ **Tab Sync FiveM** nella pagina Admin RBAC
+- ✅ **Endpoint API**: `POST /api/admin/rbac/sync`, `GET /sync/config`, `GET /sync/last-report`
+- ✅ **Sorgenti supportate**: Auto-detect, ESX Framework, QBCore Framework
+- ✅ **Modalità sync**: Merge (consigliato), Strict (con warning)
+- ✅ **Dry Run**: Anteprima modifiche senza applicarle
+- ✅ **URL Database esterno**: Supporto connessione a DB FiveM remoto
+- ✅ **Report dettagliato**: Job aggiunti/aggiornati/rimossi, gradi, errori
+- ✅ **UI italiana completa**: Tutti i label e messaggi in italiano
 
 ### PC Realism Mode
 - [ ] Finestre draggable e ridimensionabili
