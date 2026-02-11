@@ -732,10 +732,17 @@ async def verify_document_api(
     is_expired = False
     current_status = document.status
     
-    if document.expires_at and document.expires_at < datetime.now(timezone.utc):
-        is_expired = True
-        if document.status == DocumentStatus.VALID:
-            current_status = DocumentStatus.EXPIRED
+    if document.expires_at:
+        # Ensure both datetimes are timezone-aware for comparison
+        expires_at = document.expires_at
+        if expires_at.tzinfo is None:
+            from datetime import timezone as tz
+            expires_at = expires_at.replace(tzinfo=tz.utc)
+        
+        if expires_at < datetime.now(timezone.utc):
+            is_expired = True
+            if document.status == DocumentStatus.VALID:
+                current_status = DocumentStatus.EXPIRED
     
     # Log verifica (senza autenticazione)
     event = DocumentEvent(
