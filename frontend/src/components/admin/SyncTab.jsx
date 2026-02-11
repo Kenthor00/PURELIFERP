@@ -203,12 +203,20 @@ export default function SyncTab({ api }) {
   const sources = syncConfig?.sources || [];
   const modes = syncConfig?.modes || [];
   const selectedSrcDesc = sources.find(s => s.code === syncSource)?.description;
+  const envConnection = syncConfig?.env_connection;
 
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <OsPanel>
         <OsSectionHeader title="Sincronizzazione Job/Gradi" icon={Database} />
         <div className="space-y-4">
+          {/* Badge Connessione Automatica */}
+          <EnvConnectionBadge 
+            envConnection={envConnection} 
+            onTestConnection={handleTestConnection}
+            testing={testingConnection}
+          />
+          
           <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
             <AlertTriangle size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
