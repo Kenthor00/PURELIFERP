@@ -95,6 +95,7 @@ async def create_legal_case(
         case_type=case_data.get('case_type', 'CIVIL'),
         plaintiff_name=case_data.get('plaintiff_name'),
         defendant_name=case_data.get('defendant_name'),
+        lawyer_name=case_data.get('lawyer_name'),
         description=case_data.get('description'),
         related_case_id=case_data.get('police_case_id'),
         status=LegalCaseStatus.DRAFT
