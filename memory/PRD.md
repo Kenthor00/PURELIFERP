@@ -454,7 +454,24 @@ React 18 + TailwindCSS
 
 ---
 
-## 🔜 Prossimi Task (P1 Continua)
+## 🔜 Prossimi Task (Roadmap Post-Fase 2)
+
+### P1 - Documenti Verificabili con QR
+- [ ] Sistema gestione documenti (ID, patenti, licenze)
+- [ ] Generazione QR code univoco per verifica
+- [ ] Pagina pubblica verifica documento via QR
+- [ ] Audit log per emissione/revoca documenti
+
+### P1 - Marketplace
+- [ ] Modulo annunci (veicoli, immobili, lavoro, servizi)
+- [ ] CRUD annunci con immagini
+- [ ] Filtri e ricerca
+- [ ] Contatto venditore
+
+### P1 - Pannello Admin
+- [ ] Interfaccia gestione ruoli/permessi
+- [ ] Visualizzazione completa audit log
+- [ ] Dashboard statistiche sistema
 
 ### PC Realism Mode
 - [ ] Finestre draggable e ridimensionabili
