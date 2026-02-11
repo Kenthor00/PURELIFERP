@@ -1,163 +1,134 @@
 <analysis>**original_problem_statement:**
-L'utente ha fornito una lista completa e dettagliata di bug e nuove funzionalità da implementare, con l'obiettivo di trasformare l'applicazione in un sistema RP realistico, robusto e con logiche di permessi server-side. Le richieste sono state raggruppate in diverse aree critiche: Casi/Prove, Mandati, ID Cittadino, Multe, Giustizia (Udienze e Pratiche), Weazel News e City Pulse (mappa custom). L'utente ha esplicitamente richiesto soluzioni pulite e testate, non patch sporche, con un forte accento sul realismo RP e sulla validazione lato server.
+L'utente ha richiesto la creazione di un robusto sistema RP per FiveM, con lo sviluppo suddiviso in fasi.
 
-**PRODUCT REQUIREMENTS:**
-(Estratto dalla richiesta dell'utente)
--   **A) CASI / PROVE:** Le prove devono essere legate ai casi con endpoint dedicati e una UI specifica nel dettaglio del caso.
--   **B) MANDATI:** Implementare un ciclo di vita per i mandati (OPEN, EXECUTED, EXPIRED, CANCELLED) con validazione delle transizioni di stato.
--   **C) ID CITTADINO:** Rimuovere l'ID cittadino dalle UI dove non è strettamente necessario.
--   **D) MULTE:** Rimuovere lo stato pagata/non pagata, implementare la modifica e la cancellazione con permessi basati sulla proprietà (solo il creatore o un superiore può cancellare).
--   **E) GIUSTIZIA / UDIENZE:** Fixare la selezione delle pratiche idonee in una nuova udienza.
--   **F) GIUSTIZIA / NUOVA PRATICA:** Sostituire il campo attore con avvocato.
--   **G) LISTA PRATICHE:** Fixare la visualizzazione di tutte le pratiche.
--   **H) PRATICHE IN ATTESA:** Risolvere il problema dei click non funzionanti sulle pratiche.
--   **I) WEAZEL / NUOVO ARTICOLO:** Risolvere il bug dell'editor di testo che non permette di scrivere.
--   **J) CITY PULSE / MAPPA ATTIVITÀ (CUSTOM):** Sostituire la mappa attuale con un'immagine della mappa di FiveM dove gli utenti autorizzati possono aggiungere, modificare e rimuovere Punti di Interesse (POI) custom.
+Dopo il completamento della **Fase 1** (integrazione NUI) e un'estesa sessione di bug-fixing (punti A-J), l'agente ha completato con successo la **Fase 2**, che includeva:
+*   Modulo Agenda con calendario e sistema di reminder (WebSocket, Discord).
+*   Integrazione completa dell'Audit Log per azioni critiche.
+*   Finalizzazione della mappa CityPulse con l'evento NUI .
+
+Successivamente, l'agente ha verificato la risoluzione di un elenco di vecchi bug (A-F), fornendo prove e creando deliverable di consolidamento (Changelog, Migrazione SQL, Runbook) per la versione .
+
+Infine, l'agente ha implementato il task **P1 - Pannello Admin RBAC**, creando un sistema di gestione ruoli e permessi completo, con gerarchie di lavoro italiane, un pannello di amministrazione dedicato, e un nuovo middleware di permessi.
+
+L'utente ha approvato il lavoro e ha richiesto un sotto-task immediato: **P1.1 - Sincronizzazione Automatica dei Job/Gradi** con i framework FiveM (ESX/QBCore).
 
 **User's preferred language**: Italiano
 
 **what currently exists?**
-L'applicazione è reduce da due importanti sessioni di lavoro:
-1.  Una **scrollbar custom premium** per la pagina pubblica (), implementata per risolvere problemi di scorrimento nel browser CEF di FiveM. La soluzione finale include anche un meccanismo di **fallback automatico** che mostra dei pulsanti di scorrimento qualora la scrollbar custom non funzioni nell'ambiente FiveM.
-2.  Un **bug-fix sprint** completo che ha risolto con successo 7 problemi segnalati in precedenza, tra cui: il cambio canale nella chat, la creazione della pagina di dettaglio paziente EMS, il layout del modale dei referti EMS, la gestione dei link non funzionanti nella dashboard Giustizia, l'aggiunta di un pulsante Elimina Tutto per le attività LSPD e la trasformazione della mappa di City Pulse per utilizzare dati reali (basati su chiamate e casi) invece di dati random.
-
-L'agente stava finalizzando il task della scrollbar quando l'utente ha inviato la nuova, massiccia lista di requisiti che di fatto ha azzerato le priorità precedenti.
+L'applicazione è un sistema full-stack (React, FastAPI, MySQL) che ha completato diverse fasi di sviluppo.
+*   **Fase 1 (Integrazione NUI FiveM):** Completata.
+*   **Fase 2 (Agenda, Reminder, Audit Log, Mappa):** Completata e testata con successo.
+*   **Sprint Bug-Fix (A-F):** Tutti i punti sono stati verificati, risolti e documentati.
+*   **P1 (Pannello Admin RBAC):** Implementato con successo. Include:
+    *   **Backend:** Nuove tabelle DB (, , , ), un middleware RBAC () e un router admin ().
+    *   **Frontend:** Una pagina di gestione RBAC completamente in italiano ().
+    *   **Seed:** Le gerarchie di lavoro italiane (LSPD, EMS, Governo, etc.) sono state caricate nel database.
 
 **Last working item**:
-- **Last item agent was working:** L'agente ha ricevuto una nuova, estesa lista di bug e requisiti dall'utente e ha iniziato la fase di analisi esplorando la struttura dei file del backend (, routers) e del frontend per comprendere l'entità del lavoro richiesto e pianificare l'implementazione.
-- **Status:** NOT STARTED (la fase di analisi è appena iniziata).
-- **Agent Testing Done:** N/A
-- **Which testing method agent to use?** both. Data la vastità delle modifiche che toccano backend, DB e frontend, sarà necessario un ciclo di testing robusto. L'agente di testing () dovrà essere usato per validare i fix e le nuove funzionalità a gruppi.
+- **Last item agent was working:** L'agente ha iniziato l'implementazione del task **P1.1 - Sincronizzazione Automatica dei Job/Gradi** con ESX/QBCore. L'obiettivo è importare e mantenere allineati i ruoli del server FiveM con il pannello RBAC interno.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** both. Iniziare con test di backend (usando  o  per l'endpoint ) per validare la logica di sync (merge, strict, dry-run). Successivamente, usare  per un test e2e che includa la nuova tab Sync nel frontend.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-Tutti i punti della nuova richiesta dell'utente sono considerati i task correnti, con priorità massima.
-
-- **Issue 1: BUG: Quando creo caso non va le prove (Priority: P0)**
-    - **Description:** Le prove non sono correttamente collegate ai casi.
-    - **Next debug checklist:**
-        1.  Modificare il modello DB  e creare un modello  con una relazione .
-        2.  Creare i nuovi endpoint API in  (o un nuovo ): , , , .
-        3.  Nella pagina di dettaglio del caso (), aggiungere un'interfaccia a tab per visualizzare e gestire le prove associate.
-    - **Status:** NOT STARTED
-    - **Should Test frontend/backend/both after fix?** both
-
-- **Issue 2: BUG: I mandati non li fa mettere come terminati (Priority: P0)**
-    - **Description:** Manca la logica per cambiare lo stato di un mandato.
-    - **Next debug checklist:**
-        1.  Aggiungere un campo  al modello  nel DB ().
-        2.  Creare l'endpoint  con validazione server-side delle transizioni di stato.
-        3.  Aggiungere un pulsante Segna come eseguito nella UI della lista mandati ().
-    - **Status:** NOT STARTED
-    - **Should Test frontend/backend/both after fix?** both
-
-- **Issue 3: BUG: Su nuova udienza non fa selezionare le pratiche (Priority: P0)**
-    - **Description:** La UI per creare un'udienza non permette di selezionare le pratiche.
-    - **Next debug checklist:**
-        1.  Creare l'endpoint  per recuperare le pratiche idonee.
-        2.  Nella pagina di creazione udienza (), implementare un dropdown o una ricerca per selezionare una pratica dalla lista fornita dall'API.
-    - **Status:** NOT STARTED
-    - **Should Test frontend/backend/both after fix?** both
-
-... (e così via per tutti i punti dalla A alla J della richiesta utente)
+Nessun problema bloccante.
 
 **In progress Task List**:
-- **Task 1: Implementare la lista completa di bug-fix e feature (Priority: P0)**
-    - **Description:** Affrontare sistematicamente tutti i punti (dalla A alla J) della richiesta utente, partendo dalla ridefinizione degli schemi DB, passando per la creazione/modifica degli endpoint API FastAPI, e concludendo con l'aggiornamento delle relative interfacce React.
-    - **Where to resume:** L'agente ha appena finito di esplorare la codebase. Il prossimo passo è iniziare a implementare il primo punto: **A) CASI / PROVE**. Questo richiede modifiche a , creazione di nuovi endpoint e modifica della UI in  (se esiste, o va creata).
-    - **What will be achieved with this?** L'applicazione diventerà più realistica, stabile e sicura, allineandosi alla visione dell'utente di un sistema RP professionale.
+- **Task 1: P1.1 - Implementare Sincronizzazione Automatica Job/Gradi (Priority: P0)**
+    - **Description:** Creare un sistema che importa e sincronizza i lavori (jobs) e i gradi (grades) da un server FiveM che usa ESX o QBCore.
+    - **Where to resume:**
+        1.  Implementare la logica di connessione e sincronizzazione nel file . Questo include la gestione delle modalità  e  e l'opzione .
+        2.  Completare gli endpoint  e  nel router .
+        3.  Aggiungere una nuova tab Sync alla pagina  con i controlli UI richiesti (pulsante sync, toggle dry-run, scelta modalità).
+        4.  Integrare la scrittura nell'audit log per ogni operazione di sync.
+    - **What will be achieved with this?** Il pannello admin potrà configurare automaticamente i lavori e i gradi basandosi sulla configurazione reale del server FiveM, eliminando la necessità di inserimento manuale.
     - **Status:** IN PROGRESS
     - **Should Test frontend/backend/both after fix?** both
     - **Blocked on something:** No
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks:**
-  - **P1: Implementare PC Realism Mode:** Trasformare i moduli principali (LSPD, EMS, ecc.) in finestre draggable e ridimensionabili.
-  - **P1: Implementare Dossier System:** Creare una pagina aggregata con tutte le informazioni su un cittadino.
-  - **P1: Implementare Broadcast Operativo:** Sviluppare un sistema per notifiche urgenti.
-  - **P1: Ottimizzazioni Frontend:** Integrare  e .
-  - **P1: Implementare WebSockets:** Sostituire SSE con WebSocket.
+- **Upcoming Tasks (Roadmap P1):**
+    - **P1: Documenti Verificabili con QR:** (Priority P1) Sviluppare un sistema per la gestione di documenti (ID, patenti, licenze) con una pagina di verifica pubblica tramite QR code e audit log.
+    - **P1: Marketplace:** (Priority P1) Creare un modulo per la pubblicazione di annunci (veicoli, immobili, lavoro, servizi) con moderazione e notifiche WebSocket.
 - **Future Tasks:**
-  - **P2: Preparare l'Integrazione FiveM:** Creare un Integration Layer backend.
-  - **P2: Suite di Test E2E:** Configurare Playwright.
+    - Notifiche Discord per mandati di alta priorità, con de-duplicazione, cooldown e ruolo ping configurabile.
 
 **Completed work in this session**
-- **FiveM Scrollbar Fallback:** Implementato un sistema di fallback automatico per la pagina pubblica (). Il sistema rileva se il browser è il CEF di FiveM e, in caso di problemi con la scrollbar custom premium, mostra dei pulsanti di scorrimento alternativi.
-- **Bug Fix Sprint (7 Bug Risolti):**
-    - **Chat:** Risolto il bug del cambio canale che non aggiornava i messaggi.
-    - **EMS:** Creata la pagina  mancante e migliorato il layout del modale dei referti.
-    - **Giustizia:** Sostituiti i link non funzionanti (Verdetti/Archivio) con toast informativi.
-    - **LSPD:** Aggiunto il pulsante Elimina Tutto per le attività recenti (con permessi) e risolto il problema dell'eliminazione dell'ultimo caso in lista.
-    - **City Pulse:** Sostituiti i dati random della mappa con un'API che fornisce dati reali basati su chiamate dispatch e casi LSPD.
-- **Scrollbar Custom Premium:** Completata e testata con successo su diverse risoluzioni (desktop, tablet, ) la scrollbar custom per la pagina pubblica, risolvendo i problemi di scorrimento su FiveM.
+- **Fase 2 Completata:** Implementato e testato con successo il sistema di reminder per l'agenda, l'audit log esteso a LSPD e la funzione waypoint sulla mappa CityPulse.
+- **Verifica Bug Fix (A-F):** Verificati e risolti in modo definitivo i bug relativi a Prove, Mandati, Multe, Giustizia e Weazel News.
+- **Deliverable v3.2.0:** Creati i file , la migrazione , il  e una collection Postman.
+- **P1 - Pannello Admin RBAC (v3.3.0):** Implementato da zero il sistema di gestione ruoli e permessi, comprensivo di modelli DB, middleware, router, seed dati e un'interfaccia frontend completa in italiano. Il lavoro è stato validato con successo dal testing agent.
 
 **Earlier issues found/mentioned but not fixed**
-- Nessuno. Tutti i problemi precedenti sono stati risolti o inglobati nella nuova massiccia richiesta dell'utente.
+- Nessuno. Tutti i problemi noti sono stati affrontati.
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:** Disallineamento tra schema del database e modelli del codice.
-- **Recurrence count:** 4
-- **Status:** RESOLVED (per ora). Il prossimo agente deve prestare la massima attenzione durante la modifica dei modelli () e preparare le relative migrazioni del DB per evitare . La nuova richiesta dell'utente richiederà sicuramente modifiche allo schema.
+- **Issue recurrence in previous fork:** Disallineamento tra schema del database e modelli/schemi del codice (SQLAlchemy/Pydantic).
+- **Recurrence count:** 5+
+- **Status:** RESOLVED (for now). Questo problema si è ripresentato più volte durante l'implementazione del pannello RBAC, causando errori  e . L'agente precedente ha dovuto correggere manualmente le definizioni dei modelli e degli schemi per risolvere i conflitti. Il prossimo agente deve prestare la massima attenzione a questo aspetto.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Server-Side Validation:** La nuova richiesta pone un'enfasi critica sulla validazione dei permessi e della logica di business a livello di API (FastAPI), non solo sul frontend.
-- **Ownership:** Introduzione del concetto di proprietà delle risorse (es. una multa può essere cancellata solo dal suo creatore o da un superiore).
-- **Stato e Transizioni:** Gestione formale degli stati delle entità (es. ) con logica di transizione validata.
-- **Custom POI System:** Sviluppo di un sistema per la gestione di punti di interesse su un'immagine statica della mappa, con conversione di coordinate.
-- **CEF Browser Compatibility:** Riconoscimento e gestione delle limitazioni del browser di FiveM, implementando soluzioni di fallback.
+- Hybrid RBAC (Role-Based Access Control)
+- Connessione a database esterni (per sync ESX)
+- FastAPI Dependencies e Middleware
+- Migrazioni SQL manuali
 
 **key DB schema**
-Il prossimo agente dovrà modificare significativamente il database:
-- ****: Aggiungere campi o modificare stati per renderle idonee per udienza.
-- ****: Creare nuova tabella con foreign key a .
-- ****: Aggiungere campo  (Enum).
-- ****: Modificare/Aggiungere campi per tracciare  e rimuovere .
-- ** /  (Justice)**: Modificare campo  in .
-- ****: Creare nuova tabella per i punti di interesse della mappa custom.
-- ****: Assicurarsi che ogni azione critica venga registrata.
+- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
+- ****: (uid=0(root) gid=0(root) groups=0(root), , , , )
+- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
+- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
+- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
+- ****: Aggiunte colonne  (ForeignKey a ) e  (ForeignKey a ).
+
+**changes in tech stack**
+- Nessuna modifica allo stack tecnologico principale. È prevista l'interazione con database esterni (MySQL per ESX) per la funzionalità di sync.
 
 **All files of reference**
-- : Contiene l'implementazione finale della scrollbar e del fallback per FiveM.
-- : Contiene la logica aggiornata per la mappa attività che ora usa dati reali.
-- : Contiene il fix per il cambio canale.
-- : Contiene il nuovo endpoint  per la mappa.
-- : File che dovrà essere pesantemente modificato per accomodare i nuovi requisiti.
-- : Contiene il changelog aggiornato con tutti i fix completati.
+-  (file principale per riprendere il lavoro)
+-  (router di riferimento per il modulo RBAC)
+-  (contiene tutti i nuovi modelli RBAC)
+-  (pagina frontend di riferimento)
+-  (ultima migrazione DB)
+-  (contiene i requisiti dettagliati per il task P1.1)
 
 **Critical Info for New Agent**
-- **La priorità assoluta è la nuova lista di requisiti (A-J):** Ignora i task pianificati in precedenza. L'utente ha fornito un mandato chiaro e completo che ridefinisce il lavoro da fare.
-- **Focus su Soluzioni Robuste:** L'utente ha esplicitamente vietato patch sporche. Ogni fix o feature deve includere validazione server-side, gestione dei permessi e logica di business realistica.
-- **Modifiche al DB sono necessarie:** Preparati a scrivere e applicare migrazioni del database. L'incoerenza tra modelli e DB è un problema ricorrente.
-- **Test per ogni punto:** L'utente si aspetta che ogni punto della sua lista venga testato. Pianifica di usare screenshot, curl o il testing agent per ogni blocco di funzionalità completato.
+- **Priorità Massima:** Completare il task **P1.1 - Sync Job/Gradi**. I requisiti sono dettagliati nel messaggio utente . Il file di servizio  è già stato creato e va riempito con la logica.
+- **Attenzione a DB e Schemi:** Il disallineamento tra DB, modelli SQLAlchemy e schemi Pydantic è la causa più comune di bug in questo progetto. Prima di ogni modifica, verifica la coerenza tra questi tre livelli (tipi di dato, nullability, nomi dei campi).
+- **Lingua Italiana:** L'interfaccia utente, specialmente per le sezioni Admin, deve essere rigorosamente in italiano, come da richiesta.
 
 **documents and test reports created in this job**
 - 
+- 
+- 
+- 
+- 
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. L'utente ha chiesto di implementare il suggerimento di un fallback per la scrollbar su FiveM.
-9. L'agente ha finalizzato un bug-fix sprint di 7 punti e ha chiesto conferma per implementare il fallback della scrollbar.
-8. L'utente ha fornito una lista massiccia e dettagliata di bug e requisiti (punti A-J), ridefinendo completamente le priorità del progetto e chiedendo soluzioni robuste e realistiche.
-7. L'agente ha chiesto conferma per procedere con i fix di una lista di problemi segnalati in precedenza.
-6. L'utente ha risposto continua.
-5. L'agente ha proposto un piano per risolvere una serie di bug visivi e funzionali.
-4. L'agente ha finalizzato il lavoro sulla scrollbar custom e ha chiesto all'utente di testare in-game, offrendosi per ulteriori modifiche.
-3. L'utente ha inviato screenshot mostrando che la scrollbar custom non era visibile in FiveM.
-2. L'agente ha annunciato il completamento e il successo dei test sulla scrollbar custom.
-1. L'utente ha approvato il piano per la scrollbar custom, chiedendo che fosse fatto molto bene nei minimi dettagli.
+- L'utente ha approvato il completamento del P1 Admin RBAC.
+- L'utente ha richiesto come prossima priorità immediata il task **P1.1 - Sincronizzazione Automatica** con ESX/QBCore.
+- L'utente ha fornito requisiti tecnici dettagliati per la funzione di sync (modalità merge/strict, dry-run, endpoint API, UI e requisiti di sicurezza).
+- L'utente ha confermato la roadmap successiva: dopo il sync, si procederà con P1 Documenti QR e poi P1 Marketplace.
 
 **Project Health Check:**
-- **Broken:** Diverse funzionalità chiave (gestione prove, stato mandati, cancellazione multe, selezione pratiche) sono rotte o non implementate secondo la logica RP richiesta dall'utente.
-- **Mocked:** La mappa di City Pulse è stata migliorata ma ora l'utente richiede un sistema completamente nuovo e custom basato su POI.
-- **In Progress:** La fase di analisi e implementazione della nuova lista di requisiti è appena iniziata.
+- **Broken:** Nessuna funzionalità è rotta.
+- **Mocked:** Il servizio  è vuoto; la sua funzionalità è solo abbozzata.
+- **In Progress:** P1.1 - Sistema di sincronizzazione Job/Gradi.
 
 **3rd Party Integrations**
-- **MySQL on Railway**: Database primario dell'applicazione.
+- **MySQL on Railway** (Esistente)
+- **Discord Webhooks** (Implementato)
+- **ESX Database** (Da integrare per il sync dei job)
+- **QBCore Shared Config** (Da integrare per il sync dei job)
 
 **Testing status**
-- **Testing agent used after significant changes:** YES, usato con successo per validare il bug-fix sprint.
+- **Testing agent used after significant changes:** YES. È stato usato con successo per validare sia la Fase 2 che il P1 Admin RBAC.
 - **Troubleshoot agent used after agent stuck in loop:** NO.
 - **Test files created:** Nessuno.
 - **Known regressions:** Nessuna.
@@ -166,4 +137,4 @@ Il prossimo agente dovrà modificare significativamente il database:
 - **Admin**:  / 
 
 **What agent forgot to execute**
-L'agente ha correttamente identificato la nuova richiesta dell'utente come la priorità assoluta e stava iniziando la fase di esplorazione. Nessun task della nuova lista è stato dimenticato.</analysis>
+- Niente. L'agente ha seguito la roadmap e le priorità dell'utente in modo preciso.</analysis>
