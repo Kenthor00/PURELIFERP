@@ -1,7 +1,7 @@
 /**
  * PURE LIFE OS - Admin RBAC Sync Tab
  * Sincronizzazione Job/Gradi da ESX/QBCore
- * UI 100% in Italiano - Versione semplificata
+ * UI 100% in Italiano - Supporta configurazione env automatica
  */
 
 import React, { useState, useEffect } from 'react';
@@ -9,8 +9,45 @@ import { toast } from 'sonner';
 import { OsPanel, OsSectionHeader } from '../os/OsComponents';
 import {
   Database, Play, Eye, Loader2, AlertTriangle, Check,
-  Plus, Edit, Trash2, ArrowRightLeft, History
+  Plus, Edit, Trash2, ArrowRightLeft, History, Link, Wifi, WifiOff, RefreshCw
 } from 'lucide-react';
+
+// Badge connessione automatica
+function EnvConnectionBadge({ envConnection, onTestConnection, testing }) {
+  if (!envConnection) return null;
+  
+  const isActive = envConnection.active;
+  
+  return (
+    <div className={`flex items-center justify-between p-3 rounded-lg border ${
+      isActive ? 'bg-green-500/10 border-green-500/30' : 'bg-plos-surface border-plos-border'
+    }`}>
+      <div className="flex items-center gap-3">
+        {isActive ? <Wifi size={18} className="text-green-400" /> : <WifiOff size={18} className="text-plos-text-muted" />}
+        <div>
+          <p className="font-medium text-sm">
+            {isActive ? '✓ Connessione Automatica Attiva' : 'Connessione Automatica Non Configurata'}
+          </p>
+          {isActive && (
+            <p className="text-xs text-plos-text-muted">
+              {envConnection.host} → {envConnection.database} ({envConnection.framework})
+            </p>
+          )}
+        </div>
+      </div>
+      {isActive && (
+        <button
+          onClick={onTestConnection}
+          disabled={testing}
+          className="flex items-center gap-1 px-2 py-1 text-xs bg-green-500/20 hover:bg-green-500/30 rounded text-green-400 disabled:opacity-50"
+        >
+          {testing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+          Test
+        </button>
+      )}
+    </div>
+  );
+}
 
 // Componenti interni semplificati
 function SourceButton({ src, selected, onClick }) {
