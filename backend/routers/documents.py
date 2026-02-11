@@ -635,7 +635,7 @@ async def change_document_status(
     permission_map = {
         DocumentStatus.SUSPENDED: 'DOC_SUSPEND',
         DocumentStatus.REVOKED: 'DOC_REVOKE',
-        DocumentStatus.VALID: 'DOC_SUSPEND'  # Riattivazione richiede stesso permesso
+        DocumentStatus.VALID: 'DOC_REACTIVATE'  # Riattivazione ha permesso dedicato
     }
     required_perm = permission_map.get(data.new_status, 'DOC_ADMIN')
     
