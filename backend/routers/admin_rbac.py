@@ -274,7 +274,7 @@ async def list_permissions(
     if category:
         query = query.where(PermissionRecord.category == category)
     
-    result = await db.execute(query.order_by(PermissionRecord.category, Permission.name))
+    result = await db.execute(query.order_by(PermissionRecord.category, PermissionRecord.name))
     return result.scalars().all()
 
 
