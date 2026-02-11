@@ -871,3 +871,21 @@ async def get_documents_stats(
         "issued_today": issued_today.scalar() or 0,
         "total": sum(by_status.values())
     }
+
+
+@router.get("/permissions/me")
+async def get_my_document_permissions(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Restituisce i permessi documenti dell'utente corrente"""
+    doc_permissions = [
+        'DOC_VIEW', 'DOC_CREATE_ID', 'DOC_CREATE_LICENSE', 'DOC_CREATE_PERMIT',
+        'DOC_UPDATE', 'DOC_SUSPEND', 'DOC_REVOKE', 'DOC_REACTIVATE', 'DOC_VERIFY', 'DOC_ADMIN'
+    ]
+    
+    result = {}
+    for perm in doc_permissions:
+        result[perm] = await has_permission(db, current_user, perm)
+    
+    return result
