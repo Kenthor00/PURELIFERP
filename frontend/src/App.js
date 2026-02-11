@@ -52,6 +52,10 @@ import AuditDashboard from './pages/admin/AuditDashboard';
 // Admin RBAC
 import AdminRBACPage from './pages/AdminRBACPage';
 
+// Documents (QR Verification)
+import DocumentsPage from './pages/documents/DocumentsPage';
+import VerifyDocumentPage from './pages/public/VerifyDocumentPage';
+
 // City Pulse (UNIQUE FEATURE)
 import CityPulsePage from './pages/CityPulsePage';
 
