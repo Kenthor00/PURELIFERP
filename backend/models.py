@@ -179,6 +179,7 @@ class AuditAction(str, enum.Enum):
     
     # City Hub - Appointments
     APPOINTMENT_CREATE = "appointment_create"
+    APPOINTMENT_UPDATE = "appointment_update"
     APPOINTMENT_ACCEPT = "appointment_accept"
     APPOINTMENT_REJECT = "appointment_reject"
     APPOINTMENT_COMPLETE = "appointment_complete"
