@@ -25,6 +25,7 @@ import {
   Command,
   ChevronRight,
   Home,
+  ShoppingBag,
 } from 'lucide-react';
 
 // Navigation modules
