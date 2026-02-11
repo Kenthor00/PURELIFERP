@@ -41,7 +41,7 @@ async def get_admin_stats(
                 select(func.count(AuditLog.id)).where(
                     and_(
                         AuditLog.action == 'login_success',
-                        AuditLog.created_at >= today_start
+                        AuditLog.timestamp >= today_start
                     )
                 )
             )
