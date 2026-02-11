@@ -238,15 +238,26 @@ export default function SyncTab({ api }) {
             </div>
           </div>
           <div>
-            <label className="block text-sm text-plos-text-muted mb-2">URL Database FiveM (opzionale)</label>
+            <label className="block text-sm text-plos-text-muted mb-2">
+              URL Database FiveM 
+              {envConnection?.active ? (
+                <span className="text-green-400 ml-1">(opzionale - connessione automatica attiva)</span>
+              ) : (
+                <span className="text-plos-text-muted ml-1">(opzionale)</span>
+              )}
+            </label>
             <input
               type="text"
               value={syncFivemDbUrl}
               onChange={e => setSyncFivemDbUrl(e.target.value)}
-              placeholder="mysql://user:pass@host/database"
+              placeholder={envConnection?.active ? "Lascia vuoto per usare connessione automatica" : "mysql://user:pass@host/database"}
               className="w-full p-3 bg-plos-background border border-plos-border rounded-lg text-sm font-mono focus:border-plos-primary focus:outline-none"
             />
-            <p className="text-xs text-plos-text-muted mt-1">Lascia vuoto per usare il database corrente.</p>
+            <p className="text-xs text-plos-text-muted mt-1">
+              {envConnection?.active 
+                ? "Lascia vuoto per usare la connessione automatica configurata nel server." 
+                : "Inserisci l'URL del database FiveM o configura FIVEM_DB_* nel .env del backend."}
+            </p>
           </div>
           <div className="flex items-center justify-between p-3 bg-plos-surface rounded-lg">
             <div className="flex items-center gap-3">
