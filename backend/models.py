@@ -1159,7 +1159,7 @@ class UserPermissionOverride(Base):
     
     # Relationships
     user = relationship("User", foreign_keys=[user_id])
-    permission = relationship("Permission")
+    permission = relationship("PermissionRecord")
     granter = relationship("User", foreign_keys=[granted_by])
 
 
