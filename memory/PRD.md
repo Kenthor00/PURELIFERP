@@ -567,6 +567,8 @@ React 18 + TailwindCSS
 
 | Data | Versione | Modifiche |
 |------|----------|-----------|
+| 2026-02-11 | 3.5.0 | **P1 MARKETPLACE**: Sistema annunci completo per cittadini. Categorie: Veicoli, Immobili, Lavoro, Servizi. CRUD annunci con moderazione staff, manifestazione interesse, notifiche WebSocket real-time. Frontend: MarketplacePage con filtri, ricerca, modale creazione, dettaglio annuncio. 25/25 test backend + frontend 100% |
+| 2026-02-11 | 3.4.1 | **FINALIZZAZIONE UI DOCUMENTI**: Aggiunte azioni operative (Sospendi, Revoca, Riattiva) alla modale dettaglio documento. Modali con motivazione obbligatoria, controllo permessi RBAC, aggiornamento real-time stato e timeline. 16/16 test passati |
 | 2026-02-11 | 3.4.0 | **P1 DOCUMENTI QR**: Sistema completo documenti verificabili. Tipi: Carta ID, Patenti (A/B/C), Porto d'Armi, Licenze (Caccia, Pesca, Taxi, Medica, Legale). Pagina pubblica /verify/:token con QR. RBAC integrato, audit log, timeline eventi. Frontend: Gestione Documenti + EmittiDocumento wizard |
 | 2026-02-11 | 3.3.2 | **FIVEM DB AUTO-CONNECTION**: Configurazione connessione automatica via .env (FIVEM_DB_*). Badge UI, test connessione, mascheramento password nei log. Documentazione RUNBOOK aggiornata |
 | 2026-02-11 | 3.3.1 | **P1.1 SYNC FIVEM**: Tab Sync nella pagina Admin RBAC per sincronizzare job/gradi da server ESX/QBCore. Supporto dry_run, modalità merge/strict, URL database esterno. 16/16 test backend + frontend 100% |
