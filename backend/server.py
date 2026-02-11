@@ -23,6 +23,7 @@ from sse_manager import sse_manager
 from outbox_worker import outbox_worker
 from cache import cache, get_cache_stats, clear_all_cache
 from websocket_engine import ws_manager, heartbeat_checker, WSEventType
+from routers.appointments import check_and_send_reminders
 
 from routers import auth, lspd, ems, dispatch, timeline
 from routers import city, news, justice, chat
