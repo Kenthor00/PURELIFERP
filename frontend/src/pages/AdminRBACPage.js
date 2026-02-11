@@ -14,12 +14,12 @@ import {
   OsStatCard
 } from '../components/os/OsComponents';
 import {
-  Users, Shield, Briefcase, Lock, Settings, Search,
-  ChevronRight, ChevronDown, Plus, Edit, Trash2, Save,
-  AlertTriangle, Check, X, Download, Filter, RefreshCw,
-  UserPlus, UserMinus, Key, History, Building2, BadgeCheck,
-  Database, Play, Eye, Loader2, CheckCircle2, XCircle, ArrowRightLeft
+  Users, Shield, Briefcase, Lock, Search,
+  ChevronRight, ChevronDown, Edit, Trash2,
+  AlertTriangle, Check, X, RefreshCw,
+  Key, History, Building2, BadgeCheck
 } from 'lucide-react';
+import SyncTab from '../components/admin/SyncTab';
 
 // Traduzioni categorie
 const CATEGORY_LABELS = {
