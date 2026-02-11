@@ -401,6 +401,9 @@ export const CityPulsePage = () => {
                     e.stopPropagation();
                     if (editMode && canManagePoi) {
                       handleEditPoi(poi);
+                    } else {
+                      // Click normale: imposta waypoint
+                      handleSetWaypoint(poi);
                     }
                   }}
                 >
@@ -424,13 +427,18 @@ export const CityPulsePage = () => {
                   {/* Tooltip on hover */}
                   <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
                     <div className="bg-plos-surface border border-plos-border rounded-lg p-3 shadow-xl min-w-48">
-                      <p className="font-heading text-sm font-bold">{poi.name}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-heading text-sm font-bold">{poi.name}</p>
+                        <Navigation size={12} className="text-plos-primary" />
+                      </div>
                       <p className="text-xs text-plos-text-muted capitalize">{poi.category}</p>
                       {poi.description && (
                         <p className="text-xs text-plos-text-secondary mt-1">{poi.description}</p>
                       )}
-                      {editMode && canManagePoi && (
+                      {editMode && canManagePoi ? (
                         <p className="text-xs text-plos-primary mt-2">Click per modificare</p>
+                      ) : (
+                        <p className="text-xs text-blue-400 mt-2">Click per impostare waypoint</p>
                       )}
                     </div>
                   </div>
