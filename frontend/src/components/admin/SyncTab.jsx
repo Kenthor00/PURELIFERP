@@ -139,6 +139,7 @@ export default function SyncTab({ api }) {
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncReport, setSyncReport] = useState(null);
   const [lastSyncReport, setLastSyncReport] = useState(null);
+  const [testingConnection, setTestingConnection] = useState(false);
 
   useEffect(() => {
     fetchSyncConfig();
@@ -154,6 +155,22 @@ export default function SyncTab({ api }) {
       setLastSyncReport(lastReportRes.data);
     } catch (error) {
       toast.error('Errore nel caricamento configurazione sync');
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    try {
+      const res = await api.post('/admin/rbac/sync/test-connection');
+      if (res.data.success) {
+        toast.success(`Connessione riuscita! ${res.data.message}`);
+      } else {
+        toast.error(`Test fallito: ${res.data.message}`);
+      }
+    } catch (error) {
+      toast.error('Errore nel test connessione');
+    } finally {
+      setTestingConnection(false);
     }
   };
 
