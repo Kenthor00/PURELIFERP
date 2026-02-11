@@ -124,52 +124,6 @@ export default function AdminRBACPage() {
     }
   };
 
-  // Fetch sync configuration
-  const fetchSyncConfig = async () => {
-    try {
-      const [configRes, lastReportRes] = await Promise.all([
-        api.get('/admin/rbac/sync/config'),
-        api.get('/admin/rbac/sync/last-report')
-      ]);
-      setSyncConfig(configRes.data);
-      setLastSyncReport(lastReportRes.data);
-    } catch (error) {
-      toast.error('Errore nel caricamento configurazione sync');
-    }
-  };
-
-  // Execute sync
-  const handleSync = async () => {
-    setSyncLoading(true);
-    setSyncReport(null);
-    
-    try {
-      const res = await api.post('/admin/rbac/sync', {
-        source: syncSource,
-        mode: syncMode,
-        dry_run: syncDryRun,
-        fivem_db_url: syncFivemDbUrl || null
-      });
-      
-      setSyncReport(res.data);
-      setLastSyncReport(res.data);
-      
-      if (res.data.dry_run) {
-        toast.info('Anteprima completata - Nessuna modifica applicata');
-      } else if (res.data.errors?.length > 0) {
-        toast.warning(`Sync completato con ${res.data.errors.length} errori`);
-      } else {
-        toast.success(`Sync completato! +${res.data.jobs_added} job, ~${res.data.jobs_updated} aggiornati`);
-        // Refresh jobs list
-        fetchInitialData();
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.detail || 'Errore durante la sincronizzazione');
-    } finally {
-      setSyncLoading(false);
-    }
-  };
-
   // Handle assign job to user
   const handleAssignJob = async (userId, jobId, gradeId, reason) => {
     try {
