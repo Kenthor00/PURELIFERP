@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLOS Bridge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Container principale - nascosto di default -->
+    <div id="plos-container" class="hidden">
+        <!-- Wrapper per iframe/webview -->
+        <div id="plos-frame-wrapper">
+            <iframe id="plos-frame" 
+                    src="about:blank" 
+                    frameborder="0"
+                    allow="clipboard-write; clipboard-read">
+            </iframe>
+        </div>
+        
+        <!-- Loading overlay -->
+        <div id="plos-loading" class="hidden">
+            <div class="loading-spinner"></div>
+            <p>Caricamento PURE LIFE OS...</p>
+        </div>
+        
+        <!-- Error overlay -->
+        <div id="plos-error" class="hidden">
+            <div class="error-icon">⚠️</div>
+            <h2>Errore di connessione</h2>
+            <p id="error-message">Impossibile caricare PURE LIFE OS</p>
+            <button id="retry-btn">Riprova</button>
+            <button id="close-error-btn">Chiudi</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
