@@ -64,8 +64,8 @@ CREATE TABLE IF NOT EXISTS documents (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY (type_id) REFERENCES document_types(id),
-    FOREIGN KEY (citizen_id) REFERENCES user(id),
-    FOREIGN KEY (issued_by) REFERENCES user(id),
+    FOREIGN KEY (citizen_id) REFERENCES users(id),
+    FOREIGN KEY (issued_by) REFERENCES users(id),
     INDEX idx_documents_citizen (citizen_id),
     INDEX idx_documents_type (type_id),
     INDEX idx_documents_status (status),
