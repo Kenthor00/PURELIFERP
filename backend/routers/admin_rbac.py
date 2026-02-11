@@ -1147,7 +1147,8 @@ async def sync_jobs_from_fivem(
             grades_removed=report.grades_removed,
             errors=report.errors,
             items=report.items,
-            duration_ms=report.duration_ms
+            duration_ms=report.duration_ms,
+            connection_source=getattr(report, 'connection_source', 'manual')
         )
     except Exception as e:
         logger.error(f"Sync error: {e}")
