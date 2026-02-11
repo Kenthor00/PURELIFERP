@@ -60,16 +60,6 @@ export default function AdminRBACPage() {
   const [expandedJob, setExpandedJob] = useState(null);
   const [userModal, setUserModal] = useState({ open: false, user: null });
   const [assignModal, setAssignModal] = useState({ open: false, type: null, userId: null });
-  
-  // Sync states
-  const [syncConfig, setSyncConfig] = useState(null);
-  const [syncSource, setSyncSource] = useState('auto');
-  const [syncMode, setSyncMode] = useState('merge');
-  const [syncDryRun, setSyncDryRun] = useState(true);
-  const [syncFivemDbUrl, setSyncFivemDbUrl] = useState('');
-  const [syncLoading, setSyncLoading] = useState(false);
-  const [syncReport, setSyncReport] = useState(null);
-  const [lastSyncReport, setLastSyncReport] = useState(null);
 
   useEffect(() => {
     fetchInitialData();
