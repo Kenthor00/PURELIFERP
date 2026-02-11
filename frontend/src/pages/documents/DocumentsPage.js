@@ -245,14 +245,18 @@ function CreateDocumentModal({ isOpen, onClose, api, documentTypes, onCreated })
 }
 
 // Document detail modal
-function DocumentDetailModal({ doc, isOpen, onClose, api, onUpdated }) {
+function DocumentDetailModal({ doc, isOpen, onClose, api, onUpdated, permissions }) {
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [actionModal, setActionModal] = useState({ open: false, type: null });
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionReason, setActionReason] = useState('');
 
   useEffect(() => {
     if (isOpen && doc) {
       fetchEvents();
+      setActionReason('');
     }
   }, [isOpen, doc]);
 
@@ -268,9 +272,44 @@ function DocumentDetailModal({ doc, isOpen, onClose, api, onUpdated }) {
     }
   };
 
+  const handleStatusChange = async (newStatus) => {
+    if (!actionReason.trim() || actionReason.length < 5) {
+      toast.error('La motivazione deve essere di almeno 5 caratteri');
+      return;
+    }
+    
+    setActionLoading(true);
+    try {
+      const res = await api.post(`/documents/${doc.id}/status`, {
+        new_status: newStatus,
+        reason: actionReason
+      });
+      
+      const statusLabels = {
+        SUSPENDED: 'sospeso',
+        REVOKED: 'revocato',
+        VALID: 'riattivato'
+      };
+      toast.success(`Documento ${statusLabels[newStatus] || 'aggiornato'} con successo!`);
+      setActionModal({ open: false, type: null });
+      setActionReason('');
+      onUpdated(res.data);
+      fetchEvents();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Errore nel cambio stato');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (!isOpen || !doc) return null;
 
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(doc.verify_url.replace('http://', 'https://'))}`;
+  
+  // Determina quali azioni sono disponibili
+  const canSuspend = doc.status === 'VALID' && (permissions?.DOC_SUSPEND || permissions?.DOC_ADMIN);
+  const canRevoke = (doc.status === 'VALID' || doc.status === 'SUSPENDED') && (permissions?.DOC_REVOKE || permissions?.DOC_ADMIN);
+  const canReactivate = doc.status === 'SUSPENDED' && (permissions?.DOC_REACTIVATE || permissions?.DOC_ADMIN);
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
