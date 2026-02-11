@@ -591,11 +591,9 @@ export default function AdminRBACPage() {
       )}
 
       {/* TAB SYNC FIVEM */}
-      {activeTab === 'sync' && (
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Configurazione Sync */}
-          <OsPanel>
-            <OsSectionHeader title="Sincronizzazione Job/Gradi" icon={Database} />
+      {activeTab === 'sync' && <SyncTab api={api} />}
+
+      {activeTab === 'audit' && (
             
             <div className="space-y-4">
               {/* Alert informativo */}
