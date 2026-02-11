@@ -228,7 +228,12 @@ def get_status_label(status: DocumentStatus) -> str:
 
 def document_to_response(doc: Document, base_url: str = "") -> DocumentResponse:
     """Converte Document model in response"""
-    is_expired = doc.expires_at and doc.expires_at < datetime.now(timezone.utc) if doc.expires_at else False
+    is_expired = False
+    if doc.expires_at:
+        expires_at = doc.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        is_expired = expires_at < datetime.now(timezone.utc)
     
     return DocumentResponse(
         id=doc.id,
