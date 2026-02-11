@@ -492,3 +492,14 @@ React 18 + TailwindCSS
 ---
 
 *PURE LIFE OS - Il Sistema Operativo della Città - ULTRA PREMIUM*
+
+---
+
+## 📅 Changelog
+
+| Data | Versione | Modifiche |
+|------|----------|-----------|
+| 2026-02-11 | 3.2.0 | **FASE 2 COMPLETATA**: Sistema Reminder Agenda con scheduler background (ogni 60s), notifiche WebSocket e Discord webhook. Audit Log integrato in appointments e LSPD (cases, warrants, fines). CityPulse POI click → waypoint con evento NUI PLOS_SET_WAYPOINT |
+| 2026-02-10 | 3.1.0 | **SISTEMA RP COMPLETO**: Prove casi, ciclo vita mandati, permessi multe, fix giustizia, mappa POI custom |
+| 2026-02-10 | 3.0.9 | **FIVEM NUI INTEGRATION**: Handshake auth, JWT short-lived, WebSocket engine NUI, NUIContext bridge |
+| 2026-02-08 | 3.0.8 | FiveM CEF Auto-Fallback |
