@@ -583,6 +583,7 @@ class LegalCaseBase(BaseModel):
     police_case_id: Optional[int] = None
     plaintiff_name: Optional[str] = None  # Attore
     defendant_name: Optional[str] = None  # Convenuto
+    lawyer_name: Optional[str] = None  # Avvocato
     client_name: Optional[str] = None  # For backward compatibility
     client_identifier: Optional[str] = None
     case_type: str
