@@ -417,6 +417,10 @@ class User(Base):
     hierarchy_level = Column(Integer, nullable=False, default=1)
     is_sector_chief = Column(Boolean, default=False)  # Capo settore
     
+    # RBAC - Job/Grade System
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=True)
+    job_grade_id = Column(Integer, ForeignKey("job_grades.id"), nullable=True)
+    
     # Dati opzionali
     badge_number = Column(String(50), unique=True, nullable=True)
     department = Column(String(50), nullable=True)
