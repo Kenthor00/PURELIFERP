@@ -458,7 +458,51 @@ React 18 + TailwindCSS
 
 ---
 
-## 🔜 Prossimi Task (Roadmap Post-Fase 2)
+## ✅ Iteration 21 - P1 Admin RBAC (11/02/2026)
+
+### Sistema RBAC Completo
+- **Tabelle**: `jobs`, `job_grades`, `permissions`, `job_grade_permissions`, `user_permission_overrides`, `staff_roles`, `user_staff_roles`
+- **Middleware**: `RBACService` con `require_permission()`, `require_staff()`
+- **15 endpoint** su `/api/admin/rbac/*`
+
+### Gerarchie Italiane (Come richiesto)
+| Job | Gradi | Categorie |
+|-----|-------|-----------|
+| LSPD | 13 | COMANDO, ALTO COMANDO, SUPERVISIONE, UFFICIALI, RECLUTE |
+| EMS | 6 | DIREZIONE, MEDICI, PERSONALE |
+| Giustizia | 5 | PROCURA, MAGISTRATURA, AVVOCATURA |
+| Weazel | 5 | DIREZIONE, REDAZIONE, REPORTER |
+| Meccanico | 5 | PROPRIETÀ, GESTIONE, TECNICI, APPRENDISTI |
+| Taxi | 5 | DIREZIONE, GESTIONE, AUTISTI |
+| Sicurezza | 4 | DIREZIONE, GESTIONE, OPERATIVO |
+
+### Ruoli Staff (Separati)
+- **Moderatore** (Lv1): Moderazione chat/utenti base
+- **Amministratore** (Lv2): Bypass permessi job
+- **Super Admin** (Lv3): Controllo totale
+
+### Permessi (23 permessi base)
+- LSPD: 13 permessi (view/create/edit/delete per casi, mandati, multe, prove)
+- EMS: 5 permessi (pazienti, referti)
+- Admin: 5 permessi (utenti, ruoli, permessi, audit)
+
+### Frontend `/admin/rbac`
+- UI 100% italiana
+- 5 Tabs: Lavori/Gradi, Utenti, Matrice Permessi, Ruoli Staff, Registro Attività
+- Assegnazione job/grado con motivazione
+- Assegnazione ruoli staff
+- Override permessi con scadenza
+- Audit log con filtri
+
+### File Creati/Modificati
+- `/app/backend/rbac.py` - Middleware RBAC
+- `/app/backend/routers/admin_rbac.py` - Router completo
+- `/app/frontend/src/pages/AdminRBACPage.js` - UI Admin
+- `/app/migrations/v3.3.0_admin_rbac.sql` - Migrazioni complete
+
+---
+
+## 🔜 Prossimi Task (Roadmap Post-P1 Admin)
 
 ### P1 - Documenti Verificabili con QR
 - [ ] Sistema gestione documenti (ID, patenti, licenze)
