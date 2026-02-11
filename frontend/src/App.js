@@ -594,6 +594,16 @@ const AppRoutes = () => {
           }
         />
 
+        {/* Documents Routes */}
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute>
+              <DocumentsPage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Sector Chief Routes */}
         <Route
           path="/sector-management"
