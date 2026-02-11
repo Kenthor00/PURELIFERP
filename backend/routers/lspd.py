@@ -479,6 +479,16 @@ async def create_fine(
     
     await db.commit()
     
+    # Audit log
+    await log_audit(
+        db, AuditAction.FINE_CREATE,
+        user=current_user,
+        entity_type="fine",
+        entity_id=fine.id,
+        description=f"Emessa multa: {fine.fine_number} - €{fine.amount} a {fine.citizen_name}",
+        metadata={"fine_number": fine.fine_number, "amount": fine.amount, "citizen_name": fine.citizen_name}
+    )
+    
     await sse_manager.broadcast("fine_issued", {
         "fine_id": fine.id,
         "fine_number": fine.fine_number,
