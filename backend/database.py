@@ -87,12 +87,15 @@ else:
     engine = create_async_engine(
         DATABASE_URL,
         echo=False,
-        pool_pre_ping=True,
-        pool_size=5,
-        max_overflow=10,
-        pool_recycle=300,
+        pool_pre_ping=True,        # Verifica connessione prima di usarla
+        pool_size=10,              # Connessioni persistenti nel pool
+        max_overflow=20,           # Connessioni extra in caso di picco
+        pool_recycle=1800,         # Ricicla connessioni ogni 30 minuti
+        pool_timeout=30,           # Timeout per ottenere connessione dal pool
         connect_args={
-            "connect_timeout": 10
+            "connect_timeout": 10,
+            "read_timeout": 30,
+            "write_timeout": 30,
         }
     )
 
