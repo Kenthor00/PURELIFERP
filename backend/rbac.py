@@ -55,13 +55,13 @@ class RBACService:
         for sr in staff_roles:
             if sr.staff_role and sr.staff_role.bypass_job_permissions:
                 # Carica tutti i permessi
-                all_perms = await db.execute(select(Permission.code))
+                all_perms = await db.execute(select(PermissionRecord.code))
                 return set(all_perms.scalars().all())
         
         # 2. Permessi dal job grade
         if user.job_grade_id:
             grade_perms = await db.execute(
-                select(Permission.code)
+                select(PermissionRecord.code)
                 .join(JobGradePermission, JobGradePermission.permission_id == Permission.id)
                 .where(JobGradePermission.job_grade_id == user.job_grade_id)
             )
