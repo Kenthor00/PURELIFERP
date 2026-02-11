@@ -195,7 +195,9 @@ export const LoginPage = () => {
                   AUTENTICAZIONE...
                 </>
               ) : loginDisabled ? (
-                'LOGIN DISABILITATO'
+                'BACKEND OFFLINE'
+              ) : dbWarning ? (
+                'PROVA ACCESSO'
               ) : (
                 'ACCEDI'
               )}
