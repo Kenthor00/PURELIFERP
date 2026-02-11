@@ -348,6 +348,17 @@ async def run_column_migrations():
     
     try:
         async with async_session() as session:
+            # Create new tables
+            for create_sql in new_tables:
+                try:
+                    await session.execute(text(create_sql))
+                    logger.info("Tabella creata o già esistente")
+                except Exception as table_err:
+                    logger.debug(f"Create table skip: {table_err}")
+            
+            await session.commit()
+            
+            # Column migrations
             for table, column, column_def in migrations:
                 try:
                     if USING_SQLITE:
