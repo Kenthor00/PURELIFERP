@@ -318,3 +318,132 @@ sudo supervisorctl restart backend
 # Re-login
 export TOKEN=$(curl -s -X POST "$API_URL/api/auth/login" ...)
 ```
+
+---
+
+## 🔄 FiveM Database Sync (RBAC)
+
+### Configurazione Connessione Automatica (.env)
+
+Aggiungi le seguenti variabili al file `/app/backend/.env`:
+
+```bash
+# FiveM Database Auto-Connection
+FIVEM_DB_ENABLED=true          # Abilita connessione automatica
+FIVEM_DB_HOST=your-fivem-db    # Host del database FiveM
+FIVEM_DB_PORT=3306             # Porta MySQL (default 3306)
+FIVEM_DB_NAME=essentialmode    # Nome database (es. essentialmode, qb-core)
+FIVEM_DB_USER=fivem_user       # Username database
+FIVEM_DB_PASS=your_password    # Password database
+FIVEM_DB_FRAMEWORK=auto        # Framework: auto, esx, qbcore
+```
+
+### Esempio per Server ESX
+
+```bash
+FIVEM_DB_ENABLED=true
+FIVEM_DB_HOST=mysql.myserver.com
+FIVEM_DB_PORT=3306
+FIVEM_DB_NAME=essentialmode
+FIVEM_DB_USER=esx_readonly
+FIVEM_DB_PASS=SecurePassword123!
+FIVEM_DB_FRAMEWORK=esx
+```
+
+### Esempio per Server QBCore
+
+```bash
+FIVEM_DB_ENABLED=true
+FIVEM_DB_HOST=mysql.myserver.com
+FIVEM_DB_PORT=3306
+FIVEM_DB_NAME=qbcore
+FIVEM_DB_USER=qb_readonly
+FIVEM_DB_PASS=SecurePassword123!
+FIVEM_DB_FRAMEWORK=qbcore
+```
+
+### API Sync
+
+```bash
+# 1. Verifica stato configurazione
+curl -s "$API_URL/api/admin/rbac/sync/env-status" \
+  -H "Authorization: Bearer $TOKEN" | jq
+
+# 2. Test connessione database FiveM
+curl -s -X POST "$API_URL/api/admin/rbac/sync/test-connection" \
+  -H "Authorization: Bearer $TOKEN" | jq
+
+# 3. Sync in modalità anteprima (dry-run)
+curl -s -X POST "$API_URL/api/admin/rbac/sync" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source": "auto",
+    "mode": "merge",
+    "dry_run": true
+  }' | jq
+
+# 4. Sync effettivo (applica modifiche)
+curl -s -X POST "$API_URL/api/admin/rbac/sync" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source": "auto",
+    "mode": "merge",
+    "dry_run": false
+  }' | jq
+
+# 5. Sync con URL manuale (ignora .env)
+curl -s -X POST "$API_URL/api/admin/rbac/sync" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source": "esx",
+    "mode": "merge",
+    "dry_run": true,
+    "fivem_db_url": "mysql+aiomysql://user:pass@host:3306/database"
+  }' | jq
+```
+
+### Troubleshooting Sync
+
+| Errore | Causa | Soluzione |
+|--------|-------|-----------|
+| `Connection refused` | Host non raggiungibile | Verifica firewall e hostname |
+| `Access denied` | Credenziali errate | Controlla user/password in .env |
+| `Unknown database` | DB non esiste | Verifica FIVEM_DB_NAME |
+| `No framework detected` | Tabelle non trovate | Verifica che il DB contenga tabelle ESX/QBCore |
+| `1045 Access denied for user` | Permessi insufficienti | Assicurati che l'utente abbia SELECT sui tables jobs/job_grades |
+
+### Tabelle ESX Richieste
+
+```sql
+-- Per ESX il sync legge queste tabelle:
+jobs (name, label)
+job_grades (job, grade, name, salary)
+```
+
+### Tabelle QBCore Richieste
+
+```sql
+-- Per QBCore il sync legge:
+qb_jobs (name, label, grades JSON)
+-- oppure cerca pattern qb_* tables
+```
+
+### Sicurezza
+
+⚠️ **Best Practices:**
+- Usa un utente MySQL con permessi **SOLO SELECT** (read-only)
+- Non usare l'utente root del database FiveM
+- Le password non vengono mai esposte al frontend
+- I log mascherano automaticamente le credenziali
+
+```sql
+-- Esempio creazione utente read-only per sync
+CREATE USER 'plos_sync'@'%' IDENTIFIED BY 'StrongPassword!';
+GRANT SELECT ON essentialmode.jobs TO 'plos_sync'@'%';
+GRANT SELECT ON essentialmode.job_grades TO 'plos_sync'@'%';
+FLUSH PRIVILEGES;
+```
+
