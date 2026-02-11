@@ -1032,6 +1032,11 @@ class AppointmentRequest(Base):
 # ==========================================
 
 class AnnouncementCategory(str, enum.Enum):
+    """Categorie per gli annunci"""
+    GENERAL = "general"
+    EMERGENCY = "emergency"
+    EVENT = "event"
+    SERVICE = "service"
 
 
 # ==========================================
