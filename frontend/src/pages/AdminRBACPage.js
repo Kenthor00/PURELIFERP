@@ -184,6 +184,7 @@ export default function AdminRBACPage() {
     { id: 'utenti', label: 'Utenti', icon: Users },
     { id: 'permessi', label: 'Matrice Permessi', icon: Lock },
     { id: 'staff', label: 'Ruoli Staff', icon: Shield },
+    { id: 'sync', label: 'Sync FiveM', icon: RefreshCw },
     { id: 'audit', label: 'Registro Attività', icon: History }
   ];
 
