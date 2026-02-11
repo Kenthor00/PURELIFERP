@@ -233,7 +233,7 @@ async def run_column_migrations():
         """,
         # Appointments table (new agenda system)
         """
-        CREATE TABLE IF NOT EXISTS appointments (
+        CREATE TABLE IF NOT EXISTS agenda_appointments (
             id INT PRIMARY KEY AUTO_INCREMENT,
             title VARCHAR(200) NOT NULL,
             description TEXT,
