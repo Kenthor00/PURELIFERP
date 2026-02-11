@@ -13,7 +13,7 @@ from sqlalchemy.orm import selectinload
 
 from database import get_db
 from models import (
-    User, Job, JobGrade, Permission, JobGradePermission,
+    User, Job, JobGrade, PermissionRecord, JobGradePermission,
     UserPermissionOverride, StaffRole, UserStaffRole, AuditLog, AuditAction
 )
 from auth import get_current_user
