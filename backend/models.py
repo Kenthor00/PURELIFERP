@@ -638,7 +638,7 @@ class DocumentEvent(Base):
     old_status = Column(String(20), nullable=True)
     new_status = Column(String(20), nullable=True)
     reason = Column(Text, nullable=True)
-    performed_by = Column(Integer, ForeignKey("user.id"), nullable=False)
+    performed_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     performed_by_name = Column(String(100), nullable=False)
     ip_address = Column(String(45), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
