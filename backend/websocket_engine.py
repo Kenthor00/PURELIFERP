@@ -58,8 +58,10 @@ class WSEventType(str, Enum):
     
     # Marketplace
     MARKETPLACE_LISTING = "marketplace_listing"
+    MARKETPLACE_NEW = "marketplace_new"
     MARKETPLACE_SOLD = "marketplace_sold"
     MARKETPLACE_INTEREST = "marketplace_interest"
+    MARKETPLACE_MODERATION = "marketplace_moderation"
     
     # Documents
     DOCUMENT_ISSUED = "document_issued"
