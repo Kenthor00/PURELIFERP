@@ -1,134 +1,119 @@
 <analysis>**original_problem_statement:**
-L'utente ha richiesto la creazione di un robusto sistema RP per FiveM, con lo sviluppo suddiviso in fasi.
+L'utente ha richiesto la creazione di un robusto sistema RP per FiveM. Dopo aver completato diverse fasi (Integrazione NUI, Agenda, RBAC Admin, Sincronizzazione automatica con ESX/QBCore), l'agente ha implementato un sistema di gestione documenti con verifica tramite QR code.
 
-Dopo il completamento della **Fase 1** (integrazione NUI) e un'estesa sessione di bug-fixing (punti A-J), l'agente ha completato con successo la **Fase 2**, che includeva:
-*   Modulo Agenda con calendario e sistema di reminder (WebSocket, Discord).
-*   Integrazione completa dell'Audit Log per azioni critiche.
-*   Finalizzazione della mappa CityPulse con l'evento NUI .
-
-Successivamente, l'agente ha verificato la risoluzione di un elenco di vecchi bug (A-F), fornendo prove e creando deliverable di consolidamento (Changelog, Migrazione SQL, Runbook) per la versione .
-
-Infine, l'agente ha implementato il task **P1 - Pannello Admin RBAC**, creando un sistema di gestione ruoli e permessi completo, con gerarchie di lavoro italiane, un pannello di amministrazione dedicato, e un nuovo middleware di permessi.
-
-L'utente ha approvato il lavoro e ha richiesto un sotto-task immediato: **P1.1 - Sincronizzazione Automatica dei Job/Gradi** con i framework FiveM (ESX/QBCore).
+L'utente ha approvato l'implementazione e ha richiesto due attività successive:
+1.  **FASE 1 - Finalizzazione UI Documenti (v3.4.1):** Aggiungere azioni operative (Sospendi, Revoca, Riattiva) con modali di motivazione e controllo dei permessi RBAC nella schermata di dettaglio del documento.
+2.  **FASE 2 - Marketplace (P1):** Creare un sistema di annunci (veicoli, immobili, lavoro, servizi) con moderazione dello staff, integrazione WebSocket, e permessi RBAC dedicati.
 
 **User's preferred language**: Italiano
 
 **what currently exists?**
-L'applicazione è un sistema full-stack (React, FastAPI, MySQL) che ha completato diverse fasi di sviluppo.
-*   **Fase 1 (Integrazione NUI FiveM):** Completata.
-*   **Fase 2 (Agenda, Reminder, Audit Log, Mappa):** Completata e testata con successo.
-*   **Sprint Bug-Fix (A-F):** Tutti i punti sono stati verificati, risolti e documentati.
-*   **P1 (Pannello Admin RBAC):** Implementato con successo. Include:
-    *   **Backend:** Nuove tabelle DB (, , , ), un middleware RBAC () e un router admin ().
-    *   **Frontend:** Una pagina di gestione RBAC completamente in italiano ().
-    *   **Seed:** Le gerarchie di lavoro italiane (LSPD, EMS, Governo, etc.) sono state caricate nel database.
+L'applicazione è un sistema full-stack (React, FastAPI, MySQL) con le seguenti funzionalità completate e testate:
+*   Integrazione NUI FiveM (Fase 1).
+*   Modulo Agenda con reminder e Audit Log (Fase 2).
+*   Pannello di amministrazione RBAC con gestione di lavori e gradi in italiano (P1).
+*   Sistema di sincronizzazione automatica dei lavori/gradi con ESX e QBCore, configurabile anche tramite variabili d'ambiente (P1.1).
+*   Modulo Documenti (P1) che include:
+    *   **Backend:** Creazione di tabelle , , . Un router API () per la gestione dei documenti e la generazione di URL di verifica sicuri con firma HMAC.
+    *   **Frontend:** Una pagina di gestione () e una pagina di verifica pubblica () per i QR code.
+    *   **Sicurezza:** Permessi RBAC () e logging delle azioni nell'audit log.
 
 **Last working item**:
-- **Last item agent was working:** L'agente ha iniziato l'implementazione del task **P1.1 - Sincronizzazione Automatica dei Job/Gradi** con ESX/QBCore. L'obiettivo è importare e mantenere allineati i ruoli del server FiveM con il pannello RBAC interno.
+- **Last item agent was working:** L'agente stava implementando la **Fase 1 - Finalizzazione UI Documenti**, aggiungendo le azioni operative (Sospendi, Revoca, Riattiva) alla modale di dettaglio del documento.
 - **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** both. Iniziare con test di backend (usando  o  per l'endpoint ) per validare la logica di sync (merge, strict, dry-run). Successivamente, usare  per un test e2e che includa la nuova tab Sync nel frontend.
+- **Which testing method agent to use?** both. Iniziare con test di backend usando  per l'endpoint  per validare le azioni e i permessi. Successivamente, usare  per un test e2e del flusso frontend: login come admin, apertura di un documento, sospensione con motivazione, verifica del cambio di stato, riattivazione e verifica finale.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
 Nessun problema bloccante.
 
 **In progress Task List**:
-- **Task 1: P1.1 - Implementare Sincronizzazione Automatica Job/Gradi (Priority: P0)**
-    - **Description:** Creare un sistema che importa e sincronizza i lavori (jobs) e i gradi (grades) da un server FiveM che usa ESX o QBCore.
+- **Task 1: Fase 1 - Finalizzazione UI Documenti (Priority: P0)**
+    - **Description:** Aggiungere pulsanti di azione (Sospendi, Revoca, Riattiva) alla modale di dettaglio del documento. Ogni azione deve aprire un'ulteriore modale per inserire una motivazione (obbligatoria). L'UI deve aggiornarsi in tempo reale e i pulsanti devono essere visibili solo se l'utente possiede i permessi RBAC corretti (, , ).
     - **Where to resume:**
-        1.  Implementare la logica di connessione e sincronizzazione nel file . Questo include la gestione delle modalità  e  e l'opzione .
-        2.  Completare gli endpoint  e  nel router .
-        3.  Aggiungere una nuova tab Sync alla pagina  con i controlli UI richiesti (pulsante sync, toggle dry-run, scelta modalità).
-        4.  Integrare la scrittura nell'audit log per ogni operazione di sync.
-    - **What will be achieved with this?** Il pannello admin potrà configurare automaticamente i lavori e i gradi basandosi sulla configurazione reale del server FiveM, eliminando la necessità di inserimento manuale.
+        1.  Finalizzare il refactoring del componente  all'interno del file .
+        2.  L'agente ha già aggiunto la logica per recuperare i permessi dell'utente () e ha iniziato a implementare le funzioni , , e .
+        3.  Bisogna completare l'implementazione di queste funzioni, assicurandosi che facciano la chiamata API corretta a  con il payload richiesto (nuovo stato e motivazione).
+        4.  Verificare che la logica per mostrare/nascondere i pulsanti di azione in base allo stato attuale del documento e ai permessi dell'utente sia corretta e robusta.
+    - **What will be achieved with this?** Gli amministratori e gli utenti autorizzati potranno gestire l'intero ciclo di vita di un documento direttamente dall'interfaccia web, con tracciabilità completa delle azioni.
     - **Status:** IN PROGRESS
     - **Should Test frontend/backend/both after fix?** both
     - **Blocked on something:** No
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks (Roadmap P1):**
-    - **P1: Documenti Verificabili con QR:** (Priority P1) Sviluppare un sistema per la gestione di documenti (ID, patenti, licenze) con una pagina di verifica pubblica tramite QR code e audit log.
-    - **P1: Marketplace:** (Priority P1) Creare un modulo per la pubblicazione di annunci (veicoli, immobili, lavoro, servizi) con moderazione e notifiche WebSocket.
+- **Upcoming Tasks:**
+    - **P1: Fase 2 - Marketplace (Priority P1):** Implementare un sistema di annunci per cittadini con categorie (veicoli, immobili, ecc.), moderazione dello staff, integrazione WebSocket per notifiche in tempo reale, e un set completo di permessi RBAC ().
 - **Future Tasks:**
-    - Notifiche Discord per mandati di alta priorità, con de-duplicazione, cooldown e ruolo ping configurabile.
+    - Notifiche Discord per mandati di alta priorità.
 
 **Completed work in this session**
-- **Fase 2 Completata:** Implementato e testato con successo il sistema di reminder per l'agenda, l'audit log esteso a LSPD e la funzione waypoint sulla mappa CityPulse.
-- **Verifica Bug Fix (A-F):** Verificati e risolti in modo definitivo i bug relativi a Prove, Mandati, Multe, Giustizia e Weazel News.
-- **Deliverable v3.2.0:** Creati i file , la migrazione , il  e una collection Postman.
-- **P1 - Pannello Admin RBAC (v3.3.0):** Implementato da zero il sistema di gestione ruoli e permessi, comprensivo di modelli DB, middleware, router, seed dati e un'interfaccia frontend completa in italiano. Il lavoro è stato validato con successo dal testing agent.
+- **P1.1 - Sincronizzazione Automatica Job/Gradi (COMPLETED):** Implementato e testato con successo il sistema di sync per ESX/QBCore, inclusa la configurazione tramite . È stato necessario refactorare la UI in un componente separato () per risolvere un problema di build.
+- **P1 - Documenti Verificabili con QR (COMPLETED):** Creato l'intero modulo da zero, inclusi modelli DB, migrazioni, router backend con firma HMAC, e pagine frontend per la gestione e la verifica pubblica. Sono stati risolti numerosi bug legati a conflitti nei modelli, foreign key, e timezone.
 
 **Earlier issues found/mentioned but not fixed**
-- Nessuno. Tutti i problemi noti sono stati affrontati.
+- L'agente ha disabilitato un plugin () tramite la variabile d'ambiente  per risolvere un errore di Maximum call stack size exceeded durante la build del frontend. Questa è una soluzione temporanea. Sarebbe opportuno, dopo aver completato il refactoring, provare a riattivare il plugin per vedere se il problema è stato risolto dalla scomposizione dei componenti.
 
 **Known issue recurrence from previous fork**
 - **Issue recurrence in previous fork:** Disallineamento tra schema del database e modelli/schemi del codice (SQLAlchemy/Pydantic).
 - **Recurrence count:** 5+
-- **Status:** RESOLVED (for now). Questo problema si è ripresentato più volte durante l'implementazione del pannello RBAC, causando errori  e . L'agente precedente ha dovuto correggere manualmente le definizioni dei modelli e degli schemi per risolvere i conflitti. Il prossimo agente deve prestare la massima attenzione a questo aspetto.
+- **Status:** RESOLVED (for now). L'agente ha affrontato e risolto nuovamente questo problema durante la creazione del modulo Documenti, correggendo definizioni di tabelle duplicate, nomi di tabelle/colonne errati, foreign key e tipi di dati. La massima attenzione è richiesta per qualsiasi modifica futura al database.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- Hybrid RBAC (Role-Based Access Control)
-- Connessione a database esterni (per sync ESX)
-- FastAPI Dependencies e Middleware
-- Migrazioni SQL manuali
+- Full-stack development (React, FastAPI, MySQL)
+- Role-Based Access Control (RBAC) per azioni granulari
+- Generazione di URL sicuri con firma HMAC (hash-based message authentication code)
+- Refactoring di componenti React per ottimizzazione e risoluzione di problemi di build
+- Migrazioni del database e seeding dei dati
 
 **key DB schema**
-- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
+- ****: (uid=0(root) gid=0(root) groups=0(root) (uuid), , , , , , )
 - ****: (uid=0(root) gid=0(root) groups=0(root), , , , )
-- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
-- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
-- ****: (uid=0(root) gid=0(root) groups=0(root), , , )
-- ****: Aggiunte colonne  (ForeignKey a ) e  (ForeignKey a ).
+- ****: (uid=0(root) gid=0(root) groups=0(root), , , , )
+- ****: Estesa con , , , , .
 
 **changes in tech stack**
-- Nessuna modifica allo stack tecnologico principale. È prevista l'interazione con database esterni (MySQL per ESX) per la funzionalità di sync.
+- Nessuno.
 
 **All files of reference**
--  (file principale per riprendere il lavoro)
--  (router di riferimento per il modulo RBAC)
--  (contiene tutti i nuovi modelli RBAC)
--  (pagina frontend di riferimento)
--  (ultima migrazione DB)
--  (contiene i requisiti dettagliati per il task P1.1)
+-  (file principale su cui riprendere il lavoro)
+-  (router di backend di riferimento)
+-  (per le definizioni dei modelli DB)
+-  (per la logica dei permessi)
+-  (contiene i requisiti dettagliati per il task corrente e il successivo)
 
 **Critical Info for New Agent**
-- **Priorità Massima:** Completare il task **P1.1 - Sync Job/Gradi**. I requisiti sono dettagliati nel messaggio utente . Il file di servizio  è già stato creato e va riempito con la logica.
-- **Attenzione a DB e Schemi:** Il disallineamento tra DB, modelli SQLAlchemy e schemi Pydantic è la causa più comune di bug in questo progetto. Prima di ogni modifica, verifica la coerenza tra questi tre livelli (tipi di dato, nullability, nomi dei campi).
-- **Lingua Italiana:** L'interfaccia utente, specialmente per le sezioni Admin, deve essere rigorosamente in italiano, come da richiesta.
+- **Priorità Massima:** Completare la **Fase 1 - Finalizzazione UI Documenti**. Il lavoro è già in corso nel file . È necessario finalizzare l'implementazione della modale di dettaglio del documento per gestire correttamente le azioni di sospensione, revoca e riattivazione, inclusi i modali per la motivazione e le chiamate API protette da RBAC.
+- **Roadmap Chiara:** Dopo aver completato e testato la UI dei documenti, la priorità successiva è la **Fase 2 - Marketplace (P1)**. I requisiti sono molto dettagliati e si trovano nel messaggio .
+- **Attenzione ai Modelli DB:** Il problema del disallineamento tra database, modelli SQLAlchemy e schemi Pydantic è la principale fonte di errori in questo progetto. Prima di ogni modifica, verificare meticolosamente la coerenza tra questi tre elementi.
 
 **documents and test reports created in this job**
 - 
 - 
-- 
-- 
-- 
-- 
-- 
+-  (aggiornato)
 
 **Last 10 User Messages and any pending HUMAN messages**
-- L'utente ha approvato il completamento del P1 Admin RBAC.
-- L'utente ha richiesto come prossima priorità immediata il task **P1.1 - Sincronizzazione Automatica** con ESX/QBCore.
-- L'utente ha fornito requisiti tecnici dettagliati per la funzione di sync (modalità merge/strict, dry-run, endpoint API, UI e requisiti di sicurezza).
-- L'utente ha confermato la roadmap successiva: dopo il sync, si procederà con P1 Documenti QR e poi P1 Marketplace.
+- L'utente ha approvato l'implementazione del modulo Documenti con QR.
+- L'utente ha fornito requisiti dettagliati per due fasi successive:
+    1.  Finalizzare la UI dei documenti aggiungendo le azioni di gestione (Sospendi, Revoca, ecc.).
+    2.  Costruire da zero il modulo Marketplace.
+- L'utente ha dato il via libera per procedere prima con la Fase 1 e poi con la Fase 2.
 
 **Project Health Check:**
-- **Broken:** Nessuna funzionalità è rotta.
-- **Mocked:** Il servizio  è vuoto; la sua funzionalità è solo abbozzata.
-- **In Progress:** P1.1 - Sistema di sincronizzazione Job/Gradi.
+- **Broken:** Nessuna funzionalità principale è rotta.
+- **Mocked:** Nessuno.
+- **In Progress:** La UI per le azioni di gestione dei documenti (//) è parzialmente implementata nel file .
 
 **3rd Party Integrations**
-- **MySQL on Railway** (Esistente)
-- **Discord Webhooks** (Implementato)
-- **ESX Database** (Da integrare per il sync dei job)
-- **QBCore Shared Config** (Da integrare per il sync dei job)
+- **MySQL on Railway** (Database principale)
+- **Discord Webhooks** (Per le notifiche dell'agenda)
+- **ESX/QBCore Database** (Connessione esterna per la sincronizzazione dei lavori)
 
 **Testing status**
-- **Testing agent used after significant changes:** YES. È stato usato con successo per validare sia la Fase 2 che il P1 Admin RBAC.
+- **Testing agent used after significant changes:** YES (per la funzionalità di Sync).
 - **Troubleshoot agent used after agent stuck in loop:** NO.
 - **Test files created:** Nessuno.
 - **Known regressions:** Nessuna.
@@ -137,4 +122,4 @@ Nessun problema bloccante.
 - **Admin**:  / 
 
 **What agent forgot to execute**
-- Niente. L'agente ha seguito la roadmap e le priorità dell'utente in modo preciso.</analysis>
+- Nulla di dimenticato. L'agente era nel mezzo di un'implementazione complessa e deve solo riprendere il lavoro.</analysis>
