@@ -620,7 +620,7 @@ async def get_evidence(
 ):
     """Lista prove per caso"""
     result = await db.execute(
-        select(Evidence).where(Evidence.case_id == case_id).order_by(Evidence.created_at)
+        select(Evidence).where(Evidence.case_id == case_id).order_by(Evidence.collected_at)
     )
     return result.scalars().all()
 
