@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from database import get_db
 from models import (
-    User, Job, JobGrade, Permission, JobGradePermission,
+    User, Job, JobGrade, PermissionRecord, JobGradePermission,
     UserPermissionOverride, StaffRole, UserStaffRole, AuditLog, AuditAction, Sector
 )
 from auth import get_current_user, log_audit
