@@ -49,6 +49,9 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import AuditDashboard from './pages/admin/AuditDashboard';
 
+// Admin RBAC
+import AdminRBACPage from './pages/AdminRBACPage';
+
 // City Pulse (UNIQUE FEATURE)
 import CityPulsePage from './pages/CityPulsePage';
 
