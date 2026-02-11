@@ -1025,6 +1025,162 @@ class AppointmentRequest(Base):
 # ==========================================
 
 class AnnouncementCategory(str, enum.Enum):
+
+
+# ==========================================
+# RBAC - SISTEMA LAVORI/GRADI/PERMESSI
+# ==========================================
+
+class JobCategory(str, enum.Enum):
+    """Categorie di lavoro"""
+    LAW_ENFORCEMENT = "law_enforcement"
+    MEDICAL = "medical"
+    GOVERNMENT = "government"
+    EMERGENCY = "emergency"
+    MEDIA = "media"
+    CIVILIAN = "civilian"
+
+
+class Job(Base):
+    """Lavori disponibili nel sistema"""
+    __tablename__ = "jobs"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(String(50), unique=True, nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    name_short = Column(String(50), nullable=False)
+    category = Column(String(50), nullable=False)
+    description = Column(Text, nullable=True)
+    icon = Column(String(50), nullable=True)
+    color = Column(String(20), nullable=True)
+    is_active = Column(Boolean, default=True)
+    is_whitelisted = Column(Boolean, default=False)
+    max_employees = Column(Integer, default=0)
+    discord_role_id = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    grades = relationship("JobGrade", back_populates="job", cascade="all, delete-orphan")
+
+
+class JobGrade(Base):
+    """Gradi per ogni lavoro"""
+    __tablename__ = "job_grades"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
+    grade_level = Column(Integer, nullable=False)
+    code = Column(String(50), nullable=False)
+    name = Column(String(100), nullable=False)
+    category = Column(String(50), nullable=True)
+    salary = Column(Integer, default=0)
+    is_boss = Column(Boolean, default=False)
+    is_supervisor = Column(Boolean, default=False)
+    can_hire = Column(Boolean, default=False)
+    can_fire = Column(Boolean, default=False)
+    can_promote = Column(Boolean, default=False)
+    permissions = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    job = relationship("Job", back_populates="grades")
+    grade_permissions = relationship("JobGradePermission", back_populates="job_grade", cascade="all, delete-orphan")
+    
+    __table_args__ = (
+        Index('idx_job_grade_unique', 'job_id', 'grade_level', unique=True),
+    )
+
+
+class Permission(Base):
+    """Permessi disponibili nel sistema"""
+    __tablename__ = "permissions"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(String(100), unique=True, nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String(50), nullable=False, index=True)
+    is_dangerous = Column(Boolean, default=False)
+    requires_audit = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class JobGradePermission(Base):
+    """Permessi assegnati ai gradi"""
+    __tablename__ = "job_grade_permissions"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_grade_id = Column(Integer, ForeignKey("job_grades.id"), nullable=False)
+    permission_id = Column(Integer, ForeignKey("permissions.id"), nullable=False)
+    granted_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    granted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    job_grade = relationship("JobGrade", back_populates="grade_permissions")
+    permission = relationship("Permission")
+    
+    __table_args__ = (
+        Index('idx_grade_perm_unique', 'job_grade_id', 'permission_id', unique=True),
+    )
+
+
+class UserPermissionOverride(Base):
+    """Override permessi per singolo utente"""
+    __tablename__ = "user_permission_overrides"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    permission_id = Column(Integer, ForeignKey("permissions.id"), nullable=False)
+    override_type = Column(String(10), nullable=False)  # 'grant' o 'revoke'
+    reason = Column(Text, nullable=False)
+    expires_at = Column(DateTime, nullable=True)
+    granted_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    granted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    revoked_at = Column(DateTime, nullable=True)
+    revoked_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id])
+    permission = relationship("Permission")
+    granter = relationship("User", foreign_keys=[granted_by])
+
+
+class StaffRole(Base):
+    """Ruoli staff (separati dai job)"""
+    __tablename__ = "staff_roles"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(String(50), unique=True, nullable=False)
+    name = Column(String(100), nullable=False)
+    level = Column(Integer, nullable=False)
+    color = Column(String(20), nullable=True)
+    bypass_job_permissions = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class UserStaffRole(Base):
+    """Assegnazione ruoli staff a utenti"""
+    __tablename__ = "user_staff_roles"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    staff_role_id = Column(Integer, ForeignKey("staff_roles.id"), nullable=False)
+    reason = Column(Text, nullable=False)
+    assigned_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    assigned_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True)
+    revoked_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    user = relationship("User", foreign_keys=[user_id])
+    staff_role = relationship("StaffRole")
+    assigner = relationship("User", foreign_keys=[assigned_by])
+
     LAVORO = "lavoro"
     VENDITA = "vendita"
     AFFITTI = "affitti"
