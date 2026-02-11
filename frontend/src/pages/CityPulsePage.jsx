@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNUI, useWaypoint } from '../context/NUIContext';
 import { toast } from 'sonner';
 import { StatsSkeleton, ListSkeleton } from '../components/ui/Skeleton';
 import {
@@ -17,7 +18,8 @@ import {
 import {
   Activity, Shield, Heart, Radio, MapPin, RefreshCw,
   AlertTriangle, Plus, X, Edit, Trash2, Save, Building2,
-  Home, Store, Factory, Music, Wrench, ChevronDown, Eye, EyeOff
+  Home, Store, Factory, Music, Wrench, ChevronDown, Eye, EyeOff,
+  Navigation
 } from 'lucide-react';
 
 // Mappa FiveM ad alta risoluzione
