@@ -354,6 +354,9 @@ const AppRoutes = () => {
         <Route path="/city/events" element={<CityHubPage />} />
         <Route path="/city/events/:eventId" element={<CityHubPage />} />
         
+        {/* Public Document Verification */}
+        <Route path="/verify/:token" element={<VerifyDocumentPage />} />
+        
         {/* City Hub v2 - Announcements are public, others require auth */}
         <Route path="/city/announcements" element={<AnnouncementsPage />} />
         <Route
