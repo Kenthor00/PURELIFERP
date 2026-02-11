@@ -62,7 +62,7 @@ class RBACService:
         if user.job_grade_id:
             grade_perms = await db.execute(
                 select(PermissionRecord.code)
-                .join(JobGradePermission, JobGradePermission.permission_id == Permission.id)
+                .join(JobGradePermission, JobGradePermission.permission_id == PermissionRecord.id)
                 .where(JobGradePermission.job_grade_id == user.job_grade_id)
             )
             permissions.update(grade_perms.scalars().all())
