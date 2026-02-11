@@ -205,6 +205,147 @@ async def run_column_migrations():
         ("users", "created_via", "VARCHAR(50) NULL"),
     ]
     
+    # New tables to create
+    new_tables = [
+        # Appointments table
+        """
+        CREATE TABLE IF NOT EXISTS appointments (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            title VARCHAR(200) NOT NULL,
+            description TEXT,
+            appointment_type VARCHAR(50) DEFAULT 'meeting',
+            status VARCHAR(50) DEFAULT 'scheduled',
+            scheduled_at DATETIME NOT NULL,
+            duration_minutes INT DEFAULT 60,
+            end_at DATETIME,
+            location VARCHAR(200),
+            location_coords_x FLOAT,
+            location_coords_y FLOAT,
+            organizer_id INT NOT NULL,
+            participant_ids JSON,
+            legal_case_id INT,
+            lspd_case_id INT,
+            reminder_settings JSON,
+            reminder_sent JSON,
+            discord_webhook_url VARCHAR(500),
+            discord_notified BOOLEAN DEFAULT FALSE,
+            notes TEXT,
+            is_private BOOLEAN DEFAULT FALSE,
+            is_all_day BOOLEAN DEFAULT FALSE,
+            color VARCHAR(20),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            cancelled_at DATETIME,
+            cancelled_by INT,
+            cancellation_reason TEXT,
+            INDEX idx_scheduled_at (scheduled_at),
+            INDEX idx_status (status),
+            INDEX idx_organizer (organizer_id)
+        )
+        """,
+        # Documents table
+        """
+        CREATE TABLE IF NOT EXISTS documents (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            verification_code VARCHAR(64) UNIQUE NOT NULL,
+            document_type VARCHAR(50) NOT NULL,
+            status VARCHAR(50) DEFAULT 'valid',
+            holder_id INT NOT NULL,
+            holder_name VARCHAR(100) NOT NULL,
+            holder_identifier VARCHAR(100),
+            issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at DATETIME,
+            issued_by INT NOT NULL,
+            issuing_authority VARCHAR(100),
+            details JSON,
+            suspended_at DATETIME,
+            suspended_by INT,
+            suspension_reason TEXT,
+            suspension_until DATETIME,
+            revoked_at DATETIME,
+            revoked_by INT,
+            revocation_reason TEXT,
+            last_verified_at DATETIME,
+            verification_count INT DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_verification_code (verification_code),
+            INDEX idx_holder (holder_id),
+            INDEX idx_status (status)
+        )
+        """,
+        # Marketplace listings table
+        """
+        CREATE TABLE IF NOT EXISTS marketplace_listings (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            title VARCHAR(200) NOT NULL,
+            description TEXT NOT NULL,
+            category VARCHAR(50) NOT NULL,
+            status VARCHAR(50) DEFAULT 'pending',
+            price FLOAT,
+            price_negotiable BOOLEAN DEFAULT TRUE,
+            currency VARCHAR(10) DEFAULT '$',
+            seller_id INT NOT NULL,
+            contact_phone VARCHAR(20),
+            contact_email VARCHAR(255),
+            contact_discord VARCHAR(100),
+            images JSON,
+            location VARCHAR(200),
+            location_coords_x FLOAT,
+            location_coords_y FLOAT,
+            details JSON,
+            is_featured BOOLEAN DEFAULT FALSE,
+            views_count INT DEFAULT 0,
+            published_at DATETIME,
+            expires_at DATETIME,
+            sold_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_category (category),
+            INDEX idx_status (status),
+            INDEX idx_seller (seller_id)
+        )
+        """,
+        # Marketplace interests table
+        """
+        CREATE TABLE IF NOT EXISTS marketplace_interests (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            listing_id INT NOT NULL,
+            user_id INT NOT NULL,
+            message TEXT,
+            contact_phone VARCHAR(20),
+            is_read BOOLEAN DEFAULT FALSE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_listing (listing_id),
+            INDEX idx_user (user_id)
+        )
+        """,
+        # Map POIs table (if not exists)
+        """
+        CREATE TABLE IF NOT EXISTS map_pois (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            x_percent FLOAT NOT NULL,
+            y_percent FLOAT NOT NULL,
+            name VARCHAR(100) NOT NULL,
+            description TEXT,
+            category VARCHAR(50) DEFAULT 'altro',
+            icon VARCHAR(50),
+            color VARCHAR(20),
+            address VARCHAR(200),
+            phone VARCHAR(50),
+            website VARCHAR(200),
+            is_active BOOLEAN DEFAULT TRUE,
+            is_public BOOLEAN DEFAULT TRUE,
+            created_by INT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            updated_by INT,
+            INDEX idx_category (category),
+            INDEX idx_active (is_active)
+        )
+        """
+    ]
+    
     try:
         async with async_session() as session:
             for table, column, column_def in migrations:
