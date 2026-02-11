@@ -1134,7 +1134,7 @@ class JobGradePermission(Base):
     
     # Relationships
     job_grade = relationship("JobGrade", back_populates="grade_permissions")
-    permission = relationship("Permission")
+    permission = relationship("PermissionRecord")
     
     __table_args__ = (
         Index('idx_grade_perm_unique', 'job_grade_id', 'permission_id', unique=True),
