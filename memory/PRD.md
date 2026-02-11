@@ -412,6 +412,48 @@ React 18 + TailwindCSS
 
 ---
 
+## ✅ Stato Attuale (11/02/2026)
+
+### Iteration 20 - FASE 2 COMPLETATA (11/02/2026)
+
+#### 1. Sistema Reminder Agenda ✅
+- **Background Scheduler**: Task asincrono che verifica reminder ogni 60 secondi
+- **Intervalli reminder**: 24h, 1h, 15 minuti prima dell'appuntamento
+- **Notifiche WebSocket**: Invio su canali `nui:appointments`, `nui:notifications`
+- **Discord Webhook**: Integrazione webhook per reminder (URL configurabile per appuntamento)
+- **Evento NUI**: `PLOS_NOTIFY` per notifiche in-game
+
+#### 2. Audit Log Completo ✅
+- **Endpoint**: `GET /api/admin/audit?limit=N` - Ritorna log con struttura completa
+- **Azioni Tracciate**:
+  - `appointment_create`, `appointment_update` - Modulo Agenda
+  - `case_create`, `warrant_create`, `fine_create` - Modulo LSPD
+  - `warrant_execute` - Cambio stato mandato
+  - `login_success` - Autenticazione
+- **Struttura log**: id, action, description, user_email, game_name, sector, entity_type, entity_id, timestamp
+- **Fix admin.py**: Corretto uso colonna `timestamp` invece di `created_at`
+
+#### 3. Mappa CityPulse con Waypoint ✅
+- **Click POI → Waypoint**: Click su marker POI imposta destinazione
+- **Evento NUI**: `PLOS_SET_WAYPOINT` inviato a FiveM con coordinate GTA V
+- **Browser fallback**: Toast notification con info POI quando non in ambiente NUI
+- **Tooltip aggiornato**: Mostra indicazione "Click per impostare waypoint"
+- **Conversione coordinate**: Percentuale mappa → coordinate GTA V (approssimazione)
+
+### Modifiche File (11/02/2026)
+- `/app/backend/server.py` - Aggiunto reminder_scheduler task nel lifespan
+- `/app/backend/routers/admin.py` - Fix audit endpoint (timestamp column)
+- `/app/backend/routers/lspd.py` - Aggiunto audit log per case/warrant/fine
+- `/app/frontend/src/pages/CityPulsePage.jsx` - handleSetWaypoint(), useWaypoint hook
+
+### Test Results Iteration 20 (11/02/2026)
+- **Backend**: 22/22 test passati (100%)
+- **Frontend**: 100% funzionalità verificate
+- **Audit Log**: Correttamente popolato con azioni critiche
+- **Reminder Scheduler**: Avviato nel server lifespan
+
+---
+
 ## 🔜 Prossimi Task (P1 Continua)
 
 ### PC Realism Mode
