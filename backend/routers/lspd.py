@@ -121,6 +121,16 @@ async def create_case(
     db.add(timeline_event)
     await db.commit()
     
+    # Audit log
+    await log_audit(
+        db, AuditAction.CASE_CREATE,
+        user=current_user,
+        entity_type="case",
+        entity_id=case.id,
+        description=f"Creato caso: {case.case_number} - {case.title}",
+        metadata={"case_number": case.case_number, "priority": case.priority}
+    )
+    
     # Invalidate stats cache
     await ModuleCache.invalidate_stats("lspd")
     
