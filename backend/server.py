@@ -438,6 +438,10 @@ api_router.include_router(admin_rbac.router)
 from routers import documents
 api_router.include_router(documents.router)
 
+# Marketplace System
+from routers import marketplace
+api_router.include_router(marketplace.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
