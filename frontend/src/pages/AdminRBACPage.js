@@ -594,10 +594,9 @@ export default function AdminRBACPage() {
       {activeTab === 'sync' && <SyncTab api={api} />}
 
       {activeTab === 'audit' && (
-            
-            <div className="space-y-4">
-              {/* Alert informativo */}
-              <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+        <OsPanel>
+          <div className="flex items-center justify-between mb-4">
+            <OsSectionHeader title="Registro Attività (Audit Log)" icon={History} />
                 <AlertTriangle size={18} className="text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
                   <p className="font-medium text-blue-400 mb-1">Sincronizzazione Database FiveM</p>
