@@ -504,6 +504,12 @@ React 18 + TailwindCSS
 
 ## 🔜 Prossimi Task (Roadmap Post-P1 Admin)
 
+### ✅ P1 - Pannello Admin (COMPLETATO)
+- [x] Sistema RBAC job+grado+override
+- [x] Gerarchie italiane realistiche
+- [x] UI gestione completa
+- [x] Audit log con filtri ed export
+
 ### P1 - Documenti Verificabili con QR
 - [ ] Sistema gestione documenti (ID, patenti, licenze)
 - [ ] Generazione QR code univoco per verifica
