@@ -56,6 +56,9 @@ import AdminRBACPage from './pages/AdminRBACPage';
 import DocumentsPage from './pages/documents/DocumentsPage';
 import VerifyDocumentPage from './pages/public/VerifyDocumentPage';
 
+// Marketplace
+import MarketplacePage from './pages/marketplace/MarketplacePage';
+
 // City Pulse (UNIQUE FEATURE)
 import CityPulsePage from './pages/CityPulsePage';
 
