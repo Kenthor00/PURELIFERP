@@ -257,6 +257,16 @@ async def create_warrant(
     
     await db.commit()
     
+    # Audit log
+    await log_audit(
+        db, AuditAction.WARRANT_CREATE,
+        user=current_user,
+        entity_type="warrant",
+        entity_id=warrant.id,
+        description=f"Emesso mandato: {warrant.warrant_number} per {warrant.suspect_name}",
+        metadata={"warrant_number": warrant.warrant_number, "suspect_name": warrant.suspect_name, "case_id": request.case_id}
+    )
+    
     await sse_manager.broadcast("warrant_issued", {
         "warrant_id": warrant.id,
         "warrant_number": warrant.warrant_number,
