@@ -297,6 +297,7 @@ export default function AdminRBACPage() {
               setActiveTab(tab.id);
               if (tab.id === 'utenti') fetchUsers();
               if (tab.id === 'audit') fetchAuditLogs();
+              if (tab.id === 'sync') fetchSyncConfig();
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
               activeTab === tab.id
