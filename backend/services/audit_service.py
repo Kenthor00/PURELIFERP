@@ -190,3 +190,30 @@ class AuditService:
 
 # Singleton instance
 audit_service = AuditService()
+
+
+# Convenience function for logging
+async def log_audit(
+    db: AsyncSession,
+    user: Optional[User],
+    action: AuditAction,
+    entity_type: Optional[str] = None,
+    entity_id: Optional[int] = None,
+    description: Optional[str] = None,
+    extra_data: Optional[Dict[str, Any]] = None,
+    request: Optional[Request] = None
+) -> AuditLog:
+    """
+    Convenience function per registrare log di audit.
+    Wrapper per AuditService.log()
+    """
+    return await AuditService.log(
+        db=db,
+        action=action,
+        user=user,
+        entity_type=entity_type,
+        entity_id=entity_id,
+        description=description,
+        metadata=extra_data,
+        request=request
+    )
