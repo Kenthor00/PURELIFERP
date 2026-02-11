@@ -581,6 +581,14 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/rbac"
+          element={
+            <ProtectedRoute allowedSectors={['ADMIN']}>
+              <AdminRBACPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Sector Chief Routes */}
         <Route
