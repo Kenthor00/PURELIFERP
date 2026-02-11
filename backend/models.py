@@ -541,6 +541,119 @@ class User(Base):
 # AUDIT LOG MODEL
 # ==========================================
 
+# ==========================================
+# SISTEMA DOCUMENTI CON QR
+# ==========================================
+
+class DocumentType(Base):
+    """Tipi di documento (Carta ID, Patente, Licenze, etc.)"""
+    __tablename__ = "document_types"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(String(50), unique=True, nullable=False)
+    name = Column(String(100), nullable=False)
+    name_short = Column(String(50), nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String(50), default="general")  # identity, driving, permit, professional
+    issuing_authority = Column(String(100), nullable=False)
+    has_expiry = Column(Boolean, default=False)
+    default_validity_days = Column(Integer, nullable=True)
+    required_fields = Column(JSON, nullable=True)
+    icon = Column(String(50), default="FileText")
+    color = Column(String(20), default="#00FF88")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    documents = relationship("Document", back_populates="document_type")
+
+
+class Document(Base):
+    """Documento emesso a un cittadino"""
+    __tablename__ = "documents"
+    
+    id = Column(String(36), primary_key=True)  # UUID
+    document_number = Column(String(50), unique=True, nullable=False)
+    type_id = Column(Integer, ForeignKey("document_types.id"), nullable=False)
+    
+    # Dati cittadino
+    citizen_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    citizen_name = Column(String(100), nullable=False)
+    citizen_surname = Column(String(100), nullable=False)
+    citizen_dob = Column(DateTime, nullable=True)
+    citizen_photo_url = Column(String(500), nullable=True)
+    citizen_identifier = Column(String(50), nullable=True)  # Codice fiscale, ID RP, etc.
+    
+    # Emissione
+    issued_by = Column(Integer, ForeignKey("user.id"), nullable=False)
+    issued_by_name = Column(String(100), nullable=False)
+    issued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    issuing_office = Column(String(100), nullable=True)
+    
+    # Scadenza
+    expires_at = Column(DateTime, nullable=True)
+    
+    # Stato
+    status = Column(Enum(DocumentStatus), default=DocumentStatus.VALID)
+    status_reason = Column(Text, nullable=True)
+    status_changed_at = Column(DateTime, nullable=True)
+    status_changed_by = Column(Integer, ForeignKey("user.id"), nullable=True)
+    
+    # Dati aggiuntivi
+    extra_data = Column(JSON, nullable=True)
+    
+    # QR Verification
+    qr_signature = Column(String(64), nullable=False)
+    verify_token = Column(String(32), unique=True, nullable=False)
+    
+    # Metadata
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    document_type = relationship("DocumentType", back_populates="documents")
+    citizen = relationship("User", foreign_keys=[citizen_id], backref="documents_owned")
+    issuer = relationship("User", foreign_keys=[issued_by], backref="documents_issued")
+    status_changer = relationship("User", foreign_keys=[status_changed_by])
+    events = relationship("DocumentEvent", back_populates="document", cascade="all, delete-orphan", order_by="DocumentEvent.created_at.desc()")
+    
+    __table_args__ = (
+        Index('ix_documents_citizen', 'citizen_id'),
+        Index('ix_documents_type', 'type_id'),
+        Index('ix_documents_status', 'status'),
+        Index('ix_documents_number', 'document_number'),
+        Index('ix_documents_verify_token', 'verify_token'),
+    )
+
+
+class DocumentEvent(Base):
+    """Eventi/Timeline di un documento"""
+    __tablename__ = "document_events"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    document_id = Column(String(36), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
+    event_type = Column(Enum(DocumentEventType), nullable=False)
+    event_data = Column(JSON, nullable=True)
+    old_status = Column(String(20), nullable=True)
+    new_status = Column(String(20), nullable=True)
+    reason = Column(Text, nullable=True)
+    performed_by = Column(Integer, ForeignKey("user.id"), nullable=False)
+    performed_by_name = Column(String(100), nullable=False)
+    ip_address = Column(String(45), nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    document = relationship("Document", back_populates="events")
+    performer = relationship("User", backref="document_events_performed")
+    
+    __table_args__ = (
+        Index('ix_doc_events_document', 'document_id'),
+        Index('ix_doc_events_type', 'event_type'),
+        Index('ix_doc_events_date', 'created_at'),
+    )
+
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     
