@@ -91,7 +91,7 @@ async def get_audit_log(
     try:
         result = await db.execute(
             select(AuditLog)
-            .order_by(AuditLog.created_at.desc())
+            .order_by(AuditLog.timestamp.desc())
             .limit(limit)
         )
         logs = result.scalars().all()
@@ -100,11 +100,13 @@ async def get_audit_log(
             {
                 "id": log.id,
                 "action": log.action.value if hasattr(log.action, 'value') else str(log.action),
-                "description": log.description or log.action.value if hasattr(log.action, 'value') else str(log.action),
+                "description": log.description or (log.action.value if hasattr(log.action, 'value') else str(log.action)),
                 "user_email": log.user_email,
+                "game_name": log.game_name,
+                "sector": log.sector.value if log.sector and hasattr(log.sector, 'value') else str(log.sector),
                 "entity_type": log.entity_type,
                 "entity_id": log.entity_id,
-                "created_at": log.created_at.isoformat() if log.created_at else None
+                "timestamp": log.timestamp.isoformat() if log.timestamp else None
             }
             for log in logs
         ]
