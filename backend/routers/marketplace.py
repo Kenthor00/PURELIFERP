@@ -646,7 +646,7 @@ async def express_interest(
     await db.refresh(interest)
     
     # Notifica WebSocket al venditore
-    await ws_manager.send_to_user(
+    await ws_manager.send_personal(
         listing.seller_id,
         {
             "type": WSEventType.MARKETPLACE_INTEREST,
@@ -848,7 +848,7 @@ async def moderate_listing(
     )
     
     # Notifica WebSocket al venditore
-    await ws_manager.send_to_user(
+    await ws_manager.send_personal(
         listing.seller_id,
         {
             "type": WSEventType.MARKETPLACE_MODERATION,
