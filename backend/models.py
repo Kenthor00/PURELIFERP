@@ -220,6 +220,13 @@ class AuditAction(str, enum.Enum):
     USER_DELETE_HARD = "user_delete_hard"  # Eliminazione definitiva
     GRADE_CHANGE = "grade_change"
     
+    # RBAC - Sistema Ruoli/Permessi
+    ROLE_ASSIGN = "role_assign"
+    ROLE_REVOKE = "role_revoke"
+    PERMISSION_CHANGE = "permission_change"
+    JOB_CHANGE = "job_change"
+    AUDIT_EXPORT = "audit_export"
+    
     # Chat
     MESSAGE_SEND = "message_send"
     CHANNEL_CREATE = "channel_create"
