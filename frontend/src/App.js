@@ -610,6 +610,16 @@ const AppRoutes = () => {
           }
         />
 
+        {/* Marketplace Routes */}
+        <Route
+          path="/marketplace"
+          element={
+            <ProtectedRoute>
+              <MarketplacePage />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Sector Chief Routes */}
         <Route
           path="/sector-management"
