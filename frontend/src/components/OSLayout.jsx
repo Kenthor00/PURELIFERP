@@ -114,6 +114,16 @@ const getNavModules = (role) => {
     color: '#06b6d4',
   });
   
+  // Marketplace (always)
+  modules.push({
+    id: 'marketplace',
+    path: '/marketplace',
+    icon: ShoppingBag,
+    label: 'MERCATO',
+    sublabel: 'Annunci',
+    color: '#f59e0b',
+  });
+  
   // Admin
   if (role === 'admin') {
     modules.push({
