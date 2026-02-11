@@ -1,15 +1,18 @@
 """
 PURE LIFE OS - RBAC Sync Service
 Sincronizzazione Job/Gradi da ESX e QBCore
+Supporta configurazione via .env per connessione automatica
 """
+import os
 import logging
 import json
 from datetime import datetime, timezone
 from typing import Optional, Dict, List, Tuple, Any
 from enum import Enum
 from dataclasses import dataclass, asdict
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy import select, text, and_
+from sqlalchemy.orm import sessionmaker
 
 from models import Job, JobGrade, AuditLog, AuditAction
 
@@ -25,6 +28,52 @@ class SyncSource(str, Enum):
     AUTO = "auto"      # Rileva automaticamente
     ESX = "esx"        # ESX Framework (tabelle jobs, job_grades)
     QBCORE = "qbcore"  # QBCore (shared/jobs.lua o qb_jobs table)
+
+
+@dataclass
+class FiveMDbConfig:
+    """Configurazione database FiveM da variabili d'ambiente"""
+    enabled: bool = False
+    host: str = ""
+    port: int = 3306
+    name: str = ""
+    user: str = ""
+    password: str = ""
+    framework: str = "auto"  # auto, esx, qbcore
+    
+    @classmethod
+    def from_env(cls) -> 'FiveMDbConfig':
+        """Carica configurazione da variabili d'ambiente"""
+        return cls(
+            enabled=os.environ.get('FIVEM_DB_ENABLED', 'false').lower() == 'true',
+            host=os.environ.get('FIVEM_DB_HOST', ''),
+            port=int(os.environ.get('FIVEM_DB_PORT', '3306')),
+            name=os.environ.get('FIVEM_DB_NAME', ''),
+            user=os.environ.get('FIVEM_DB_USER', ''),
+            password=os.environ.get('FIVEM_DB_PASS', ''),
+            framework=os.environ.get('FIVEM_DB_FRAMEWORK', 'auto').lower()
+        )
+    
+    def is_valid(self) -> bool:
+        """Verifica che la configurazione sia completa"""
+        return bool(self.enabled and self.host and self.name and self.user)
+    
+    def get_connection_url(self) -> str:
+        """Genera URL di connessione MySQL"""
+        return f"mysql+aiomysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+    
+    def get_masked_info(self) -> Dict[str, Any]:
+        """Restituisce info con password mascherata per log/UI"""
+        return {
+            "enabled": self.enabled,
+            "host": self.host,
+            "port": self.port,
+            "database": self.name,
+            "user": self.user,
+            "password": "***" if self.password else "",
+            "framework": self.framework,
+            "is_valid": self.is_valid()
+        }
 
 
 @dataclass
@@ -57,6 +106,7 @@ class SyncReport:
     errors: List[str] = None
     items: List[Dict] = None
     duration_ms: int = 0
+    connection_source: str = "manual"  # 'env' o 'manual'
 
     def __post_init__(self):
         if self.errors is None:
