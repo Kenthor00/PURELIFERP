@@ -510,17 +510,19 @@ React 18 + TailwindCSS
 - [x] UI gestione completa
 - [x] Audit log con filtri ed export
 
-### P1 - Documenti Verificabili con QR
-- [ ] Sistema gestione documenti (ID, patenti, licenze)
-- [ ] Generazione QR code univoco per verifica
-- [ ] Pagina pubblica verifica documento via QR
-- [ ] Audit log per emissione/revoca documenti
+### P1 - Documenti Verificabili con QR ✅ (11/02/2026)
+- ✅ Sistema gestione documenti (ID, patenti, licenze)
+- ✅ Generazione QR code univoco per verifica
+- ✅ Pagina pubblica verifica documento via QR
+- ✅ Audit log per emissione/revoca documenti
+- ✅ Azioni operative: Sospendi, Revoca, Riattiva con motivazione
 
-### P1 - Marketplace
-- [ ] Modulo annunci (veicoli, immobili, lavoro, servizi)
-- [ ] CRUD annunci con immagini
-- [ ] Filtri e ricerca
-- [ ] Contatto venditore
+### P1 - Marketplace ✅ (11/02/2026)
+- ✅ Modulo annunci (veicoli, immobili, lavoro, servizi)
+- ✅ CRUD annunci con moderazione staff
+- ✅ Filtri e ricerca
+- ✅ Manifestazione interesse
+- ✅ Notifiche WebSocket real-time
 
 ### P1 - Pannello Admin RBAC ✅ (11/02/2026)
 - ✅ Interfaccia gestione ruoli/permessi - Pagina `/admin/rbac` con 6 tab
