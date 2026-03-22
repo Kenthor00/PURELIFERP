@@ -41,7 +41,7 @@ class LoginResponse(BaseModel):
     name: str
     email: str
     sector: str
-    grade: str
+    grade: int
     hierarchy_level: int
     is_sector_chief: bool
     game_name: Optional[str]
