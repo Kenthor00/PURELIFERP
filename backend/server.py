@@ -270,13 +270,25 @@ async def sse_events(
     )
 
 
-# CORS
+# CORS - Configurato per FiveM NUI e browser
+# Include supporto per cfx-nui-* origins
+cors_origins = [
+    "*",  # Permette tutte le origini
+    "https://cfx-nui-purelife_computer",
+    "https://cfx-nui-purelife_computer/",
+    "nui://purelife_computer",
+    "nui://game",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://cfx-nui-.*",  # Permette tutti i cfx-nui-*
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
 
