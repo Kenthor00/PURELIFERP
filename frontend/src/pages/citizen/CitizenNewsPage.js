@@ -29,7 +29,7 @@ const CitizenNewsPage = () => {
 
   if (selected) {
     return (
-      <div className="p-4 sm:p-6 max-w-3xl mx-auto" data-testid="news-detail">
+      <div className="max-w-3xl" data-testid="news-detail">
         <button onClick={() => setSelected(null)} className="text-xs text-plos-text-secondary hover:text-white mb-4 flex items-center gap-1">
           ← Torna alle news
         </button>
@@ -52,7 +52,7 @@ const CitizenNewsPage = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-4xl mx-auto" data-testid="citizen-news-page">
+    <div className="space-y-4 max-w-4xl" data-testid="citizen-news-page">
       <div>
         <h1 className="text-xl font-bold text-white flex items-center gap-2"><Newspaper size={22} className="text-yellow-400" /> Weazel News</h1>
         <p className="text-xs text-plos-text-secondary mt-1">Ultime notizie da Los Santos</p>

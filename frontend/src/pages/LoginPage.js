@@ -230,7 +230,7 @@ export const LoginPage = () => {
 
           <div className="mt-6 pt-4 border-t border-plos-border">
             <p className="text-plos-text-muted text-xs text-center mono">
-              v1.0.0 | SISTEMA PROTETTO
+              v3.7.0 | SISTEMA PROTETTO
             </p>
           </div>
         </div>

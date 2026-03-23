@@ -303,7 +303,7 @@ export const OSLayout = ({ children }) => {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#0a0f12]">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#060a0d]">
       {/* System Bar - Top */}
       <SystemBar 
         alertLevel={alertLevel} 
@@ -312,39 +312,39 @@ export const OSLayout = ({ children }) => {
       
       {/* Main Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - Module Navigation */}
-        <aside className="w-20 lg:w-64 flex-shrink-0 bg-[#0f1519] border-r border-[#1b2a30] flex flex-col">
+        {/* Sidebar - Always expanded for laptop */}
+        <aside className="w-56 flex-shrink-0 bg-[#0a0e12] border-r border-[#adff2f]/8 flex flex-col">
           {/* User Info */}
-          <div className="p-3 lg:p-4 border-b border-[#1b2a30]">
-            <div className="flex items-center gap-3">
+          <div className="px-3 py-2.5 border-b border-[#adff2f]/8">
+            <div className="flex items-center gap-2.5">
               {/* Avatar */}
-              <div className="w-10 h-10 rounded-lg bg-[#1b2a30] flex items-center justify-center border border-[#243038]">
-                <span className="text-sm font-bold text-[#adff2f]">
+              <div className="w-8 h-8 rounded-md bg-[#adff2f]/10 flex items-center justify-center border border-[#adff2f]/20">
+                <span className="text-xs font-bold text-[#adff2f]">
                   {user?.game_name?.[0] || user?.name?.[0] || '?'}
                 </span>
               </div>
               
-              {/* Info - Hidden on mobile */}
-              <div className="hidden lg:block flex-1 min-w-0">
-                <p className="text-xs font-bold text-[#e6f1f2] truncate">
+              {/* Info - Always visible on laptop */}
+              <div className="flex-1 min-w-0">
+                <p className="text-[0.6875rem] font-bold text-[#e6f1f2] truncate leading-tight">
                   {user?.game_name || user?.name || 'Utente'}
                 </p>
-                <p className="text-[0.625rem] text-[#7f9aa3] uppercase tracking-wider">
+                <p className="text-[0.5625rem] text-[#adff2f]/50 uppercase tracking-[0.15em] leading-tight">
                   {user?.sector || 'CIVIL'}
                 </p>
               </div>
               
               {/* Status Dot */}
-              <div className={`w-2 h-2 rounded-full ${
-                presence === 'online' ? 'bg-[#adff2f]' : 
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                presence === 'online' ? 'bg-[#adff2f] shadow-[0_0_6px_#adff2f]' : 
                 presence === 'in_service' ? 'bg-[#ffc857]' : 'bg-[#4a6670]'
               }`} />
             </div>
           </div>
           
           {/* Navigation Modules */}
-          <nav className="flex-1 py-2 overflow-y-auto">
-            <div className="space-y-1 px-2">
+          <nav className="flex-1 py-1.5 overflow-y-auto scrollbar-thin">
+            <div className="space-y-0.5 px-2">
               {modules.map((module, index) => {
                 const Icon = module.icon;
                 const isActive = location.pathname.startsWith(module.path);
@@ -354,57 +354,54 @@ export const OSLayout = ({ children }) => {
                     key={module.id}
                     to={module.path}
                     className={`
-                      group flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200
+                      group flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all duration-200 relative
                       ${isActive 
-                        ? 'bg-[#1b2a30] border border-[#243038]' 
-                        : 'hover:bg-[#1b2a30]/50 border border-transparent'
+                        ? 'bg-[#adff2f]/8' 
+                        : 'hover:bg-white/3 border border-transparent'
                       }
                     `}
-                    style={{
-                      animationDelay: `${index * 50}ms`
-                    }}
+                    style={isActive ? {
+                      border: `1px solid ${module.color}25`,
+                      boxShadow: `inset 0 0 20px ${module.color}08, 0 0 8px ${module.color}06`
+                    } : undefined}
                   >
-                    {/* Icon Container */}
+                    {/* Active bar */}
+                    {isActive && (
+                      <div 
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
+                        style={{ backgroundColor: module.color, boxShadow: `0 0 8px ${module.color}` }}
+                      />
+                    )}
+                    
+                    {/* Icon */}
                     <div 
                       className={`
-                        w-9 h-9 rounded-md flex items-center justify-center transition-all
-                        ${isActive 
-                          ? 'bg-opacity-20' 
-                          : 'bg-[#1b2a30] group-hover:bg-opacity-30'
-                        }
+                        w-7 h-7 rounded flex items-center justify-center transition-all flex-shrink-0
+                        ${isActive ? '' : 'bg-[#1b2a30]/40 group-hover:bg-[#1b2a30]/60'}
                       `}
-                      style={{ 
-                        backgroundColor: isActive ? `${module.color}20` : undefined,
-                        boxShadow: isActive ? `0 0 12px ${module.color}20` : undefined
-                      }}
+                      style={isActive ? { 
+                        backgroundColor: `${module.color}15`,
+                      } : undefined}
                     >
                       <Icon 
-                        size={18} 
+                        size={15} 
                         style={{ color: isActive ? module.color : '#7f9aa3' }}
                         className="transition-colors"
                       />
                     </div>
                     
-                    {/* Label - Hidden on mobile */}
-                    <div className="hidden lg:block flex-1 min-w-0">
+                    {/* Label - Always visible */}
+                    <div className="flex-1 min-w-0">
                       <p 
-                        className="text-[0.6875rem] font-bold tracking-wider transition-colors"
-                        style={{ color: isActive ? module.color : '#e6f1f2' }}
+                        className="text-[0.625rem] font-bold tracking-[0.1em] transition-colors leading-tight"
+                        style={{ color: isActive ? module.color : '#c0cdd0' }}
                       >
                         {module.label}
                       </p>
-                      <p className="text-[0.5625rem] text-[#4a6670] tracking-wide">
+                      <p className="text-[0.5rem] text-[#4a6670] tracking-wide leading-tight">
                         {module.sublabel}
                       </p>
                     </div>
-                    
-                    {/* Active Indicator */}
-                    {isActive && (
-                      <div 
-                        className="hidden lg:block w-1 h-8 rounded-full"
-                        style={{ backgroundColor: module.color }}
-                      />
-                    )}
                   </NavLink>
                 );
               })}
@@ -412,42 +409,42 @@ export const OSLayout = ({ children }) => {
           </nav>
           
           {/* Bottom Actions */}
-          <div className="border-t border-[#1b2a30] p-2 space-y-1">
+          <div className="border-t border-[#adff2f]/8 p-1.5 space-y-0.5">
             {/* Command Palette */}
             <button
               onClick={() => setCommandPaletteOpen(true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[#7f9aa3] hover:bg-[#1b2a30]/50 transition-colors"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[#7f9aa3] hover:bg-white/3 transition-colors"
             >
-              <Command size={16} />
-              <span className="hidden lg:inline text-[0.6875rem] tracking-wider">COMANDI</span>
-              <kbd className="hidden lg:inline ml-auto text-[0.5625rem] px-1.5 py-0.5 bg-[#1b2a30] rounded border border-[#243038]">
-                ⌘K
+              <Command size={14} />
+              <span className="text-[0.625rem] tracking-wider">COMANDI</span>
+              <kbd className="ml-auto text-[0.5rem] px-1 py-0.5 bg-[#1b2a30] rounded border border-[#243038] font-mono">
+                Ctrl+K
               </kbd>
             </button>
             
             {/* Settings */}
             <button
               onClick={() => navigate('/settings')}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[#7f9aa3] hover:bg-[#1b2a30]/50 transition-colors"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[#7f9aa3] hover:bg-white/3 transition-colors"
             >
-              <Settings size={16} />
-              <span className="hidden lg:inline text-[0.6875rem] tracking-wider">IMPOSTAZIONI</span>
+              <Settings size={14} />
+              <span className="text-[0.625rem] tracking-wider">IMPOSTAZIONI</span>
             </button>
             
             {/* Logout */}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[#ff3b3b] hover:bg-[#ff3b3b]/10 transition-colors"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[#ff3b3b]/70 hover:bg-[#ff3b3b]/8 hover:text-[#ff3b3b] transition-colors"
             >
-              <LogOut size={16} />
-              <span className="hidden lg:inline text-[0.6875rem] tracking-wider">ESCI</span>
+              <LogOut size={14} />
+              <span className="text-[0.625rem] tracking-wider">ESCI</span>
             </button>
           </div>
         </aside>
         
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto bg-[#0a0f12]">
-          <div className="p-4 lg:p-6 min-h-full">
+        <main className="flex-1 overflow-y-auto bg-[#060a0d]">
+          <div className="p-4 min-h-full">
             {children}
           </div>
         </main>

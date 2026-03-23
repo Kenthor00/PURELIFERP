@@ -45,7 +45,7 @@ const MyFinesPage = () => {
   const totalDebt = fines.filter(f => !f.is_paid).reduce((sum, f) => sum + f.amount, 0);
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-4xl mx-auto" data-testid="my-fines-page">
+    <div className="space-y-4 max-w-4xl" data-testid="my-fines-page">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2"><Receipt size={22} /> Le Mie Multe</h1>

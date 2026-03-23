@@ -1,6 +1,7 @@
 /**
- * PURE LIFE OS 3.0 - SISTEMA OPERATIVO GOVERNATIVO
- * Design System - Palette Istituzionale Tecnologica
+ * PURE LIFE OS 3.7 - SISTEMA OPERATIVO GOVERNATIVO
+ * Design System - Lime Green (#adff2f) + Deep Black
+ * Ottimizzato per laptop in-game FiveM
  */
 
 :root {
@@ -8,12 +9,12 @@
      SISTEMA OPERATIVO GOVERNATIVO - PALETTE UFFICIALE
      ═══════════════════════════════════════════════════════ */
   
-  /* Background Layers */
-  --os-bg-base: #0a0f12;
-  --os-bg-layer: rgba(18, 25, 30, 0.75);
-  --os-bg-card: #0f1519;
-  --os-bg-elevated: #141c22;
-  --os-bg-hover: #1a252d;
+  /* Background Layers - Deeper blacks */
+  --os-bg-base: #060a0d;
+  --os-bg-layer: rgba(10, 14, 18, 0.85);
+  --os-bg-card: #0a0e12;
+  --os-bg-elevated: #0f1419;
+  --os-bg-hover: #141c22;
   
   /* Borders */
   --os-border: #1b2a30;
@@ -847,3 +848,55 @@ body::before {
 .presence-dot.in_service { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
 .presence-dot.off_duty { background: #eab308; }
 .presence-dot.offline { background: #6b7280; }
+
+
+/* ==========================================
+   LAPTOP IN-GAME OPTIMIZATIONS
+   ========================================== */
+
+/* Custom Scrollbar - Thin & Lime */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(173, 255, 47, 0.15);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(173, 255, 47, 0.3);
+}
+
+/* Glow Effects */
+.glow-lime {
+  box-shadow: 0 0 15px rgba(173, 255, 47, 0.1), inset 0 0 15px rgba(173, 255, 47, 0.03);
+}
+.glow-lime-strong {
+  box-shadow: 0 0 20px rgba(173, 255, 47, 0.2), 0 0 40px rgba(173, 255, 47, 0.05);
+}
+.border-glow-lime {
+  border-color: rgba(173, 255, 47, 0.15);
+}
+
+/* Text glow */
+.text-glow-lime {
+  text-shadow: 0 0 10px rgba(173, 255, 47, 0.3);
+}
+
+/* Focus States - Lime */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: rgba(173, 255, 47, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(173, 255, 47, 0.08) !important;
+}
+
+/* Remove default mobile tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Presence dots with lime */
+.presence-dot.online { background: #adff2f; box-shadow: 0 0 6px #adff2f; }

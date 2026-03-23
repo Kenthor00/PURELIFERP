@@ -29,7 +29,7 @@ const MyWarrantsPage = () => {
   const active = warrants.filter(w => w.is_active);
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-4xl mx-auto" data-testid="my-warrants-page">
+    <div className="space-y-4 max-w-4xl" data-testid="my-warrants-page">
       <div>
         <h1 className="text-xl font-bold text-white flex items-center gap-2"><Scale size={22} /> I Miei Mandati</h1>
         <p className="text-xs text-plos-text-secondary mt-1">Controlla se hai mandati attivi</p>

@@ -130,7 +130,7 @@ const TicketsPage = ({ isStaff = false }) => {
   if (selectedTicket && ticketDetail) {
     const st = STATUS_MAP[ticketDetail.status] || STATUS_MAP.open;
     return (
-      <div className="p-4 sm:p-6 space-y-4 max-w-4xl mx-auto" data-testid="ticket-detail">
+      <div className="space-y-4 max-w-4xl" data-testid="ticket-detail">
         <button onClick={() => { setSelectedTicket(null); setTicketDetail(null); }} className="flex items-center gap-1 text-xs text-plos-text-secondary hover:text-white transition-colors">
           <ArrowLeft size={14} /> Torna alla lista
         </button>
@@ -189,7 +189,7 @@ const TicketsPage = ({ isStaff = false }) => {
   // ============ CREATE VIEW ============
   if (showCreate) {
     return (
-      <div className="p-4 sm:p-6 max-w-2xl mx-auto" data-testid="ticket-create">
+      <div className="max-w-2xl" data-testid="ticket-create">
         <button onClick={() => setShowCreate(false)} className="flex items-center gap-1 text-xs text-plos-text-secondary hover:text-white transition-colors mb-4">
           <ArrowLeft size={14} /> Torna alla lista
         </button>
@@ -230,7 +230,7 @@ const TicketsPage = ({ isStaff = false }) => {
 
   // ============ LIST VIEW ============
   return (
-    <div className="p-4 sm:p-6 space-y-4 max-w-4xl mx-auto" data-testid="tickets-page">
+    <div className="space-y-4 max-w-4xl" data-testid="tickets-page">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
