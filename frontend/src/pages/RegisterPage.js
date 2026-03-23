@@ -105,8 +105,8 @@ export const RegisterPage = () => {
       <div className="min-h-screen tactical-bg flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="glass-card rounded-xl p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/20 rounded-full mb-4">
-              <CheckCircle className="w-8 h-8 text-green-500" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-lime-500/20 rounded-full mb-4">
+              <CheckCircle className="w-8 h-8 text-lime-500" />
             </div>
             <h1 className="font-heading text-2xl mb-2">Registrazione Completata!</h1>
             <p className="text-plos-text-secondary mb-4">

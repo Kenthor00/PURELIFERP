@@ -123,7 +123,7 @@ export const CaseDetailPage = () => {
     const colors = {
       'open': 'text-orange-500 border-orange-500 bg-orange-500/10',
       'investigating': 'text-blue-500 border-blue-500 bg-blue-500/10',
-      'closed': 'text-green-500 border-green-500 bg-green-500/10',
+      'closed': 'text-lime-500 border-lime-500 bg-lime-500/10',
       'archived': 'text-gray-500 border-gray-500 bg-gray-500/10',
     };
     return colors[status] || 'text-plos-text-muted border-plos-border';

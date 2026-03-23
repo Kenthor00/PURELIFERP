@@ -21,7 +21,7 @@ export const OsStatCard = ({
     'blue': { bg: 'from-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', glow: 'rgba(59,130,246,0.1)' },
     'orange': { bg: 'from-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400', glow: 'rgba(249,115,22,0.1)' },
     'red': { bg: 'from-red-500/10', border: 'border-red-500/30', text: 'text-red-400', glow: 'rgba(239,68,68,0.1)' },
-    'green': { bg: 'from-green-500/10', border: 'border-green-500/30', text: 'text-green-400', glow: 'rgba(34,197,94,0.1)' },
+    'green': { bg: 'from-lime-500/10', border: 'border-lime-500/30', text: 'text-lime-400', glow: 'rgba(34,197,94,0.1)' },
     'purple': { bg: 'from-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', glow: 'rgba(168,85,247,0.1)' },
     'cyan': { bg: 'from-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', glow: 'rgba(6,182,212,0.1)' },
     'plos-primary': { bg: 'from-plos-primary/10', border: 'border-plos-primary/30', text: 'text-plos-primary', glow: 'rgba(0,255,156,0.1)' },
@@ -55,7 +55,7 @@ export const OsStatCard = ({
             <p className="text-plos-text-muted text-xs mt-1">{subtitle}</p>
           )}
           {trend !== undefined && (
-            <div className={`mt-2 text-xs flex items-center gap-1 ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`mt-2 text-xs flex items-center gap-1 ${trend >= 0 ? 'text-lime-400' : 'text-red-400'}`}>
               <span className={trend < 0 ? 'rotate-180' : ''}>↑</span>
               <span>{Math.abs(trend)}% oggi</span>
             </div>
@@ -86,7 +86,7 @@ export const OsSectionHeader = ({ icon: Icon, title, action, actionLabel, color 
     'blue': 'bg-blue-500/20 text-blue-400',
     'orange': 'bg-orange-500/20 text-orange-400',
     'red': 'bg-red-500/20 text-red-400',
-    'green': 'bg-green-500/20 text-green-400',
+    'green': 'bg-lime-500/20 text-lime-400',
     'purple': 'bg-purple-500/20 text-purple-400',
     'plos-primary': 'bg-plos-primary/20 text-plos-primary',
   };
@@ -139,7 +139,7 @@ export const OsListRow = ({ children, onClick, index = 0 }) => (
 export const OsBadge = ({ children, variant = 'default' }) => {
   const variants = {
     default: 'bg-plos-surface text-plos-text-secondary border-plos-border',
-    success: 'bg-green-500/20 text-green-400 border-green-500/30',
+    success: 'bg-lime-500/20 text-lime-400 border-lime-500/30',
     warning: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     danger: 'bg-red-500/20 text-red-400 border-red-500/30',
     info: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -193,7 +193,7 @@ export const OsQuickAction = ({ icon: Icon, title, subtitle, onClick, color = 'p
     'blue': { bg: 'from-blue-500/10', border: 'border-blue-500/20 hover:border-blue-500/50', shadow: 'hover:shadow-blue-500/10', text: 'text-blue-400', circle: 'bg-blue-500/5' },
     'orange': { bg: 'from-orange-500/10', border: 'border-orange-500/20 hover:border-orange-500/50', shadow: 'hover:shadow-orange-500/10', text: 'text-orange-400', circle: 'bg-orange-500/5' },
     'red': { bg: 'from-red-500/10', border: 'border-red-500/20 hover:border-red-500/50', shadow: 'hover:shadow-red-500/10', text: 'text-red-400', circle: 'bg-red-500/5' },
-    'green': { bg: 'from-green-500/10', border: 'border-green-500/20 hover:border-green-500/50', shadow: 'hover:shadow-green-500/10', text: 'text-green-400', circle: 'bg-green-500/5' },
+    'green': { bg: 'from-lime-500/10', border: 'border-lime-500/20 hover:border-lime-500/50', shadow: 'hover:shadow-lime-500/10', text: 'text-lime-400', circle: 'bg-lime-500/5' },
     'plos-primary': { bg: 'from-plos-primary/10', border: 'border-plos-primary/20 hover:border-plos-primary/50', shadow: 'hover:shadow-plos-primary/10', text: 'text-plos-primary', circle: 'bg-plos-primary/5' },
   };
   

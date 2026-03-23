@@ -193,7 +193,7 @@ const AppointmentsPage = () => {
   const getStatusBadge = (status) => {
     const badges = {
       pending: { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50', icon: Clock, label: 'In Attesa' },
-      accepted: { color: 'bg-green-500/20 text-green-400 border-green-500/50', icon: CheckCircle, label: 'Accettato' },
+      accepted: { color: 'bg-lime-500/20 text-lime-400 border-lime-500/50', icon: CheckCircle, label: 'Accettato' },
       rejected: { color: 'bg-red-500/20 text-red-400 border-red-500/50', icon: XCircle, label: 'Rifiutato' },
       completed: { color: 'bg-blue-500/20 text-blue-400 border-blue-500/50', icon: CheckCircle, label: 'Completato' },
       cancelled: { color: 'bg-gray-500/20 text-gray-400 border-gray-500/50', icon: XCircle, label: 'Annullato' },
@@ -211,7 +211,7 @@ const AppointmentsPage = () => {
   const getStatusColor = (status) => {
     const colors = {
       pending: 'border-l-yellow-500 bg-yellow-500/5',
-      accepted: 'border-l-green-500 bg-green-500/5',
+      accepted: 'border-l-lime-500 bg-lime-500/5',
       rejected: 'border-l-red-500 bg-red-500/5',
       completed: 'border-l-blue-500 bg-blue-500/5',
       cancelled: 'border-l-gray-500 bg-gray-500/5',
@@ -221,7 +221,7 @@ const AppointmentsPage = () => {
 
   const getUrgencyBadge = (urgency) => {
     const badges = {
-      low: 'text-green-400 bg-green-500/10',
+      low: 'text-lime-400 bg-lime-500/10',
       normal: 'text-yellow-400 bg-yellow-500/10',
       high: 'text-red-400 bg-red-500/10',
     };
@@ -499,7 +499,7 @@ const AppointmentsPage = () => {
                       <h3 className="font-medium mb-1">{apt.subject}</h3>
                       <p className="text-sm text-plos-text-secondary mb-2">{apt.description}</p>
                       {apt.scheduled_date && (
-                        <p className="text-sm text-green-400">
+                        <p className="text-sm text-lime-400">
                           <CalendarDays size={14} className="inline mr-1" />
                           Confermato: {formatDate(apt.scheduled_date)}
                         </p>
@@ -540,7 +540,7 @@ const AppointmentsPage = () => {
                   <div className="text-xs text-plos-text-muted">In Attesa</div>
                 </div>
                 <div className="card-tactical p-4 text-center">
-                  <div className="text-2xl font-heading text-green-400">{stats.accepted}</div>
+                  <div className="text-2xl font-heading text-lime-400">{stats.accepted}</div>
                   <div className="text-xs text-plos-text-muted">Accettati</div>
                 </div>
                 <div className="card-tactical p-4 text-center">
@@ -561,7 +561,7 @@ const AppointmentsPage = () => {
                 <div className="text-center py-8 text-plos-text-muted">Caricamento...</div>
               ) : sectorAppointments.length === 0 ? (
                 <div className="card-tactical p-8 text-center">
-                  <CheckCircle className="mx-auto text-green-500 mb-4" size={48} />
+                  <CheckCircle className="mx-auto text-lime-500 mb-4" size={48} />
                   <p className="text-plos-text-muted">Nessun appuntamento da gestire</p>
                 </div>
               ) : (
@@ -593,10 +593,10 @@ const AppointmentsPage = () => {
                           {apt.status === 'pending' && (
                             <button
                               onClick={() => setHandleModal({ apt, action: 'accepted' })}
-                              className="p-2 bg-green-500/20 border border-green-500/50 hover:bg-green-500/30"
+                              className="p-2 bg-lime-500/20 border border-lime-500/50 hover:bg-lime-500/30"
                               title="Accetta"
                             >
-                              <CheckCircle size={16} className="text-green-400" />
+                              <CheckCircle size={16} className="text-lime-400" />
                             </button>
                           )}
                           {apt.status === 'accepted' && (
@@ -679,12 +679,12 @@ const AppointmentsPage = () => {
                 ) : (
                   <div className="grid gap-4">
                     {calendarAppointments.map((apt) => (
-                      <div key={apt.id} className="card-tactical p-4 border-l-4 border-green-500">
+                      <div key={apt.id} className="card-tactical p-4 border-l-4 border-lime-500">
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <CalendarDays size={16} className="text-green-400" />
-                              <span className="font-heading text-green-400">
+                              <CalendarDays size={16} className="text-lime-400" />
+                              <span className="font-heading text-lime-400">
                                 {formatDate(apt.scheduled_date)}
                               </span>
                             </div>
@@ -741,7 +741,7 @@ const AppointmentsPage = () => {
                               {dayAppointments.slice(0, 2).map(apt => (
                                 <div 
                                   key={apt.id}
-                                  className="text-[10px] p-1 bg-green-500/20 text-green-400 truncate"
+                                  className="text-[10px] p-1 bg-lime-500/20 text-lime-400 truncate"
                                   title={`${apt.subject} - ${apt.requester_game_name}`}
                                 >
                                   {new Date(apt.scheduled_date).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
@@ -814,7 +814,7 @@ const AppointmentsPage = () => {
                 onClick={() => handleAppointment(handleModal.apt.id, handleModal.action)}
                 disabled={handleModal.action === 'accepted' && !scheduledDate}
                 className={`flex-1 px-4 py-2 disabled:opacity-50 ${
-                  handleModal.action === 'accepted' || handleModal.action === 'completed' ? 'bg-green-600' : 'bg-red-600'
+                  handleModal.action === 'accepted' || handleModal.action === 'completed' ? 'bg-lime-600' : 'bg-red-600'
                 }`}
               >
                 Conferma

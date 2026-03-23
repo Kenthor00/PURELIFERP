@@ -34,9 +34,9 @@ export const SystemBar = ({ alertLevel = 'normale', serverOnline = true }) => {
 
   const alertConfig = {
     normale: { 
-      color: 'text-[#00ff9c]', 
-      bg: 'bg-[#00ff9c]/10', 
-      border: 'border-[#00ff9c]/30',
+      color: 'text-[#adff2f]', 
+      bg: 'bg-[#adff2f]/10', 
+      border: 'border-[#adff2f]/30',
       label: 'NORMALE',
       icon: Activity
     },
@@ -64,7 +64,7 @@ export const SystemBar = ({ alertLevel = 'normale', serverOnline = true }) => {
       {/* Left - System Identity */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#00ff9c]" />
+          <Shield className="w-4 h-4 text-[#adff2f]" />
           <span className="text-[0.6875rem] font-bold tracking-[0.15em] text-[#7f9aa3]">
             PURE LIFE OS
           </span>
@@ -78,7 +78,7 @@ export const SystemBar = ({ alertLevel = 'normale', serverOnline = true }) => {
         
         {/* System Status */}
         <div className="flex items-center gap-2">
-          <div className={`w-1.5 h-1.5 rounded-full ${serverOnline ? 'bg-[#00ff9c]' : 'bg-[#ff3b3b]'}`} />
+          <div className={`w-1.5 h-1.5 rounded-full ${serverOnline ? 'bg-[#adff2f]' : 'bg-[#ff3b3b]'}`} />
           <span className="text-[0.625rem] text-[#7f9aa3] tracking-wider">
             {serverOnline ? 'SISTEMA ATTIVO' : 'OFFLINE'}
           </span>
@@ -100,7 +100,7 @@ export const SystemBar = ({ alertLevel = 'normale', serverOnline = true }) => {
         {/* Server Connection */}
         <div className="flex items-center gap-2">
           {serverOnline ? (
-            <Wifi className="w-3.5 h-3.5 text-[#00ff9c]" />
+            <Wifi className="w-3.5 h-3.5 text-[#adff2f]" />
           ) : (
             <WifiOff className="w-3.5 h-3.5 text-[#ff3b3b]" />
           )}

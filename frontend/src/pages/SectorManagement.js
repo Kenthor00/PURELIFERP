@@ -391,7 +391,7 @@ const SectorManagement = () => {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {u.is_active ? (
-                          <span className="flex items-center gap-1 text-green-400 text-xs">
+                          <span className="flex items-center gap-1 text-lime-400 text-xs">
                             <CheckCircle size={14} />
                             Attivo
                           </span>
@@ -437,7 +437,7 @@ const SectorManagement = () => {
                               className={`p-1.5 rounded transition-colors ${
                                 u.is_active
                                   ? 'hover:bg-red-500/20 text-red-400'
-                                  : 'hover:bg-green-500/20 text-green-400'
+                                  : 'hover:bg-lime-500/20 text-lime-400'
                               }`}
                               title={u.is_active ? 'Disattiva' : 'Riattiva'}
                             >
@@ -695,7 +695,7 @@ const SectorManagement = () => {
                   {accessHistory.map((log, i) => (
                     <div key={i} className="flex items-center gap-4 p-3 bg-plos-surface/50 rounded-lg">
                       <div className={`w-2 h-2 rounded-full ${
-                        log.action === 'login_success' ? 'bg-green-400' : 'bg-red-400'
+                        log.action === 'login_success' ? 'bg-lime-400' : 'bg-red-400'
                       }`} />
                       <div className="flex-1">
                         <p className="text-white text-sm">{log.description || log.action}</p>

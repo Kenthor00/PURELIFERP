@@ -40,7 +40,7 @@ const categoryLabels = {
 // Status badge component
 function StatusBadge({ status }) {
   const styles = {
-    active: 'bg-green-500/20 text-green-400 border-green-500/30',
+    active: 'bg-lime-500/20 text-lime-400 border-lime-500/30',
     pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     sold: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     removed: 'bg-red-500/20 text-red-400 border-red-500/30',

@@ -184,7 +184,7 @@ const AdminDashboard = () => {
                       sector.color === 'blue' ? 'bg-blue-500' :
                       sector.color === 'red' ? 'bg-red-500' :
                       sector.color === 'purple' ? 'bg-purple-500' :
-                      sector.color === 'green' ? 'bg-green-500' :
+                      sector.color === 'green' ? 'bg-lime-500' :
                       'bg-orange-500'
                     }`}
                     style={{ width: `${Math.min(sector.count * 10, 100)}%` }}

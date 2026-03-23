@@ -17,10 +17,10 @@ export const ConnectionStatus = ({ status = 'disconnected', showLabel = true, si
 
   const configs = {
     connected: {
-      color: 'bg-green-500',
-      borderColor: 'border-green-500/30',
-      textColor: 'text-green-500',
-      bgColor: 'bg-green-500/10',
+      color: 'bg-lime-500',
+      borderColor: 'border-lime-500/30',
+      textColor: 'text-lime-500',
+      bgColor: 'bg-lime-500/10',
       label: 'CONNESSO',
       icon: Wifi
     },
@@ -80,7 +80,7 @@ export const ConnectionStatus = ({ status = 'disconnected', showLabel = true, si
  */
 export const ConnectionDot = ({ status = 'disconnected' }) => {
   const colors = {
-    connected: 'bg-green-500',
+    connected: 'bg-lime-500',
     degraded: 'bg-orange-500 animate-pulse',
     connecting: 'bg-blue-500 animate-pulse',
     disconnected: 'bg-red-500'

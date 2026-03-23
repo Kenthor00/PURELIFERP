@@ -211,7 +211,7 @@ const AnnouncementsPage = () => {
   const getStatusBadge = (status) => {
     const badges = {
       pending: { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50', icon: Clock, label: 'In Attesa' },
-      approved: { color: 'bg-green-500/20 text-green-400 border-green-500/50', icon: CheckCircle, label: 'Approvato' },
+      approved: { color: 'bg-lime-500/20 text-lime-400 border-lime-500/50', icon: CheckCircle, label: 'Approvato' },
       rejected: { color: 'bg-red-500/20 text-red-400 border-red-500/50', icon: XCircle, label: 'Rifiutato' },
       expired: { color: 'bg-gray-500/20 text-gray-400 border-gray-500/50', icon: Clock, label: 'Scaduto' },
     };
@@ -625,7 +625,7 @@ const AnnouncementsPage = () => {
                   <div className="text-xs text-plos-text-muted">In Attesa</div>
                 </div>
                 <div className="card-tactical p-4 text-center">
-                  <div className="text-2xl font-heading text-green-400">{stats.approved}</div>
+                  <div className="text-2xl font-heading text-lime-400">{stats.approved}</div>
                   <div className="text-xs text-plos-text-muted">Approvati</div>
                 </div>
                 <div className="card-tactical p-4 text-center">
@@ -642,7 +642,7 @@ const AnnouncementsPage = () => {
                 <div className="text-center py-8 text-plos-text-muted">Caricamento...</div>
               ) : pendingAnnouncements.length === 0 ? (
                 <div className="card-tactical p-8 text-center">
-                  <CheckCircle className="mx-auto text-green-500 mb-4" size={48} />
+                  <CheckCircle className="mx-auto text-lime-500 mb-4" size={48} />
                   <p className="text-plos-text-muted">Nessun annuncio da moderare</p>
                 </div>
               ) : (
@@ -672,10 +672,10 @@ const AnnouncementsPage = () => {
                       <div className="flex gap-2 ml-4">
                         <button
                           onClick={() => setModerateModal({ ann, action: 'approved' })}
-                          className="p-2 bg-green-500/20 border border-green-500/50 hover:bg-green-500/30"
+                          className="p-2 bg-lime-500/20 border border-lime-500/50 hover:bg-lime-500/30"
                           title="Approva"
                         >
-                          <CheckCircle size={16} className="text-green-400" />
+                          <CheckCircle size={16} className="text-lime-400" />
                         </button>
                         <button
                           onClick={() => setModerateModal({ ann, action: 'rejected' })}
@@ -724,7 +724,7 @@ const AnnouncementsPage = () => {
               <button
                 onClick={() => handleModerate(moderateModal.ann.id, moderateModal.action)}
                 className={`flex-1 px-4 py-2 ${
-                  moderateModal.action === 'approved' ? 'bg-green-600' : 'bg-red-600'
+                  moderateModal.action === 'approved' ? 'bg-lime-600' : 'bg-red-600'
                 }`}
               >
                 Conferma

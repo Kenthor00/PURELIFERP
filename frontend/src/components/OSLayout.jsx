@@ -56,7 +56,7 @@ const getNavModules = (role) => {
       icon: LayoutDashboard,
       label: 'PANNELLO',
       sublabel: 'La Tua Dashboard',
-      color: '#00ff9c',
+      color: '#adff2f',
     });
   }
   
@@ -68,7 +68,7 @@ const getNavModules = (role) => {
       icon: Activity,
       label: 'CITY PULSE',
       sublabel: 'Centro Controllo',
-      color: '#00ff9c',
+      color: '#adff2f',
     });
   }
   
@@ -264,7 +264,7 @@ const getNavModules = (role) => {
       icon: Users,
       label: 'ADMIN',
       sublabel: 'Gestione Sistema',
-      color: '#00ff9c',
+      color: '#adff2f',
     });
   }
   
@@ -319,7 +319,7 @@ export const OSLayout = ({ children }) => {
             <div className="flex items-center gap-3">
               {/* Avatar */}
               <div className="w-10 h-10 rounded-lg bg-[#1b2a30] flex items-center justify-center border border-[#243038]">
-                <span className="text-sm font-bold text-[#00ff9c]">
+                <span className="text-sm font-bold text-[#adff2f]">
                   {user?.game_name?.[0] || user?.name?.[0] || '?'}
                 </span>
               </div>
@@ -336,7 +336,7 @@ export const OSLayout = ({ children }) => {
               
               {/* Status Dot */}
               <div className={`w-2 h-2 rounded-full ${
-                presence === 'online' ? 'bg-[#00ff9c]' : 
+                presence === 'online' ? 'bg-[#adff2f]' : 
                 presence === 'in_service' ? 'bg-[#ffc857]' : 'bg-[#4a6670]'
               }`} />
             </div>

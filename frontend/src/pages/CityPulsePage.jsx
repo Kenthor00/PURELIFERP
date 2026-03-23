@@ -159,7 +159,7 @@ export const CityPulsePage = () => {
   }, [stats]);
 
   const alertColors = {
-    normale: { bg: 'bg-green-500/20', border: 'border-green-500/30', text: 'text-green-500' },
+    normale: { bg: 'bg-lime-500/20', border: 'border-lime-500/30', text: 'text-lime-500' },
     elevato: { bg: 'bg-orange-500/20', border: 'border-orange-500/30', text: 'text-orange-500' },
     critico: { bg: 'bg-red-500/20', border: 'border-red-500/30', text: 'text-red-500', pulse: true },
   };

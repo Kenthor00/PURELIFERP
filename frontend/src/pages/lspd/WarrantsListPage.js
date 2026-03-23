@@ -112,7 +112,7 @@ const WarrantsListPage = () => {
     const status = warrant.status || (warrant.is_active ? 'OPEN' : 'CANCELLED');
     const icons = {
       'OPEN': <Clock className="text-orange-400" size={20} />,
-      'EXECUTED': <CheckCircle className="text-green-400" size={20} />,
+      'EXECUTED': <CheckCircle className="text-lime-400" size={20} />,
       'EXPIRED': <CalendarX className="text-gray-400" size={20} />,
       'CANCELLED': <Ban className="text-red-400" size={20} />
     };
@@ -299,7 +299,7 @@ const WarrantsListPage = () => {
               <button
                 onClick={() => handleStatusChange('executed')}
                 disabled={updatingStatus}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 rounded-lg text-green-400 font-heading text-sm transition-all"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-lime-500/20 border border-lime-500/30 hover:bg-lime-500/30 rounded-lg text-lime-400 font-heading text-sm transition-all"
               >
                 <CheckCircle size={18} />
                 SEGNA COME ESEGUITO

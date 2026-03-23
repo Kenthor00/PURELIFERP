@@ -48,9 +48,9 @@ export default function VerifyDocumentPage() {
     const configs = {
       VALID: {
         icon: CheckCircle2,
-        color: 'text-green-500',
-        bg: 'bg-green-500/10',
-        border: 'border-green-500',
+        color: 'text-lime-500',
+        bg: 'bg-lime-500/10',
+        border: 'border-lime-500',
         label: 'DOCUMENTO VALIDO'
       },
       SUSPENDED: {
@@ -84,7 +84,7 @@ export default function VerifyDocumentPage() {
         {/* Header */}
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Shield className="text-emerald-400" size={28} />
+            <Shield className="text-lime-400" size={28} />
             <h1 className="text-2xl font-bold text-white">PURE LIFE OS</h1>
           </div>
           <p className="text-slate-400 text-sm">Sistema di Verifica Documenti</p>
@@ -94,7 +94,7 @@ export default function VerifyDocumentPage() {
         <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl overflow-hidden">
           {loading ? (
             <div className="p-12 text-center">
-              <Loader2 className="animate-spin text-emerald-400 mx-auto mb-4" size={48} />
+              <Loader2 className="animate-spin text-lime-400 mx-auto mb-4" size={48} />
               <p className="text-slate-400">Verifica in corso...</p>
             </div>
           ) : error ? (
@@ -128,7 +128,7 @@ export default function VerifyDocumentPage() {
               <div className="p-6 space-y-4">
                 {/* Document Type */}
                 <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
-                  <FileText className="text-emerald-400" size={24} />
+                  <FileText className="text-lime-400" size={24} />
                   <div>
                     <p className="text-xs text-slate-400">Tipo Documento</p>
                     <p className="font-medium text-white">{result.document_type}</p>

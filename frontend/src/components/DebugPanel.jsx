@@ -118,11 +118,11 @@ const DebugPanel = () => {
             {/* SSE Status */}
             <div className="flex items-center gap-1">
               {connected ? (
-                <Wifi size={12} className="text-green-500" />
+                <Wifi size={12} className="text-lime-500" />
               ) : (
                 <WifiOff size={12} className="text-red-500" />
               )}
-              <span className={connected ? 'text-green-400' : 'text-red-400'}>
+              <span className={connected ? 'text-lime-400' : 'text-red-400'}>
                 SSE {connected ? 'ON' : 'OFF'}
               </span>
             </div>
@@ -130,11 +130,11 @@ const DebugPanel = () => {
             {/* Token Status */}
             <div className="flex items-center gap-1">
               {tokenValid ? (
-                <CheckCircle size={12} className="text-green-500" />
+                <CheckCircle size={12} className="text-lime-500" />
               ) : (
                 <AlertTriangle size={12} className="text-red-500" />
               )}
-              <span className={tokenValid ? 'text-green-400' : 'text-red-400'}>
+              <span className={tokenValid ? 'text-lime-400' : 'text-red-400'}>
                 Token {tokenValid ? `${timeToExpiry}m` : 'EXP'}
               </span>
             </div>
@@ -201,14 +201,14 @@ const DebugPanel = () => {
                       <div className="flex items-center gap-2">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           api.method === 'GET' ? 'bg-blue-500/20 text-blue-400' :
-                          api.method === 'POST' ? 'bg-green-500/20 text-green-400' :
+                          api.method === 'POST' ? 'bg-lime-500/20 text-lime-400' :
                           api.method === 'PUT' ? 'bg-yellow-500/20 text-yellow-400' :
                           api.method === 'DELETE' ? 'bg-red-500/20 text-red-400' : ''
                         }`}>
                           {api.method}
                         </span>
                         <span className={`px-1.5 py-0.5 rounded text-[10px] ${
-                          api.status < 300 ? 'bg-green-500/20 text-green-400' :
+                          api.status < 300 ? 'bg-lime-500/20 text-lime-400' :
                           api.status < 400 ? 'bg-yellow-500/20 text-yellow-400' :
                           'bg-red-500/20 text-red-400'
                         }`}>

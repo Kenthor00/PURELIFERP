@@ -69,7 +69,7 @@ export const LSPDDashboard = () => {
       onClick={onClick}
       className={`relative overflow-hidden bg-gradient-to-br from-plos-surface to-plos-bg border border-plos-border rounded-lg p-5 cursor-pointer group transition-all duration-300 hover:border-opacity-50 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5 ${onClick ? 'hover:border-plos-primary/50' : ''}`}
       data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}
-      style={{ '--stat-color': color.includes('blue') ? '#3b82f6' : color.includes('orange') ? '#f97316' : color.includes('red') ? '#ef4444' : '#00ff9c' }}
+      style={{ '--stat-color': color.includes('blue') ? '#3b82f6' : color.includes('orange') ? '#f97316' : color.includes('red') ? '#ef4444' : '#adff2f' }}
     >
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] opacity-60" style={{ background: 'var(--stat-color)' }} />
@@ -85,7 +85,7 @@ export const LSPDDashboard = () => {
           </p>
           <p className={`font-heading text-4xl font-bold tracking-tight ${color}`}>{value}</p>
           {trend && (
-            <div className={`mt-2 text-xs flex items-center gap-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`mt-2 text-xs flex items-center gap-1 ${trend > 0 ? 'text-lime-400' : 'text-red-400'}`}>
               <TrendingUp size={12} className={trend < 0 ? 'rotate-180' : ''} />
               <span>{Math.abs(trend)}% oggi</span>
             </div>
@@ -247,7 +247,7 @@ export const LSPDDashboard = () => {
                     </div>
                     <span className={`flex-shrink-0 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${
                       c.status === 'open' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                      c.status === 'closed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                      c.status === 'closed' ? 'bg-lime-500/20 text-lime-400 border border-lime-500/30' :
                       'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                     }`}>
                       {c.status?.toUpperCase()}

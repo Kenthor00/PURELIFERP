@@ -71,7 +71,7 @@ export const OSLoginPage = () => {
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00ff9c" strokeWidth="0.5"/>
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#adff2f" strokeWidth="0.5"/>
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
@@ -89,7 +89,7 @@ export const OSLoginPage = () => {
       {/* System Bar */}
       <div className="h-10 bg-[#0f1519] border-b border-[#1b2a30] flex items-center justify-between px-4 relative z-10">
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#00ff9c]" />
+          <Shield className="w-4 h-4 text-[#adff2f]" />
           <span className="text-[0.6875rem] font-bold tracking-[0.15em] text-[#7f9aa3]">
             PURE LIFE OS
           </span>
@@ -99,7 +99,7 @@ export const OSLoginPage = () => {
           {formatTime(currentTime)}
         </span>
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#00ff9c]" />
+          <div className="w-1.5 h-1.5 rounded-full bg-[#adff2f]" />
           <span className="text-[0.625rem] text-[#7f9aa3]">SISTEMA ATTIVO</span>
         </div>
       </div>
@@ -110,7 +110,7 @@ export const OSLoginPage = () => {
           {/* Logo Section */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-[#0f1519] border border-[#1b2a30] flex items-center justify-center">
-              <Shield className="w-10 h-10 text-[#00ff9c]" />
+              <Shield className="w-10 h-10 text-[#adff2f]" />
             </div>
             <h1 className="text-xl font-bold tracking-[0.2em] text-[#e6f1f2] mb-1">
               PURE LIFE OS
@@ -123,9 +123,9 @@ export const OSLoginPage = () => {
           {/* Login Form */}
           <div className="bg-[#0f1519] border border-[#1b2a30] rounded-lg overflow-hidden">
             {/* Form Header */}
-            <div className="px-6 py-4 border-b border-[#1b2a30] bg-gradient-to-r from-[#00ff9c]/5 to-transparent">
+            <div className="px-6 py-4 border-b border-[#1b2a30] bg-gradient-to-r from-[#adff2f]/5 to-transparent">
               <div className="flex items-center gap-3">
-                <Lock className="w-4 h-4 text-[#00ff9c]" />
+                <Lock className="w-4 h-4 text-[#adff2f]" />
                 <span className="text-[0.75rem] font-bold tracking-wider text-[#e6f1f2]">
                   AUTENTICAZIONE RICHIESTA
                 </span>
@@ -153,7 +153,7 @@ export const OSLoginPage = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-[#0a0f12] border border-[#1b2a30] rounded-md text-[#e6f1f2] text-sm placeholder:text-[#4a6670] focus:outline-none focus:border-[#00ff9c]/50 focus:ring-1 focus:ring-[#00ff9c]/20 transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-[#0a0f12] border border-[#1b2a30] rounded-md text-[#e6f1f2] text-sm placeholder:text-[#4a6670] focus:outline-none focus:border-[#adff2f]/50 focus:ring-1 focus:ring-[#adff2f]/20 transition-all"
                     placeholder="utente@purelife.rp"
                     required
                     disabled={loading}
@@ -172,7 +172,7 @@ export const OSLoginPage = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-3 bg-[#0a0f12] border border-[#1b2a30] rounded-md text-[#e6f1f2] text-sm placeholder:text-[#4a6670] focus:outline-none focus:border-[#00ff9c]/50 focus:ring-1 focus:ring-[#00ff9c]/20 transition-all"
+                    className="w-full pl-10 pr-12 py-3 bg-[#0a0f12] border border-[#1b2a30] rounded-md text-[#e6f1f2] text-sm placeholder:text-[#4a6670] focus:outline-none focus:border-[#adff2f]/50 focus:ring-1 focus:ring-[#adff2f]/20 transition-all"
                     placeholder="••••••••••"
                     required
                     disabled={loading}
@@ -191,7 +191,7 @@ export const OSLoginPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-[#00ff9c] text-[#0a0f12] font-bold text-[0.75rem] tracking-wider rounded-md hover:bg-[#00cc7d] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#adff2f] text-[#0a0f12] font-bold text-[0.75rem] tracking-wider rounded-md hover:bg-[#8bcc26] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -209,13 +209,13 @@ export const OSLoginPage = () => {
               <div className="flex items-center justify-between text-[0.625rem]">
                 <Link 
                   to="/register"
-                  className="text-[#7f9aa3] hover:text-[#00ff9c] transition-colors tracking-wider"
+                  className="text-[#7f9aa3] hover:text-[#adff2f] transition-colors tracking-wider"
                 >
                   REGISTRATI
                 </Link>
                 <Link 
                   to="/city"
-                  className="text-[#7f9aa3] hover:text-[#00ff9c] transition-colors tracking-wider"
+                  className="text-[#7f9aa3] hover:text-[#adff2f] transition-colors tracking-wider"
                 >
                   ACCESSO PUBBLICO →
                 </Link>

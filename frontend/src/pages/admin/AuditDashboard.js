@@ -148,7 +148,7 @@ const AuditDashboard = () => {
 
   const getActionColor = (action) => {
     if (!action) return 'text-plos-text-secondary';
-    if (action.includes('login_success')) return 'text-green-400';
+    if (action.includes('login_success')) return 'text-lime-400';
     if (action.includes('login_failed')) return 'text-red-400';
     if (action.includes('create')) return 'text-blue-400';
     if (action.includes('update') || action.includes('change')) return 'text-yellow-400';
@@ -159,7 +159,7 @@ const AuditDashboard = () => {
 
   const getActionBadgeColor = (action) => {
     if (!action) return 'bg-gray-500/20 text-gray-400';
-    if (action.includes('login_success')) return 'bg-green-500/20 text-green-400';
+    if (action.includes('login_success')) return 'bg-lime-500/20 text-lime-400';
     if (action.includes('login_failed')) return 'bg-red-500/20 text-red-400';
     if (action.includes('create')) return 'bg-blue-500/20 text-blue-400';
     if (action.includes('update') || action.includes('change')) return 'bg-yellow-500/20 text-yellow-400';
@@ -249,9 +249,9 @@ const AuditDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-plos-text-secondary text-xs">Login Riusciti</p>
-              <p className="text-2xl font-bold text-green-400 mt-1">{stats?.logins_24h || 0}</p>
+              <p className="text-2xl font-bold text-lime-400 mt-1">{stats?.logins_24h || 0}</p>
             </div>
-            <User className="w-8 h-8 text-green-400 opacity-50" />
+            <User className="w-8 h-8 text-lime-400 opacity-50" />
           </div>
         </div>
         

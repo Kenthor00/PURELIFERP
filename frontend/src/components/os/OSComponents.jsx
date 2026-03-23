@@ -14,7 +14,7 @@ export const OSModule = ({
   title, 
   subtitle, 
   children, 
-  color = '#00ff9c',
+  color = '#adff2f',
   className = '',
   onClick,
   loading = false
@@ -55,7 +55,7 @@ export const OSModule = ({
         </div>
         
         {onClick && (
-          <ChevronRight size={18} className="text-[#4a6670] group-hover:text-[#00ff9c] transition-colors" />
+          <ChevronRight size={18} className="text-[#4a6670] group-hover:text-[#adff2f] transition-colors" />
         )}
       </div>
       
@@ -76,7 +76,7 @@ export const OSStat = ({
   label, 
   value, 
   change, 
-  color = '#00ff9c',
+  color = '#adff2f',
   icon: Icon,
   className = '' 
 }) => {
@@ -91,7 +91,7 @@ export const OSStat = ({
       </div>
       <span className="os-stat-value" style={{ color }}>{value}</span>
       {change && (
-        <span className={`os-stat-change ${change > 0 ? 'text-[#00ff9c]' : change < 0 ? 'text-[#ff3b3b]' : ''}`}>
+        <span className={`os-stat-change ${change > 0 ? 'text-[#adff2f]' : change < 0 ? 'text-[#ff3b3b]' : ''}`}>
           {change > 0 ? '+' : ''}{change}%
         </span>
       )}
@@ -183,7 +183,7 @@ export const OSListItem = ({
       
       {/* Arrow */}
       {onClick && (
-        <ChevronRight size={18} className="text-[#4a6670] group-hover:text-[#00ff9c] transition-colors" />
+        <ChevronRight size={18} className="text-[#4a6670] group-hover:text-[#adff2f] transition-colors" />
       )}
     </div>
   );
@@ -196,7 +196,7 @@ export const OSSectionHeader = ({
   icon: Icon, 
   title, 
   action, 
-  color = '#00ff9c',
+  color = '#adff2f',
   className = '' 
 }) => {
   return (

@@ -89,7 +89,7 @@ export const HealthBanner = () => {
           </div>
           
           {seedResult && (
-            <div className={`mt-2 p-2 text-sm ${seedResult.success ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+            <div className={`mt-2 p-2 text-sm ${seedResult.success ? 'bg-lime-500/20 text-lime-300' : 'bg-red-500/20 text-red-300'}`}>
               {seedResult.message}
             </div>
           )}

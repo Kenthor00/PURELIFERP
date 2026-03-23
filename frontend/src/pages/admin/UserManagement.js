@@ -372,7 +372,7 @@ const UserManagement = () => {
       LSPD: 'bg-blue-500',
       EMS: 'bg-red-500',
       GOV: 'bg-yellow-500',
-      NEWS: 'bg-green-500',
+      NEWS: 'bg-lime-500',
       DISPATCH: 'bg-orange-500',
       CIVIL: 'bg-gray-500',
       ADMIN: 'bg-purple-500'
@@ -551,7 +551,7 @@ const UserManagement = () => {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {u.is_active ? (
-                          <span className="flex items-center gap-1 text-green-400 text-xs">
+                          <span className="flex items-center gap-1 text-lime-400 text-xs">
                             <CheckCircle size={12} />
                             Attivo
                           </span>
@@ -615,7 +615,7 @@ const UserManagement = () => {
                           className={`p-1.5 rounded-lg transition-colors ${
                             u.is_active
                               ? 'hover:bg-red-500/20 text-red-400'
-                              : 'hover:bg-green-500/20 text-green-400'
+                              : 'hover:bg-lime-500/20 text-lime-400'
                           }`}
                           title={u.is_active ? 'Disattiva' : 'Riattiva'}
                         >
@@ -951,7 +951,7 @@ const UserManagement = () => {
                   {accessHistory.map((log, i) => (
                     <div key={i} className="flex items-center gap-4 p-3 bg-plos-surface/50 rounded-lg">
                       <div className={`w-2 h-2 rounded-full ${
-                        log.action === 'login_success' ? 'bg-green-400' :
+                        log.action === 'login_success' ? 'bg-lime-400' :
                         log.action === 'login_failed' ? 'bg-red-400' : 'bg-blue-400'
                       }`} />
                       <div className="flex-1">

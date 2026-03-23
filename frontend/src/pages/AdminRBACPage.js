@@ -355,7 +355,7 @@ export default function AdminRBACPage() {
                                   <span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">SUPERVISORE</span>
                                 )}
                                 {grade.can_hire && (
-                                  <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">ASSUNZIONI</span>
+                                  <span className="text-[10px] bg-lime-500/20 text-lime-400 px-1.5 py-0.5 rounded">ASSUNZIONI</span>
                                 )}
                               </div>
                             </div>
@@ -568,7 +568,7 @@ export default function AdminRBACPage() {
                   <div className="flex items-center gap-2">
                     {role.bypass_job_permissions ? (
                       <>
-                        <Check size={14} className="text-green-400" />
+                        <Check size={14} className="text-lime-400" />
                         <span>Bypass permessi job</span>
                       </>
                     ) : (

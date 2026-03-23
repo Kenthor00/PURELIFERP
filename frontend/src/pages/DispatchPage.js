@@ -212,7 +212,7 @@ export const DispatchPage = () => {
                 <div className={`flex items-start justify-between gap-4 ${
                   call.priority === 'P1' ? 'border-l-4 border-l-red-500 -ml-4 pl-4' :
                   call.priority === 'P2' ? 'border-l-4 border-l-orange-500 -ml-4 pl-4' :
-                  'border-l-4 border-l-green-500 -ml-4 pl-4'
+                  'border-l-4 border-l-lime-500 -ml-4 pl-4'
                 }`}>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -251,7 +251,7 @@ export const DispatchPage = () => {
                     {call.status !== 'completed' && isDispatcher && (
                       <button
                         onClick={() => handleCompleteCall(call.id)}
-                        className="px-3 py-1.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-heading tracking-wider hover:bg-green-500/20 transition-colors rounded"
+                        className="px-3 py-1.5 bg-lime-500/10 border border-lime-500/30 text-lime-400 text-xs font-heading tracking-wider hover:bg-lime-500/20 transition-colors rounded"
                       >
                         COMPLETA
                       </button>

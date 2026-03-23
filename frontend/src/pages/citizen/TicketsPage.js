@@ -17,7 +17,7 @@ const CATEGORIES = [
 const STATUS_MAP = {
   open: { label: 'Aperto', color: 'text-blue-400', bg: 'bg-blue-500/20', icon: Clock },
   in_progress: { label: 'In Lavorazione', color: 'text-amber-400', bg: 'bg-amber-500/20', icon: MessageSquare },
-  resolved: { label: 'Risolto', color: 'text-green-400', bg: 'bg-green-500/20', icon: CheckCircle },
+  resolved: { label: 'Risolto', color: 'text-lime-400', bg: 'bg-lime-500/20', icon: CheckCircle },
   closed: { label: 'Chiuso', color: 'text-gray-400', bg: 'bg-gray-500/20', icon: CheckCircle },
 };
 

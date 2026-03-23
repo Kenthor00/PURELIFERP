@@ -122,7 +122,7 @@ export const ChatPage = () => {
 
   const getPresenceColor = (presence) => {
     switch (presence) {
-      case 'online': return 'text-green-500';
+      case 'online': return 'text-lime-500';
       case 'in_service': return 'text-blue-500';
       case 'off_duty': return 'text-orange-500';
       default: return 'text-plos-text-muted';

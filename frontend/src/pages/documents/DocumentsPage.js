@@ -17,7 +17,7 @@ import {
 // Status badge component
 function StatusBadge({ status }) {
   const styles = {
-    VALID: 'bg-green-500/20 text-green-400 border-green-500/30',
+    VALID: 'bg-lime-500/20 text-lime-400 border-lime-500/30',
     SUSPENDED: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     REVOKED: 'bg-red-500/20 text-red-400 border-red-500/30',
     EXPIRED: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
@@ -391,7 +391,7 @@ function DocumentDetailModal({ doc, isOpen, onClose, api, onUpdated, permissions
                   {canReactivate && (
                     <button
                       onClick={() => setActionModal({ open: true, type: 'reactivate' })}
-                      className="flex items-center gap-2 px-3 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-sm"
+                      className="flex items-center gap-2 px-3 py-2 bg-lime-500/20 hover:bg-lime-500/30 text-lime-400 rounded-lg text-sm"
                     >
                       <CheckCircle2 size={16} />
                       Riattiva
@@ -508,7 +508,7 @@ function DocumentDetailModal({ doc, isOpen, onClose, api, onUpdated, permissions
                         ? 'bg-red-500 hover:bg-red-600 text-white' 
                         : actionModal.type === 'suspend'
                         ? 'bg-yellow-500 hover:bg-yellow-600 text-black'
-                        : 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-lime-500 hover:bg-lime-600 text-white'
                     }`}
                   >
                     {actionLoading ? 'Elaborazione...' : 'Conferma'}

@@ -77,13 +77,13 @@ const MyFinesPage = () => {
       ) : (
         <div className="space-y-2">
           {fines.map(fine => (
-            <div key={fine.id} className={`bg-plos-bg-secondary border rounded-lg p-4 ${fine.is_paid ? 'border-green-500/20' : 'border-amber-500/30'}`} data-testid={`fine-${fine.fine_number}`}>
+            <div key={fine.id} className={`bg-plos-bg-secondary border rounded-lg p-4 ${fine.is_paid ? 'border-lime-500/20' : 'border-amber-500/30'}`} data-testid={`fine-${fine.fine_number}`}>
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-mono text-plos-text-muted">{fine.fine_number}</span>
                     {fine.is_paid ? (
-                      <span className="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full flex items-center gap-1"><CheckCircle size={10} /> Pagata</span>
+                      <span className="text-[10px] px-2 py-0.5 bg-lime-500/20 text-lime-400 rounded-full flex items-center gap-1"><CheckCircle size={10} /> Pagata</span>
                     ) : (
                       <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded-full flex items-center gap-1"><Clock size={10} /> Da Pagare</span>
                     )}
@@ -94,7 +94,7 @@ const MyFinesPage = () => {
                 <div className="text-right ml-4">
                   <p className="text-lg font-bold text-white">${fine.amount.toLocaleString()}</p>
                   {!fine.is_paid && (
-                    <button onClick={() => handlePay(fine.id)} disabled={paying === fine.id} className="mt-2 px-4 py-1.5 bg-green-600 hover:bg-green-500 text-white text-xs rounded-md transition-all disabled:opacity-50 flex items-center gap-1" data-testid={`pay-fine-${fine.id}`}>
+                    <button onClick={() => handlePay(fine.id)} disabled={paying === fine.id} className="mt-2 px-4 py-1.5 bg-lime-600 hover:bg-lime-500 text-white text-xs rounded-md transition-all disabled:opacity-50 flex items-center gap-1" data-testid={`pay-fine-${fine.id}`}>
                       <DollarSign size={12} /> {paying === fine.id ? '...' : 'Paga'}
                     </button>
                   )}

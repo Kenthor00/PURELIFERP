@@ -80,11 +80,11 @@ const CitizenDashboard = () => {
 
       {/* FiveM Link Status */}
       {fivemLinked?.linked ? (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-linked">
-          <CheckCircle2 className="text-emerald-400 flex-shrink-0" size={18} />
+        <div className="bg-lime-500/10 border border-lime-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-linked">
+          <CheckCircle2 className="text-lime-400 flex-shrink-0" size={18} />
           <div className="flex-1">
-            <p className="text-emerald-400 font-medium text-sm">Account FiveM Collegato</p>
-            <p className="text-emerald-300/60 text-xs">Riceverai le notifiche sul telefono in-game ({fivemLinked.identifier_preview || 'collegato'})</p>
+            <p className="text-lime-400 font-medium text-sm">Account FiveM Collegato</p>
+            <p className="text-lime-300/60 text-xs">Riceverai le notifiche sul telefono in-game ({fivemLinked.identifier_preview || 'collegato'})</p>
           </div>
         </div>
       ) : linkStatus === 'linking' ? (
@@ -93,9 +93,9 @@ const CitizenDashboard = () => {
           <p className="text-blue-400 text-sm">Collegamento account FiveM in corso...</p>
         </div>
       ) : isInFiveM && linkStatus === 'linked' ? (
-        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-just-linked">
-          <CheckCircle2 className="text-emerald-400 flex-shrink-0" size={18} />
-          <p className="text-emerald-400 font-medium text-sm">Account collegato! Le notifiche arriveranno sul telefono.</p>
+        <div className="bg-lime-500/10 border border-lime-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-just-linked">
+          <CheckCircle2 className="text-lime-400 flex-shrink-0" size={18} />
+          <p className="text-lime-400 font-medium text-sm">Account collegato! Le notifiche arriveranno sul telefono.</p>
         </div>
       ) : !fivemLinked?.linked ? (
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-not-linked">

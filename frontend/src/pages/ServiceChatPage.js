@@ -31,7 +31,7 @@ const CHANNEL_ICONS = {
 
 // Status colors
 const STATUS_COLORS = {
-  online: 'bg-green-500',
+  online: 'bg-lime-500',
   in_service: 'bg-blue-500',
   off_duty: 'bg-yellow-500',
   offline: 'bg-gray-500'

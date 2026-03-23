@@ -20,10 +20,10 @@ function EnvConnectionBadge({ envConnection, onTestConnection, testing }) {
   
   return (
     <div className={`flex items-center justify-between p-3 rounded-lg border ${
-      isActive ? 'bg-green-500/10 border-green-500/30' : 'bg-plos-surface border-plos-border'
+      isActive ? 'bg-lime-500/10 border-lime-500/30' : 'bg-plos-surface border-plos-border'
     }`}>
       <div className="flex items-center gap-3">
-        {isActive ? <Wifi size={18} className="text-green-400" /> : <WifiOff size={18} className="text-plos-text-muted" />}
+        {isActive ? <Wifi size={18} className="text-lime-400" /> : <WifiOff size={18} className="text-plos-text-muted" />}
         <div>
           <p className="font-medium text-sm">
             {isActive ? '✓ Connessione Automatica Attiva' : 'Connessione Automatica Non Configurata'}
@@ -39,7 +39,7 @@ function EnvConnectionBadge({ envConnection, onTestConnection, testing }) {
         <button
           onClick={onTestConnection}
           disabled={testing}
-          className="flex items-center gap-1 px-2 py-1 text-xs bg-green-500/20 hover:bg-green-500/30 rounded text-green-400 disabled:opacity-50"
+          className="flex items-center gap-1 px-2 py-1 text-xs bg-lime-500/20 hover:bg-lime-500/30 rounded text-lime-400 disabled:opacity-50"
         >
           {testing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
           Test
@@ -88,7 +88,7 @@ function ModeButton({ m, selected, onClick }) {
 
 function StatBox({ icon: Icon, label, value, subValue, color }) {
   const colors = {
-    green: 'bg-green-500/10 text-green-400',
+    green: 'bg-lime-500/10 text-lime-400',
     yellow: 'bg-yellow-500/10 text-yellow-400',
     red: 'bg-red-500/10 text-red-400',
     gray: 'bg-plos-surface text-plos-text-muted'
@@ -107,7 +107,7 @@ function StatBox({ icon: Icon, label, value, subValue, color }) {
 
 function ReportItem({ item }) {
   const bgColors = {
-    added: 'bg-green-500/10',
+    added: 'bg-lime-500/10',
     updated: 'bg-yellow-500/10',
     removed: 'bg-red-500/10',
     skipped: 'bg-plos-surface'
@@ -115,7 +115,7 @@ function ReportItem({ item }) {
   return (
     <div className={`flex items-center justify-between p-2 rounded text-sm ${bgColors[item.action] || bgColors.skipped}`}>
       <div className="flex items-center gap-2">
-        {item.action === 'added' && <Plus size={14} className="text-green-400" />}
+        {item.action === 'added' && <Plus size={14} className="text-lime-400" />}
         {item.action === 'updated' && <Edit size={14} className="text-yellow-400" />}
         {item.action === 'removed' && <Trash2 size={14} className="text-red-400" />}
         {item.action === 'skipped' && <Check size={14} className="text-plos-text-muted" />}
@@ -123,7 +123,7 @@ function ReportItem({ item }) {
         <span className="text-xs text-plos-text-muted font-mono">({item.job_code})</span>
       </div>
       <div className="text-xs text-right">
-        {item.grades_added > 0 && <span className="text-green-400">+{item.grades_added}g </span>}
+        {item.grades_added > 0 && <span className="text-lime-400">+{item.grades_added}g </span>}
         {item.grades_updated > 0 && <span className="text-yellow-400">~{item.grades_updated}g </span>}
       </div>
     </div>
@@ -241,7 +241,7 @@ export default function SyncTab({ api }) {
             <label className="block text-sm text-plos-text-muted mb-2">
               URL Database FiveM 
               {envConnection?.active ? (
-                <span className="text-green-400 ml-1">(opzionale - connessione automatica attiva)</span>
+                <span className="text-lime-400 ml-1">(opzionale - connessione automatica attiva)</span>
               ) : (
                 <span className="text-plos-text-muted ml-1">(opzionale)</span>
               )}

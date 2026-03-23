@@ -194,7 +194,7 @@ export const NewsEditorPage = () => {
       draft: 'bg-gray-500/20 text-gray-400',
       review: 'bg-yellow-500/20 text-yellow-400',
       approved: 'bg-blue-500/20 text-blue-400',
-      published: 'bg-green-500/20 text-green-400',
+      published: 'bg-lime-500/20 text-lime-400',
       archived: 'bg-purple-500/20 text-purple-400'
     };
     const labels = {
@@ -263,7 +263,7 @@ export const NewsEditorPage = () => {
         
         {article.status === 'review' && canEdit && (
           <>
-            <button onClick={() => handleAction(article.id, 'approve')} className="btn-tactical-sm text-green-400 flex items-center gap-1">
+            <button onClick={() => handleAction(article.id, 'approve')} className="btn-tactical-sm text-lime-400 flex items-center gap-1">
               <Check size={12} /> Approva
             </button>
             <button onClick={() => {
@@ -276,7 +276,7 @@ export const NewsEditorPage = () => {
         )}
         
         {article.status === 'approved' && canPublish && (
-          <button onClick={() => handleAction(article.id, 'publish')} className="btn-tactical-sm text-green-400 flex items-center gap-1">
+          <button onClick={() => handleAction(article.id, 'publish')} className="btn-tactical-sm text-lime-400 flex items-center gap-1">
             <Check size={12} /> Pubblica
           </button>
         )}
@@ -484,7 +484,7 @@ export const NewsEditorPage = () => {
                 Approvati: {stats.approved}
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="w-2 h-2 rounded-full bg-lime-500"></span>
                 Pubblicati: {stats.published}
               </span>
               <span className="flex items-center gap-2">

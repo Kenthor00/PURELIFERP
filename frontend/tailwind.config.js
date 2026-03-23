@@ -14,8 +14,8 @@ module.exports = {
       },
       colors: {
         plos: {
-          primary: '#00C853',
-          'primary-glow': 'rgba(0, 200, 83, 0.5)',
+          primary: '#adff2f',
+          'primary-glow': 'rgba(173, 255, 47, 0.5)',
           bg: '#0A0A0A',
           surface: '#121212',
           'surface-highlight': '#1C1C1C',
