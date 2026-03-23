@@ -53,7 +53,7 @@ curl -s https://YOUR_URL/ | head -20
 ### Setup
 ```bash
 # Imposta variabili
-export API_URL="https://plos-bridge-test.preview.emergentagent.com"
+export API_URL="https://fivem-manager-3.preview.emergentagent.com"
 
 # Login e salva token
 export TOKEN=$(curl -s -X POST "$API_URL/api/auth/login" \

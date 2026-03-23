@@ -454,6 +454,14 @@ api_router.include_router(documents.router)
 from routers import marketplace
 api_router.include_router(marketplace.router)
 
+# Ticket System
+from routers import tickets
+api_router.include_router(tickets.router)
+
+# Citizen API
+from routers import citizen
+api_router.include_router(citizen.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 
