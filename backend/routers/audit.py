@@ -33,7 +33,7 @@ class AuditLogResponse(BaseModel):
     user_email: Optional[str]
     game_name: Optional[str]
     sector: Optional[str]
-    grade: Optional[str]
+    grade: Optional[int] = 0
     hierarchy_level: Optional[int]
     action: str
     entity_type: Optional[str]

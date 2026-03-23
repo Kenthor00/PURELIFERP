@@ -77,9 +77,9 @@ class PresenceResponse(BaseModel):
     user_id: int
     game_name: str
     sector: str
-    grade: Optional[str]
+    grade: Optional[int] = 0
     status: str
-    status_message: Optional[str]
+    status_message: Optional[str] = None
     last_seen: str
 
 
@@ -209,7 +209,7 @@ class UserAutocomplete(BaseModel):
     id: int
     game_name: str
     sector: str
-    grade: Optional[str]
+    grade: Optional[int] = 0
 
 
 @router.get("/channels/{channel_name}/users", response_model=List[UserAutocomplete])

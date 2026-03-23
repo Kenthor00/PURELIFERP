@@ -42,7 +42,7 @@ class CreateUserRequest(BaseModel):
 
 class UpdateUserRequest(BaseModel):
     game_name: Optional[str] = None
-    grade: Optional[str] = None
+    grade: Optional[int] = None
     hierarchy_level: Optional[int] = None
     is_sector_chief: Optional[bool] = None
     badge_number: Optional[str] = None
@@ -63,7 +63,7 @@ class UserResponse(BaseModel):
     email: str
     game_name: Optional[str]
     sector: str
-    grade: str
+    grade: int
     hierarchy_level: int
     is_sector_chief: bool
     badge_number: Optional[str]
@@ -376,7 +376,7 @@ async def update_user(
 async def change_user_grade(
     user_id: int,
     request: Request,
-    new_grade: str,
+    new_grade: int,
     new_level: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

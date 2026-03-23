@@ -1,8 +1,8 @@
 # PURE LIFE OS - PRD (Product Requirements Document)
-## Sistema Operativo Governativo RP v3.5.1
+## Sistema Operativo Governativo RP v3.5.2
 
-**Current Version:** v3.5.1  
-**Last Updated:** 2026-03-23  
+**Current Version:** v3.5.2
+**Last Updated:** 2026-03-23
 **Status:** Production (Deployed on User VPS)
 
 ---
@@ -23,28 +23,75 @@ PURE LIFE OS e' un Sistema Operativo Civico Roleplay ULTRA PREMIUM per server GT
 
 ---
 
-## Fasi Completate
+## Stato Attuale (23/03/2026) - v3.5.2
 
-### FASE 1-4 - Sistema Base + City Hub + News + Chat
-### FASE 5 - Bug Fix e Stabilizzazione
-### P0 - Performance Extreme (Cache, WebSocket, Indici DB)
-### P1 - UI OS-Style + Command Palette + City Pulse + Delete Universale
-### P1 - Admin RBAC (Job, Gradi, Permessi, Staff)
-### P1 - Documenti Verificabili con QR
-### P1 - Marketplace Annunci
-### P1.1 - Sync FiveM (ESX/QBCore)
-### FiveM NUI Integration (Handshake, JWT, WebSocket, NUI Bridge)
-### Deploy VPS + Troubleshooting (DB, CORS, credenziali, build)
+### Bug Fix Critici Risolti
+1. **Registrazione cittadino non funzionava** -> Colonna `name` mancante nel modello + `grade` tipo sbagliato (String vs Integer)
+2. **Login riportava a schermata iniziale** -> `/api/auth/me` restituiva 500 per mismatch `grade: str` vs `int` nel Pydantic model
+3. **CityHub mostrava sempre ACCEDI/REGISTRATI** -> Aggiunto stato auth-aware nella header
+4. **LSPD/EMS/Justice/Chat/Dispatch API 500** -> Schema DB disallineato con modelli SQLAlchemy (26 colonne mancanti in 15+ tabelle)
+5. **Mixed Content HTTPS** -> Frontend build punta a `https://api.pureliferp.it`
+6. **Tutti i `grade: str` nel codebase** -> Corretti in `int` (auth, users, chat, audit)
+
+### Migrazione DB Completata (migration_v3_5_2.sql)
+Tabelle corrette: cases, court_hearings, news_articles, chat_channels, chat_messages, dispatch_calls, evidence, fines, legal_cases, warrants, medical_reports, timeline_events, businesses, city_events, advertisements, audit_logs
 
 ---
 
-## Stato Attuale (23/03/2026)
+## Test Results (Iteration 25)
+- Backend: **100% (23/23 tests passed)**
+- Frontend: **100% (all pages and flows verified)**
+- Ruoli testati: ADMIN, LSPD, EMS, CIVIL
 
-### v3.5.1 - Fix Frontend Build per HTTPS
-- Aggiornato URL API da `http://185.229.239.176:8000` a `https://api.pureliferp.it`
-- Risolto problema `craco.config.js` che sovrascriveva `.env.production` con `.env`
-- Build di produzione rigenerata e verificata (22 riferimenti corretti, 0 vecchi)
-- ZIP fornito all'utente per deploy su VPS
+---
+
+## Funzionalita' per Ruolo
+
+### CIVIL (Cittadino)
+- CityHub (home pubblica)
+- Chat (comunicazioni inter-settore)
+- Marketplace (compra/vendi)
+- Documenti
+- Annunci pubblici
+- Bandi di lavoro
+- Prenotazioni appuntamenti
+
+### LSPD (Polizia)
+- Dashboard con statistiche
+- Gestione casi
+- Mandati di arresto
+- Multe
+- Dispatch
+- Chat settoriale
+
+### EMS (Emergenze Mediche)
+- Dashboard con statistiche
+- Gestione pazienti
+- Referti medici
+- Dispatch
+- Chat settoriale
+
+### GOV/Justice (Governo/Tribunale)
+- Dashboard giustizia
+- Casi legali
+- Udienze
+- City Pulse
+
+### NEWS (Giornalista)
+- Editor articoli Weazel News
+- Pubblicazione notizie
+- Breaking news
+
+### DISPATCH
+- Centrale operativa
+- Gestione chiamate
+- City Pulse
+
+### ADMIN
+- Dashboard amministrativa
+- Gestione utenti (RBAC)
+- Audit log
+- Tutti gli accessi
 
 ---
 
@@ -55,29 +102,28 @@ PURE LIFE OS e' un Sistema Operativo Civico Roleplay ULTRA PREMIUM per server GT
 | Admin | admin@purelife.rp | Admin@2026! |
 | LSPD | lspd@purelife.rp | Lspd@2026! |
 | EMS | ems@purelife.rp | Ems@2026! |
+| Citizen | testflow@purelife.rp | CiaoCiao1! |
+
+---
+
+## Note Tecniche Importanti
+
+1. Il `craco.config.js` contiene `require("dotenv").config()` che sovrascrive `.env.production`. Per build corrette usare: `REACT_APP_BACKEND_URL=https://api.pureliferp.it yarn build`
+2. MySQL locale NON supporta `ALTER TABLE ADD COLUMN IF NOT EXISTS` - usare script Python con try/catch
+3. L'utente non e' tecnico: fornire sempre ZIP pronti e istruzioni chiare
+4. Lo script `migration_v3_5_2.sql` DEVE essere eseguito anche sulla VPS dell'utente
 
 ---
 
 ## Backlog
 
-### P1 - In attesa verifica utente
-- [ ] Conferma funzionamento HTTPS da NUI FiveM dopo deploy nuovo frontend
-
-### P1 - Sicurezza
+### P1 - Da fare
+- [ ] Eseguire migrazione DB sulla VPS utente (migration_v3_5_2.sql)
 - [ ] Cambio password predefinite account dipartimentali
-- [ ] Configurazione HTTPS completa (gia' in corso con Caddy)
 
-### P2 - Funzionalita'
+### P2 - Futuro
 - [ ] Notifiche Discord per mandati alta priorita'
 - [ ] Upload immagini per annunci Marketplace
 - [ ] PC Realism Mode (finestre draggable, snap layout)
 - [ ] Dossier System (profilo cittadino completo)
 - [ ] Broadcast Operativo (alert urgenti)
-
----
-
-## Note Tecniche
-
-- Il `craco.config.js` contiene `require("dotenv").config()` che sovrascrive `.env.production`. Per build corrette, usare: `REACT_APP_BACKEND_URL=https://api.pureliferp.it yarn build`
-- L'utente gestisce il deploy sulla propria VPS. Fornire sempre ZIP pronti.
-- L'utente non e' tecnico: istruzioni sempre chiare e passo-passo.
