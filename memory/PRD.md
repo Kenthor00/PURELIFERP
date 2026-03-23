@@ -1,84 +1,64 @@
-# PURE LIFE OS - PRD v3.9.0
+# PURE LIFE OS - PRD v3.9.1
 ## Sistema Operativo Governativo RP
 
-**Version:** v3.9.0 | **Updated:** 2026-03-23 | **Status:** Production Ready
+**Version:** v3.9.1 | **Updated:** 2026-03-23 | **Status:** Production Ready
 
 ---
 
 ## Prodotto
-PURE LIFE OS - Sistema gestionale completo per FiveM che sostituisce Discord. Tema: Lime Green (#adff2f) + Nero. Ottimizzato per laptop in-game (1280x720).
+PURE LIFE OS - Sistema gestionale completo per FiveM che sostituisce Discord. Tema: Lime Green (#adff2f) + Nero. Ottimizzato per laptop in-game.
 
 ## Architettura
 - Backend: FastAPI + MariaDB (VPS 185.229.239.176:3307)
-- Frontend: React 18 + TailwindCSS (build statica)
+- Frontend: React 18 + TailwindCSS
 - FiveM: plos_bridge + lb-phone + auto-link
 
-## v3.9.0 - Job Board Multi-Dipartimento (NUOVO)
+## v3.9.1 - Job Board con Gerarchia Direttori
 
-### Admin - Gestione Dipartimenti
-- Crea dipartimenti con: nome, codice (LSPD/EMS/MECH...), descrizione, icona FA, colore
-- Attiva/disattiva dipartimenti
-- Elimina dipartimenti (cascade su bandi e candidature)
-- Dashboard con statistiche globali
+### Gerarchia Ruoli
+1. **ADMIN/GOV**: Crea Job/Dipartimenti, assegna Direttori, gestisce tutto
+2. **DIRETTORE** (grado >= 8 nel settore O assegnato manualmente dall'admin): Crea bandi e gestisce candidature per il SUO dipartimento
+3. **CITTADINO**: Vede bandi aperti raggruppati per dipartimento, si candida, segue stato
 
-### Staff Dipartimento - Gestione Bandi
-- Ogni staff vede SOLO i bandi del proprio dipartimento (LSPD vede LSPD, EMS vede EMS...)
-- Crea bandi con: titolo, descrizione, requisiti, stipendio, posti, luogo, priorita'
-- Pausa/riapri/chiudi/elimina bandi
-- Gestisci candidature: revisione, colloquio (con data), accettazione, rifiuto
-- Notifiche lb-phone al cittadino quando la candidatura viene aggiornata
+### Come si diventa Direttore
+- **Automatico**: Utente con grado >= 8 nel settore corrispondente al codice dipartimento
+- **Automatico**: Utente con flag `is_sector_chief` nel settore corrispondente
+- **Manuale**: Admin assegna utente come manager nella tabella `job_dept_managers`
+- Il capo/direttore puo' anche modificare le info del proprio dipartimento
 
-### Cittadino - Bandi di Lavoro
-- Esplora bandi aperti **raggruppati per dipartimento** con colori e icone
-- Candidati con motivazione, esperienza, disponibilita'
-- Segui lo stato delle candidature (In Attesa, In Revisione, Colloquio, Accettato, Rifiutato)
-- Note staff e data colloquio visibili
-
-### Regole Accesso (RBAC)
-- **Dipartimenti**: SOLO Admin/GOV possono crearli/modificarli/eliminarli
-- **Bandi**: Staff di OGNI settore puo' creare bandi per il PROPRIO dipartimento
-- **Candidature**: Staff gestisce SOLO le candidature del proprio dipartimento
-- **Cittadini**: Possono solo visualizzare bandi e candidarsi
-- **Ticket**: SOLO GOV/ADMIN gestiscono, cittadini creano
-- **LSPD/EMS/DISPATCH**: Accesso a gestione bandi del proprio dipartimento, NO a ticket
-
-## Sidebar per Ruolo
-- CITIZEN: PANNELLO, MULTE, MANDATI, ASSISTENZA, NEWS, LAVORO, APPUNTAMENTI, DOCUMENTI, CHAT, MERCATO, SERVIZI
-- LSPD/EMS/DISPATCH/NEWS: Sezioni specifiche + BANDI (gestione proprio dipartimento) + DOCUMENTI, CHAT, MERCATO, SERVIZI
-- GOV: CITY PULSE, GIUSTIZIA, TICKET, BANDI, DOCUMENTI, CHAT, MERCATO, SERVIZI
-- ADMIN: Tutti + ADMIN
-
-## Database Schema (Job Board v2)
+### Database Schema (Job Board v2.1)
 - **job_departments**: id, name, code (UNIQUE), description, icon, color, form_fields, active, created_by
+- **job_dept_managers**: id, dept_id (FK), dept_code, user_id, assigned_by, created_at (UNIQUE: dept_id+user_id)
 - **job_postings**: id, dept_id (FK), dept_code, title, description, requirements, salary_range, max_slots, filled_slots, location, priority, status, created_by, creator_name
 - **job_applications**: id, posting_id (FK), dept_id, dept_code, user_id, game_name, motivation, experience, availability, custom_fields, status, reviewer_id, reviewer_name, reviewer_notes, interview_date
 
-## API Endpoints (Job Board v2)
-- `POST /api/jobs/departments/create` - Admin crea dipartimento
-- `GET /api/jobs/departments` - Lista dipartimenti con stats
-- `PUT /api/jobs/departments/{id}` - Admin modifica dipartimento
-- `DELETE /api/jobs/departments/{id}` - Admin elimina dipartimento
-- `POST /api/jobs/postings/create?dept_code=XXX` - Staff crea bando
-- `GET /api/jobs/postings/my-dept` - Staff vede bandi del proprio dipartimento
-- `PUT /api/jobs/postings/{id}` - Staff modifica bando
-- `DELETE /api/jobs/postings/{id}` - Staff elimina bando
-- `GET /api/jobs/postings/{id}/applications` - Staff vede candidature
-- `PUT /api/jobs/applications/{id}/review` - Staff gestisce candidatura
-- `GET /api/jobs/dept-stats` - Statistiche dipartimento
-- `GET /api/jobs/open` - Cittadino vede bandi aperti
-- `POST /api/jobs/postings/{id}/apply` - Cittadino si candida
-- `GET /api/jobs/my-applications` - Cittadino vede candidature
-
-## Deploy v3.9.0
-1. Backend: plos_backend.zip (richiede .env con DATABASE_URL, JWT_SECRET, ecc.)
-2. Frontend: plos_frontend_build.zip (build statica, servire con nginx)
-3. Bridge: plos_bridge.zip (FiveM resource con lb-phone e autolink)
-4. Le tabelle job_departments, job_postings, job_applications vengono create automaticamente
+### API Endpoints
+- **Dipartimenti (Admin)**:
+  - `POST /api/jobs/departments/create`
+  - `GET /api/jobs/departments` (include managers_count)
+  - `PUT /api/jobs/departments/{id}` (Admin + Direttore)
+  - `DELETE /api/jobs/departments/{id}` (Solo Admin)
+- **Direttori (Admin)**:
+  - `POST /api/jobs/departments/{id}/managers?user_id=X`
+  - `GET /api/jobs/departments/{id}/managers`
+  - `DELETE /api/jobs/departments/{id}/managers/{user_id}`
+  - `GET /api/jobs/users/search?q=xxx`
+- **Bandi (Direttori)**:
+  - `POST /api/jobs/postings/create?dept_code=XXX`
+  - `GET /api/jobs/postings/my-dept` (filtra per dipartimenti gestiti)
+  - `PUT /api/jobs/postings/{id}` / `DELETE /api/jobs/postings/{id}`
+  - `GET /api/jobs/postings/{id}/applications`
+  - `PUT /api/jobs/applications/{id}/review`
+  - `GET /api/jobs/dept-stats`
+- **Cittadini**:
+  - `GET /api/jobs/open`
+  - `POST /api/jobs/postings/{id}/apply`
+  - `GET /api/jobs/my-applications`
 
 ## Credenziali Test
 - admin@purelife.rp / Admin123! (ADMIN)
-- lspd@purelife.rp / Admin123! (LSPD)
-- ems@purelife.rp / Admin123! (EMS)
+- lspd@purelife.rp / Admin123! (LSPD - assegnato come direttore LSPD)
+- ems@purelife.rp / Admin123! (EMS - non assegnato come direttore)
 - cittadino@purelife.rp / Admin123! (CIVIL)
 
 ## Backlog
@@ -88,4 +68,5 @@ PURE LIFE OS - Sistema gestionale completo per FiveM che sostituisce Discord. Te
 - [ ] Dossier System (P2)
 
 ## Known Technical Debt
-- DISABLE_METADATA_PLUGIN=true workaround per build frontend (bassa priorita')
+- DISABLE_METADATA_PLUGIN=true workaround per build frontend
+- Outbox worker enum error (non impatta funzionalita')
