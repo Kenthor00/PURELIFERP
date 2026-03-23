@@ -45,6 +45,8 @@ client_scripts {
 server_scripts {
     'server/framework.lua',
     'server/main.lua',
+    'server/autolink.lua',
+    'server/lbphone.lua',
 }
 
 -- NUI (interfaccia browser embedded)

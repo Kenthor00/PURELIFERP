@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useFiveMBridge } from '../../hooks/useFiveMBridge';
 import axios from 'axios';
-import { AlertTriangle, FileText, ShoppingBag, MessageSquare, Receipt, Scale, Ticket, Newspaper, Calendar, Megaphone, Briefcase } from 'lucide-react';
+import { AlertTriangle, FileText, ShoppingBag, MessageSquare, Receipt, Scale, Ticket, Newspaper, Calendar, Megaphone, Briefcase, Link2, CheckCircle2, Loader2 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -33,17 +34,25 @@ const QuickLink = ({ icon: Icon, label, path, color }) => {
 
 const CitizenDashboard = () => {
   const { user, token } = useAuth();
+  const { isInFiveM, linkStatus, fivemIdentifier, autoLink } = useFiveMBridge();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fivemLinked, setFivemLinked] = useState(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await axios.get(`${API}/api/citizen/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setData(res.data);
+        const [dashRes, fivemRes] = await Promise.all([
+          axios.get(`${API}/api/citizen/dashboard`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API}/api/auth/fivem-status`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }).catch(() => ({ data: { linked: false } }))
+        ]);
+        setData(dashRes.data);
+        setFivemLinked(fivemRes.data);
       } catch (err) {
         console.error('Dashboard error:', err);
       } finally {
@@ -53,6 +62,13 @@ const CitizenDashboard = () => {
     if (token) fetchDashboard();
   }, [token]);
 
+  // Auto-link FiveM se in-game
+  useEffect(() => {
+    if (isInFiveM && token && user?.id && !fivemLinked?.linked) {
+      autoLink(user.id, token);
+    }
+  }, [isInFiveM, token, user, fivemLinked, autoLink]);
+
   if (loading) return <div className="flex items-center justify-center h-full"><div className="text-plos-text-secondary">Caricamento...</div></div>;
 
   return (
@@ -61,6 +77,35 @@ const CitizenDashboard = () => {
         <h1 className="text-2xl font-bold text-white">Benvenuto, {data?.game_name || user?.game_name || 'Cittadino'}</h1>
         <p className="text-sm text-plos-text-secondary mt-1">Il tuo riepilogo personale</p>
       </div>
+
+      {/* FiveM Link Status */}
+      {fivemLinked?.linked ? (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-linked">
+          <CheckCircle2 className="text-emerald-400 flex-shrink-0" size={18} />
+          <div className="flex-1">
+            <p className="text-emerald-400 font-medium text-sm">Account FiveM Collegato</p>
+            <p className="text-emerald-300/60 text-xs">Riceverai le notifiche sul telefono in-game ({fivemLinked.identifier_preview || 'collegato'})</p>
+          </div>
+        </div>
+      ) : linkStatus === 'linking' ? (
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-linking">
+          <Loader2 className="text-blue-400 flex-shrink-0 animate-spin" size={18} />
+          <p className="text-blue-400 text-sm">Collegamento account FiveM in corso...</p>
+        </div>
+      ) : isInFiveM && linkStatus === 'linked' ? (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-just-linked">
+          <CheckCircle2 className="text-emerald-400 flex-shrink-0" size={18} />
+          <p className="text-emerald-400 font-medium text-sm">Account collegato! Le notifiche arriveranno sul telefono.</p>
+        </div>
+      ) : !fivemLinked?.linked ? (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 flex items-center gap-3" data-testid="fivem-not-linked">
+          <Link2 className="text-yellow-400 flex-shrink-0" size={18} />
+          <div className="flex-1">
+            <p className="text-yellow-400 font-medium text-sm">Account FiveM non collegato</p>
+            <p className="text-yellow-300/60 text-xs">Accedi dal tablet in-game per collegare automaticamente il tuo personaggio e ricevere le notifiche.</p>
+          </div>
+        </div>
+      ) : null}
 
       {/* Alert mandati */}
       {data?.warrants?.active_count > 0 && (

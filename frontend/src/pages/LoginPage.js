@@ -3,12 +3,14 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSound } from '../context/SoundContext';
 import { useHealth } from '../context/HealthContext';
+import { useFiveMBridge } from '../hooks/useFiveMBridge';
 import { Shield, AlertCircle, Loader2, Database, Server, Zap, ChevronLeft } from 'lucide-react';
 
 export const LoginPage = () => {
   const { login } = useAuth();
   const { play } = useSound();
   const { isDbAvailable, isBackendAvailable, health, needsSeed } = useHealth();
+  const { autoLink } = useFiveMBridge();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -33,6 +35,11 @@ export const LoginPage = () => {
     try {
       const result = await login(email, password);
       play('success');
+      
+      // Auto-link FiveM identifier (se in-game)
+      if (result.access_token && result.user_id) {
+        autoLink(result.user_id, result.access_token);
+      }
       
       // Check if needs game_name
       if (result.needs_game_name) {

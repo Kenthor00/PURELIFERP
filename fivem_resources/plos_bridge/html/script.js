@@ -209,6 +209,14 @@
             case 'PLOS_COPY':
                 copyToClipboard(data.text);
                 break;
+                
+            case 'PLOS_LINK_ACCOUNT':
+                linkFiveMAccount(data.user_id, data.auth_token);
+                break;
+                
+            case 'PLOS_GET_LINK_STATUS':
+                getLinkStatus();
+                break;
         }
     }
 
@@ -366,6 +374,63 @@
             sendToIframe('PLOS_COPY_RESULT', { success: true });
         } catch (error) {
             sendToIframe('PLOS_COPY_RESULT', { success: false, error: 'Copy failed' });
+        }
+    }
+
+    // ============================================
+    // FIVEM ACCOUNT AUTO-LINK
+    // ============================================
+
+    async function linkFiveMAccount(userId, authToken) {
+        try {
+            console.log('[PLOS Bridge] Auto-link account FiveM per user:', userId);
+            
+            const response = await fetch('https://plos_bridge/PLOS_LINK_ACCOUNT', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: userId,
+                    auth_token: authToken
+                })
+            });
+            const result = await response.json();
+            
+            sendToIframe('PLOS_LINK_RESULT', {
+                success: result.success,
+                message: result.message || '',
+                error: result.error || ''
+            });
+            
+            console.log('[PLOS Bridge] Auto-link risultato:', result);
+        } catch (error) {
+            console.error('[PLOS Bridge] Errore auto-link:', error);
+            sendToIframe('PLOS_LINK_RESULT', {
+                success: false,
+                error: 'Errore collegamento: ' + error.message
+            });
+        }
+    }
+
+    async function getLinkStatus() {
+        try {
+            const response = await fetch('https://plos_bridge/PLOS_GET_LINK_STATUS', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const result = await response.json();
+            
+            sendToIframe('PLOS_LINK_STATUS', {
+                linked: result.linked,
+                identifier: result.identifier,
+                identifiers: result.identifiers
+            });
+        } catch (error) {
+            console.error('[PLOS Bridge] Errore check link status:', error);
+            sendToIframe('PLOS_LINK_STATUS', {
+                linked: false,
+                error: 'Errore: ' + error.message
+            });
         }
     }
 

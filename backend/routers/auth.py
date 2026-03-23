@@ -17,6 +17,7 @@ from models import User, Sector, AuditAction, SystemConfig
 from auth import create_access_token, create_refresh_token, get_current_user
 from services.audit_service import audit_service
 from services.security_service import security_service
+import os
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 logger = logging.getLogger(__name__)
@@ -62,6 +63,19 @@ class PublicRegisterRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str
+
+class LinkFiveMRequest(BaseModel):
+    """Richiesta di collegamento account FiveM (dal bridge server-side)"""
+    user_id: int
+    fivem_identifier: str
+    bridge_secret: str
+
+
+class LinkFiveMFromTokenRequest(BaseModel):
+    """Richiesta di collegamento account FiveM (dall'utente autenticato via bridge)"""
+    fivem_identifier: str
+    bridge_secret: str
+
 
 
 class UserProfileResponse(BaseModel):
@@ -518,3 +532,117 @@ def _get_client_ip(request: Request) -> str:
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
+
+
+# ==========================================
+# FIVEM IDENTIFIER AUTO-LINK
+# ==========================================
+
+BRIDGE_SECRET = os.environ.get("FIVEM_BRIDGE_SECRET", "plos-bridge-secret-2026")
+
+
+@router.post("/link-fivem")
+async def link_fivem_identifier(
+    data: LinkFiveMRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Collega un identifier FiveM a un utente PLOS.
+    Chiamato dal bridge server-side (server-to-server, sicuro).
+    Il bridge invia: user_id + fivem_identifier + bridge_secret.
+    """
+    if data.bridge_secret != BRIDGE_SECRET:
+        raise HTTPException(status_code=403, detail="Chiave bridge non valida")
+    
+    # Trova utente
+    result = await db.execute(select(User).where(User.id == data.user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # Salva identifier
+    from sqlalchemy import text
+    await db.execute(text("""
+        UPDATE users SET fivem_identifier = :ident WHERE id = :uid
+    """), {"ident": data.fivem_identifier, "uid": data.user_id})
+    await db.commit()
+    
+    await audit_service.log(
+        db,
+        action=AuditAction.GAME_NAME_SET,
+        user=user,
+        description=f"FiveM identifier collegato: {data.fivem_identifier[:20]}...",
+        request=request
+    )
+    
+    logger.info(f"[FiveM Link] Utente {user.id} ({user.game_name}) -> {data.fivem_identifier}")
+    
+    return {
+        "success": True,
+        "message": "Account FiveM collegato",
+        "user_id": user.id,
+        "game_name": user.game_name,
+        "linked_identifier": data.fivem_identifier[:20] + "..."
+    }
+
+
+@router.post("/link-fivem-token")
+async def link_fivem_with_token(
+    data: LinkFiveMFromTokenRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Collega un identifier FiveM all'utente autenticato.
+    Usato quando il bridge invia l'identifier attraverso il frontend.
+    Richiede sia il token JWT dell'utente che il bridge_secret.
+    """
+    if data.bridge_secret != BRIDGE_SECRET:
+        raise HTTPException(status_code=403, detail="Chiave bridge non valida")
+    
+    from sqlalchemy import text
+    await db.execute(text("""
+        UPDATE users SET fivem_identifier = :ident WHERE id = :uid
+    """), {"ident": data.fivem_identifier, "uid": current_user.id})
+    await db.commit()
+    
+    await audit_service.log(
+        db,
+        action=AuditAction.GAME_NAME_SET,
+        user=current_user,
+        description=f"FiveM identifier auto-collegato: {data.fivem_identifier[:20]}...",
+        request=request
+    )
+    
+    logger.info(f"[FiveM Auto-Link] Utente {current_user.id} ({current_user.game_name}) -> {data.fivem_identifier}")
+    
+    return {
+        "success": True,
+        "message": "Account FiveM collegato automaticamente",
+        "linked_identifier": data.fivem_identifier[:20] + "..."
+    }
+
+
+@router.get("/fivem-status")
+async def get_fivem_link_status(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Controlla se l'utente ha un identifier FiveM collegato."""
+    from sqlalchemy import text
+    result = await db.execute(text(
+        "SELECT fivem_identifier FROM users WHERE id = :uid"
+    ), {"uid": current_user.id})
+    row = result.mappings().first()
+    
+    identifier = row["fivem_identifier"] if row and row["fivem_identifier"] else None
+    
+    return {
+        "linked": identifier is not None,
+        "identifier_preview": (identifier[:15] + "...") if identifier else None,
+        "user_id": current_user.id,
+        "game_name": current_user.game_name
+    }
