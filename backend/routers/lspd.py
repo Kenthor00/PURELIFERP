@@ -9,7 +9,7 @@ from typing import Optional, List
 from datetime import datetime, timezone
 
 from database import get_db
-from models import User, Case, CaseStatus, Warrant, WarrantStatus, Fine, Evidence, TimelineEvent, Outbox, OutboxStatus, AuditAction
+from models import User, Case, Warrant, Fine, Evidence, TimelineEvent, Outbox, OutboxStatus, AuditAction
 from schemas import (
     CaseCreate, CaseUpdate, CaseResponse, CaseDetailResponse,
     WarrantCreate, WarrantResponse, FineCreate, FineResponse,
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/lspd", tags=["LSPD"])
 
 @router.get("/cases", response_model=List[CaseResponse])
 async def get_cases(
-    status: Optional[CaseStatus] = None,
+    status: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = Query(50, le=100),
     offset: int = 0,
@@ -102,7 +102,7 @@ async def create_case(
         suspect_identifier=request.suspect_identifier,
         location=request.location,
         officer_id=current_user.id,
-        status=CaseStatus.OPEN
+        status="open"
     )
     
     db.add(case)
@@ -170,12 +170,12 @@ async def update_case(
         timeline_event = TimelineEvent(
             event_type="case_status_changed",
             category="lspd",
-            title=f"Stato caso aggiornato: {case.status.value}",
+            title=f"Stato caso aggiornato: {case.status}",
             description=f"Aggiornato da {current_user.game_name or current_user.email}",
             entity_id=case.id,
             entity_type="case",
             user_id=current_user.id,
-            extra_data={"old_status": old_status.value, "new_status": case.status.value}
+            extra_data={"old_status": old_status, "new_status": case.status}
         )
         db.add(timeline_event)
         await db.commit()
@@ -290,7 +290,7 @@ async def revoke_warrant(
         raise HTTPException(status_code=404, detail="Mandato non trovato")
     
     warrant.is_active = False
-    warrant.status = WarrantStatus.CANCELLED
+    warrant.status = "CANCELLED"
     warrant.cancelled_at = datetime.now(timezone.utc)
     warrant.cancelled_by = current_user.id
     await db.commit()
@@ -315,8 +315,6 @@ async def update_warrant_status(
     - OPEN -> CANCELLED (mandato revocato)
     - Non è possibile tornare a OPEN una volta cambiato
     """
-    from models import WarrantStatus
-    
     result = await db.execute(select(Warrant).where(Warrant.id == warrant_id))
     warrant = result.scalar_one_or_none()
     
@@ -324,63 +322,63 @@ async def update_warrant_status(
         raise HTTPException(status_code=404, detail="Mandato non trovato")
     
     # Valida nuovo status
-    try:
-        target_status = WarrantStatus(new_status)
-    except ValueError:
+    valid_statuses = ["OPEN", "EXECUTED", "EXPIRED", "CANCELLED"]
+    target_status = new_status.upper()
+    if target_status not in valid_statuses:
         raise HTTPException(
             status_code=400, 
-            detail=f"Stato non valido. Stati ammessi: {[s.value for s in WarrantStatus]}"
+            detail=f"Stato non valido. Stati ammessi: {valid_statuses}"
         )
     
-    # Ottieni stato corrente (se non presente, assume OPEN se is_active)
-    current_status = warrant.status or (WarrantStatus.OPEN if warrant.is_active else WarrantStatus.CANCELLED)
+    # Ottieni stato corrente
+    current_status = (warrant.status or ("OPEN" if warrant.is_active else "CANCELLED")).upper()
     
     # Valida transizione
     valid_transitions = {
-        WarrantStatus.OPEN: [WarrantStatus.EXECUTED, WarrantStatus.EXPIRED, WarrantStatus.CANCELLED],
-        WarrantStatus.EXECUTED: [],  # Stato finale
-        WarrantStatus.EXPIRED: [],   # Stato finale
-        WarrantStatus.CANCELLED: [], # Stato finale
+        "OPEN": ["EXECUTED", "EXPIRED", "CANCELLED"],
+        "EXECUTED": [],
+        "EXPIRED": [],
+        "CANCELLED": [],
     }
     
     if target_status not in valid_transitions.get(current_status, []):
         raise HTTPException(
             status_code=400,
-            detail=f"Transizione non valida: {current_status.value} -> {target_status.value}"
+            detail=f"Transizione non valida: {current_status} -> {target_status}"
         )
     
     # Applica transizione
     warrant.status = target_status
     
-    if target_status == WarrantStatus.EXECUTED:
+    if target_status == "EXECUTED":
         warrant.executed = True
         warrant.executed_at = datetime.now(timezone.utc)
         warrant.executed_by = current_user.id
         warrant.is_active = False
-    elif target_status == WarrantStatus.CANCELLED:
+    elif target_status == "CANCELLED":
         warrant.is_active = False
         warrant.cancelled_at = datetime.now(timezone.utc)
         warrant.cancelled_by = current_user.id
         warrant.cancellation_reason = reason
-    elif target_status == WarrantStatus.EXPIRED:
+    elif target_status == "EXPIRED":
         warrant.is_active = False
     
     # Timeline event
     status_labels = {
-        WarrantStatus.EXECUTED: "Eseguito",
-        WarrantStatus.EXPIRED: "Scaduto",
-        WarrantStatus.CANCELLED: "Revocato"
+        "EXECUTED": "Eseguito",
+        "EXPIRED": "Scaduto",
+        "CANCELLED": "Revocato"
     }
     
     timeline_event = TimelineEvent(
         event_type="warrant_status_changed",
         category="lspd",
-        title=f"Mandato {status_labels.get(target_status, target_status.value)}: {warrant.warrant_number}",
+        title=f"Mandato {status_labels.get(target_status, target_status)}: {warrant.warrant_number}",
         description=f"Da {current_user.game_name or current_user.email}. {reason or ''}".strip(),
         entity_id=warrant.id,
         entity_type="warrant",
         user_id=current_user.id,
-        extra_data={"old_status": current_status.value, "new_status": target_status.value, "reason": reason}
+        extra_data={"old_status": current_status, "new_status": target_status, "reason": reason}
     )
     db.add(timeline_event)
     
@@ -393,15 +391,15 @@ async def update_warrant_status(
         user=current_user,
         entity_type="warrant",
         entity_id=warrant.id,
-        description=f"Mandato {warrant.warrant_number}: {current_status.value} -> {target_status.value}",
-        metadata={"old_status": current_status.value, "new_status": target_status.value, "reason": reason}
+        description=f"Mandato {warrant.warrant_number}: {current_status} -> {target_status}",
+        metadata={"old_status": current_status, "new_status": target_status, "reason": reason}
     )
     
     await sse_manager.broadcast("warrant_status_changed", {
         "warrant_id": warrant.id,
         "warrant_number": warrant.warrant_number,
-        "old_status": current_status.value,
-        "new_status": target_status.value
+        "old_status": current_status,
+        "new_status": target_status
     }, roles={"police", "dispatch", "admin"})
     
     return warrant
@@ -680,7 +678,7 @@ async def get_lspd_stats(
     
     # Query stats
     open_cases = await db.execute(
-        select(func.count(Case.id)).where(Case.status.in_([CaseStatus.OPEN, CaseStatus.INVESTIGATING]))
+        select(func.count(Case.id)).where(Case.status.in_(["open", "investigating"]))
     )
     
     active_warrants = await db.execute(

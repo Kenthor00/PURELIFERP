@@ -738,7 +738,7 @@ class Case(Base):
     case_number = Column(String(50), unique=True, nullable=False, index=True)
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
-    status = Column(Enum(CaseStatus), default=CaseStatus.OPEN, index=True)
+    status = Column(String(50), default="open", index=True)
     priority = Column(String(20), default="MEDIUM")
     officer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     suspect_name = Column(String(100), nullable=True)
@@ -766,7 +766,7 @@ class Warrant(Base):
     suspect_identifier = Column(String(100), nullable=True)
     reason = Column(Text, nullable=False)
     # Ciclo di vita mandato
-    status = Column(Enum(WarrantStatus), default=WarrantStatus.OPEN, index=True)
+    status = Column(String(50), default="OPEN", index=True)
     is_active = Column(Boolean, default=True)  # Legacy, derivato da status
     executed = Column(Boolean, default=False)  # Legacy, derivato da status
     executed_at = Column(DateTime, nullable=True)
@@ -871,8 +871,8 @@ class DispatchCall(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     call_number = Column(String(50), unique=True, nullable=False)
-    priority = Column(Enum(CallPriority), default=CallPriority.P2)
-    status = Column(Enum(CallStatus), default=CallStatus.PENDING, index=True)
+    priority = Column(String(10), default="P2")
+    status = Column(String(50), default="pending", index=True)
     call_type = Column(String(100), nullable=False)
     location = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
@@ -992,7 +992,7 @@ class LegalCase(Base):
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     case_type = Column(String(50), default="CIVIL")
-    status = Column(Enum(LegalCaseStatus), default=LegalCaseStatus.DRAFT, index=True)
+    status = Column(String(50), default="draft", index=True)
     plaintiff_name = Column(String(100), nullable=True)
     defendant_name = Column(String(100), nullable=True)
     # Campo avvocato (sostituisce "attore" nella UI)
@@ -1016,7 +1016,7 @@ class CourtHearing(Base):
     judge_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     scheduled_date = Column(DateTime, nullable=False)
     courtroom = Column(String(50), nullable=True)
-    status = Column(Enum(HearingStatus), default=HearingStatus.SCHEDULED, index=True)
+    status = Column(String(50), default="scheduled", index=True)
     verdict = Column(Text, nullable=True)
     verdict_date = Column(DateTime, nullable=True)
     notes = Column(Text, nullable=True)

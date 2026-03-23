@@ -8,7 +8,7 @@ from sqlalchemy import select, func, desc
 from typing import Optional, List
 
 from database import get_db
-from models import User, DispatchCall, CallPriority, CallStatus, TimelineEvent
+from models import User, DispatchCall, TimelineEvent
 from schemas import (
     DispatchCallCreate, DispatchCallUpdate, DispatchCallResponse,
     TimelineEventResponse, MessageResponse
@@ -27,8 +27,8 @@ router = APIRouter(prefix="/dispatch", tags=["Dispatch"])
 
 @router.get("/calls", response_model=List[DispatchCallResponse])
 async def get_calls(
-    status: Optional[CallStatus] = None,
-    priority: Optional[CallPriority] = None,
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
     limit: int = Query(50, le=100),
     current_user: User = Depends(require_roles(UserRole.DISPATCH, UserRole.POLICE, UserRole.EMS)),
     db: AsyncSession = Depends(get_db)
@@ -56,11 +56,7 @@ async def get_active_calls(
 ):
     """Lista chiamate attive (non completate/cancellate)"""
     query = select(DispatchCall).where(
-        DispatchCall.status.in_([
-            CallStatus.PENDING,
-            CallStatus.ASSIGNED,
-            CallStatus.IN_PROGRESS
-        ])
+        DispatchCall.status.in_(["pending", "assigned", "in_progress"])
     ).order_by(
         DispatchCall.priority,
         desc(DispatchCall.created_at)
@@ -102,7 +98,7 @@ async def create_call(
         caller_name=request.caller_name,
         caller_phone=request.caller_phone,
         created_by=current_user.id,
-        status=CallStatus.PENDING
+        status="pending"
     )
     
     db.add(call)
@@ -112,12 +108,12 @@ async def create_call(
     timeline_event = TimelineEvent(
         event_type="call_created",
         category="dispatch",
-        title=f"Chiamata {call.priority.value}: {call.call_type}",
+        title=f"Chiamata {call.priority}: {call.call_type}",
         description=f"Posizione: {call.location}",
         entity_id=call.id,
         entity_type="call",
         user_id=current_user.id,
-        extra_data={"priority": call.priority.value}
+        extra_data={"priority": call.priority}
     )
     db.add(timeline_event)
     await db.commit()
@@ -131,7 +127,7 @@ async def create_call(
     await sse_manager.broadcast("call_created", {
         "call_id": call.id,
         "call_number": call.call_number,
-        "priority": call.priority.value,
+        "priority": call.priority,
         "call_type": call.call_type,
         "location": call.location
     }, roles=target_roles)
@@ -166,12 +162,12 @@ async def update_call(
         timeline_event = TimelineEvent(
             event_type="call_status_changed",
             category="dispatch",
-            title=f"Stato chiamata: {call.status.value}",
+            title=f"Stato chiamata: {call.status}",
             description=f"Aggiornato da {current_user.game_name or current_user.email}",
             entity_id=call.id,
             entity_type="call",
             user_id=current_user.id,
-            extra_data={"old_status": old_status.value, "new_status": call.status.value}
+            extra_data={"old_status": old_status, "new_status": call.status}
         )
         db.add(timeline_event)
         await db.commit()
@@ -179,7 +175,7 @@ async def update_call(
         await sse_manager.broadcast("call_updated", {
             "call_id": call.id,
             "call_number": call.call_number,
-            "status": call.status.value,
+            "status": call.status,
             "assigned_units": call.assigned_units
         })
     
@@ -201,7 +197,7 @@ async def assign_units(
         raise HTTPException(status_code=404, detail="Chiamata non trovata")
     
     call.assigned_units = units
-    call.status = CallStatus.ASSIGNED
+    call.status = "assigned"
     
     await db.commit()
     await db.refresh(call)
@@ -239,7 +235,7 @@ async def complete_call(
     if not call:
         raise HTTPException(status_code=404, detail="Chiamata non trovata")
     
-    call.status = CallStatus.COMPLETED
+    call.status = "completed"
     
     timeline_event = TimelineEvent(
         event_type="call_completed",
@@ -277,26 +273,26 @@ async def get_dispatch_stats(
     
     pending_calls = await db.execute(
         select(func.count(DispatchCall.id))
-        .where(DispatchCall.status == CallStatus.PENDING)
+        .where(DispatchCall.status == "pending")
     )
     
     active_calls = await db.execute(
         select(func.count(DispatchCall.id))
-        .where(DispatchCall.status.in_([CallStatus.ASSIGNED, CallStatus.IN_PROGRESS]))
+        .where(DispatchCall.status.in_(["assigned", "in_progress"]))
     )
     
     p1_calls = await db.execute(
         select(func.count(DispatchCall.id))
         .where(
-            DispatchCall.priority == CallPriority.P1,
-            DispatchCall.status.in_([CallStatus.PENDING, CallStatus.ASSIGNED, CallStatus.IN_PROGRESS])
+            DispatchCall.priority == "P1",
+            DispatchCall.status.in_(["pending", "assigned", "in_progress"])
         )
     )
     
     today_completed = await db.execute(
         select(func.count(DispatchCall.id))
         .where(
-            DispatchCall.status == CallStatus.COMPLETED,
+            DispatchCall.status == "completed",
             func.date(DispatchCall.updated_at) == func.current_date()
         )
     )
@@ -348,9 +344,9 @@ async def get_zone_activity(
     calls_result = await db.execute(
         select(DispatchCall).where(
             or_(
-                DispatchCall.status.in_([CallStatus.PENDING, CallStatus.ASSIGNED, CallStatus.IN_PROGRESS]),
+                DispatchCall.status.in_(["pending", "assigned", "in_progress"]),
                 and_(
-                    DispatchCall.status == CallStatus.COMPLETED,
+                    DispatchCall.status == "completed",
                     DispatchCall.created_at >= yesterday
                 )
             )
@@ -372,9 +368,9 @@ async def get_zone_activity(
                 if zone_id.replace('_', ' ') in location_lower or zone_data['name'].lower() in location_lower:
                     zones[zone_id]['incidents'] += 1
                     # P1 = +40, P2 = +20, P3 = +10
-                    if call.priority == CallPriority.P1:
+                    if call.priority == "P1":
                         zones[zone_id]['level'] += 40
-                    elif call.priority == CallPriority.P2:
+                    elif call.priority == "P2":
                         zones[zone_id]['level'] += 20
                     else:
                         zones[zone_id]['level'] += 10

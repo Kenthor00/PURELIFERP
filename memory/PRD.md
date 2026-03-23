@@ -23,75 +23,70 @@ PURE LIFE OS e' un Sistema Operativo Civico Roleplay ULTRA PREMIUM per server GT
 
 ---
 
-## Stato Attuale (23/03/2026) - v3.5.2
+## Funzionalita' Complete e Testate (v3.5.2)
 
-### Bug Fix Critici Risolti
-1. **Registrazione cittadino non funzionava** -> Colonna `name` mancante nel modello + `grade` tipo sbagliato (String vs Integer)
-2. **Login riportava a schermata iniziale** -> `/api/auth/me` restituiva 500 per mismatch `grade: str` vs `int` nel Pydantic model
-3. **CityHub mostrava sempre ACCEDI/REGISTRATI** -> Aggiunto stato auth-aware nella header
-4. **LSPD/EMS/Justice/Chat/Dispatch API 500** -> Schema DB disallineato con modelli SQLAlchemy (26 colonne mancanti in 15+ tabelle)
-5. **Mixed Content HTTPS** -> Frontend build punta a `https://api.pureliferp.it`
-6. **Tutti i `grade: str` nel codebase** -> Corretti in `int` (auth, users, chat, audit)
-
-### Migrazione DB Completata (migration_v3_5_2.sql)
-Tabelle corrette: cases, court_hearings, news_articles, chat_channels, chat_messages, dispatch_calls, evidence, fines, legal_cases, warrants, medical_reports, timeline_events, businesses, city_events, advertisements, audit_logs
-
----
-
-## Test Results (Iteration 25)
-- Backend: **100% (23/23 tests passed)**
-- Frontend: **100% (all pages and flows verified)**
-- Ruoli testati: ADMIN, LSPD, EMS, CIVIL
-
----
-
-## Funzionalita' per Ruolo
-
-### CIVIL (Cittadino)
-- CityHub (home pubblica)
-- Chat (comunicazioni inter-settore)
+### Per tutti i ruoli
+- Login/Registrazione cittadino
+- Chat (canale generale + settoriale)
 - Marketplace (compra/vendi)
-- Documenti
-- Annunci pubblici
-- Bandi di lavoro
-- Prenotazioni appuntamenti
+- Documenti verificabili con QR
+- Annunci pubblici (bandi, assistenza)
+- Sidebar navigazione per ruolo
 
 ### LSPD (Polizia)
-- Dashboard con statistiche
-- Gestione casi
-- Mandati di arresto
-- Multe
-- Dispatch
-- Chat settoriale
+- Dashboard con statistiche (casi aperti, mandati attivi)
+- Creazione e gestione casi
+- Creazione e gestione mandati (con transizioni di stato)
+- Creazione e gestione multe
+- Evidenze
+- Dispatch (visualizzazione)
 
 ### EMS (Emergenze Mediche)
 - Dashboard con statistiche
-- Gestione pazienti
-- Referti medici
-- Dispatch
-- Chat settoriale
+- Gestione pazienti (CRUD)
+- Creazione referti medici
 
 ### GOV/Justice (Governo/Tribunale)
 - Dashboard giustizia
-- Casi legali
-- Udienze
-- City Pulse
-
-### NEWS (Giornalista)
-- Editor articoli Weazel News
-- Pubblicazione notizie
-- Breaking news
+- Creazione casi legali
+- Gestione udienze
 
 ### DISPATCH
-- Centrale operativa
-- Gestione chiamate
-- City Pulse
+- Creazione chiamate con priorita'
+- Statistiche in tempo reale
+- Mappa termica zone
+
+### NEWS
+- Editor articoli Weazel News
+- Pubblicazione notizie
 
 ### ADMIN
 - Dashboard amministrativa
 - Gestione utenti (RBAC)
 - Audit log
-- Tutti gli accessi
+
+---
+
+## API Testate (100% funzionanti)
+
+### GET (14/14 = 200)
+Cases, Warrants, Fines, Patients, Reports, JCases, Hearings, DStats, DCalls, Chat, Market, Docs, News, Timeline
+
+### POST (8/8 = 200)
+NewCase, NewWarrant, NewFine, NewPatient, NewReport, NewLCase, NewDCall, ChatMsg
+
+---
+
+## Bug Fix Critici (v3.5.2)
+
+1. Registrazione: colonna `name` mancante + tipo `grade` errato
+2. Login loop: `/api/auth/me` 500 per grade:str vs int
+3. CityHub auth-aware: PANNELLO/ESCI dopo login
+4. Migrazione DB: 26 colonne aggiunte + 10 colonne rese nullable
+5. ENUM crash: tutti gli Enum() sostituiti con String() nei modelli
+6. Tutti i `grade:str` Pydantic corretti in `int`
+7. Chat: sender_id reso nullable, canale generale creato
+8. Frontend HTTPS: `https://api.pureliferp.it`
 
 ---
 
@@ -106,24 +101,38 @@ Tabelle corrette: cases, court_hearings, news_articles, chat_channels, chat_mess
 
 ---
 
-## Note Tecniche Importanti
+## Deploy sulla VPS - ISTRUZIONI
 
-1. Il `craco.config.js` contiene `require("dotenv").config()` che sovrascrive `.env.production`. Per build corrette usare: `REACT_APP_BACKEND_URL=https://api.pureliferp.it yarn build`
-2. MySQL locale NON supporta `ALTER TABLE ADD COLUMN IF NOT EXISTS` - usare script Python con try/catch
-3. L'utente non e' tecnico: fornire sempre ZIP pronti e istruzioni chiare
-4. Lo script `migration_v3_5_2.sql` DEVE essere eseguito anche sulla VPS dell'utente
+### 1. Migrazione DB (OBBLIGATORIA)
+```bash
+mysql -u root -p purelife < migration_v3_5_2.sql
+```
+
+### 2. Deploy Backend
+Sostituisci i file Python (NON il .env). Riavvia il servizio.
+
+### 3. Deploy Frontend
+Sostituisci i file statici nella cartella build di Caddy.
+
+---
+
+## Note Tecniche
+
+1. `craco.config.js` sovrascrive `.env.production` - usare: `REACT_APP_BACKEND_URL=https://api.pureliferp.it yarn build`
+2. MySQL NON supporta `ALTER TABLE ADD COLUMN IF NOT EXISTS` - usare script separati con error handling
+3. Tutti gli Enum SQLAlchemy sostituiti con String() per compatibilita' cross-DB
 
 ---
 
 ## Backlog
 
-### P1 - Da fare
-- [ ] Eseguire migrazione DB sulla VPS utente (migration_v3_5_2.sql)
-- [ ] Cambio password predefinite account dipartimentali
+### P1 - Prossimi
+- [ ] Deploy VPS con migration_v3_5_2.sql
+- [ ] Cambio password predefinite
 
 ### P2 - Futuro
 - [ ] Notifiche Discord per mandati alta priorita'
 - [ ] Upload immagini per annunci Marketplace
-- [ ] PC Realism Mode (finestre draggable, snap layout)
-- [ ] Dossier System (profilo cittadino completo)
 - [ ] Broadcast Operativo (alert urgenti)
+- [ ] Dossier System (profilo cittadino completo)
+- [ ] PC Realism Mode (finestre draggable)

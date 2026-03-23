@@ -198,7 +198,7 @@ class CaseCreate(CaseBase):
 class CaseUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    status: Optional[CaseStatus] = None
+    status: Optional[str] = None
     priority: Optional[str] = None
     suspect_name: Optional[str] = None
     suspect_identifier: Optional[str] = None
@@ -210,7 +210,7 @@ class CaseResponse(CaseBase):
     
     id: int
     case_number: str
-    status: CaseStatus
+    status: str
     officer_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
@@ -247,8 +247,8 @@ class WarrantCreate(WarrantBase):
 
 class WarrantStatusUpdate(BaseModel):
     """Schema per aggiornare solo lo stato del mandato"""
-    status: WarrantStatus
-    reason: Optional[str] = None  # Motivo del cambio stato
+    status: str
+    reason: Optional[str] = None
 
 
 class WarrantResponse(WarrantBase):
@@ -256,7 +256,7 @@ class WarrantResponse(WarrantBase):
     
     id: int
     warrant_number: str
-    status: Optional[WarrantStatus] = None
+    status: Optional[str] = None
     is_active: bool
     executed: bool = False
     issued_by: int
@@ -403,7 +403,7 @@ class MedicalReportResponse(MedicalReportBase):
 # ==========================================
 
 class DispatchCallBase(BaseModel):
-    priority: CallPriority = CallPriority.P3
+    priority: str = "P3"
     call_type: str
     location: str
     description: Optional[str] = None
@@ -416,8 +416,8 @@ class DispatchCallCreate(DispatchCallBase):
 
 
 class DispatchCallUpdate(BaseModel):
-    priority: Optional[CallPriority] = None
-    status: Optional[CallStatus] = None
+    priority: Optional[str] = None
+    status: Optional[str] = None
     call_type: Optional[str] = None
     location: Optional[str] = None
     description: Optional[str] = None
@@ -429,7 +429,7 @@ class DispatchCallResponse(DispatchCallBase):
     
     id: int
     call_number: str
-    status: CallStatus
+    status: str
     assigned_units: Optional[List[str]] = None
     created_by: Optional[int] = None
     assigned_by: Optional[int] = None
@@ -595,7 +595,7 @@ class LegalCaseCreate(LegalCaseBase):
 
 
 class LegalCaseUpdate(BaseModel):
-    status: Optional[LegalCaseStatus] = None
+    status: Optional[str] = None
     description: Optional[str] = None
     lawyer_id: Optional[int] = None
     prosecutor_id: Optional[int] = None
@@ -608,7 +608,7 @@ class LegalCaseResponse(LegalCaseBase):
     case_number: str
     lawyer_id: Optional[int] = None
     prosecutor_id: Optional[int] = None
-    status: LegalCaseStatus
+    status: str
     created_at: datetime
     updated_at: datetime
 
@@ -631,7 +631,7 @@ class CourtHearingCreate(CourtHearingBase):
 
 
 class CourtHearingUpdate(BaseModel):
-    status: Optional[HearingStatus] = None
+    status: Optional[str] = None
     verdict: Optional[str] = None
     minutes: Optional[str] = None
     scheduled_date: Optional[datetime] = None
@@ -643,7 +643,7 @@ class CourtHearingResponse(CourtHearingBase):
     id: int
     hearing_number: str
     judge_id: Optional[int] = None
-    status: HearingStatus
+    status: str
     verdict: Optional[str] = None
     verdict_date: Optional[datetime] = None
     created_at: datetime

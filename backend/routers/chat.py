@@ -59,7 +59,7 @@ class MessageResponse(BaseModel):
     author_id: int
     author_game_name: str
     author_sector: str
-    author_grade: Optional[str]
+    author_grade: Optional[int] = 0
     content: str
     message_type: str
     is_pinned: bool

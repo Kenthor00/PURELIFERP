@@ -11,7 +11,7 @@ import random
 import string
 
 from database import get_db
-from models import User, LegalCase, LegalCaseStatus, CourtHearing, HearingStatus, TimelineEvent
+from models import User, LegalCase, CourtHearing, TimelineEvent
 from schemas import (
     LegalCaseCreate, LegalCaseUpdate, LegalCaseResponse,
     CourtHearingCreate, CourtHearingUpdate, CourtHearingResponse,
@@ -42,7 +42,7 @@ def generate_hearing_number():
 
 @router.get("/cases", response_model=List[LegalCaseResponse])
 async def get_legal_cases(
-    status: Optional[LegalCaseStatus] = None,
+    status: Optional[str] = None,
     my_cases: bool = False,
     limit: int = Query(50, le=100),
     current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT, UserRole.ADMIN)),
@@ -98,7 +98,7 @@ async def create_legal_case(
         lawyer_name=case_data.get('lawyer_name'),
         description=case_data.get('description'),
         related_case_id=case_data.get('police_case_id'),
-        status=LegalCaseStatus.DRAFT
+        status="draft"
     )
     
     if hasattr(current_user, 'role'):
@@ -155,11 +155,11 @@ async def update_legal_case(
         timeline_event = TimelineEvent(
             event_type="legal_case_status_changed",
             category="justice",
-            title=f"Stato pratica: {case.status.value}",
+            title=f"Stato pratica: {case.status}",
             entity_id=case.id,
             entity_type="legal_case",
             user_id=current_user.id,
-            extra_data={"old_status": old_status.value, "new_status": case.status.value}
+            extra_data={"old_status": old_status, "new_status": case.status}
         )
         db.add(timeline_event)
         await db.commit()
@@ -180,10 +180,10 @@ async def submit_legal_case(
     if not case:
         raise HTTPException(status_code=404, detail="Pratica non trovata")
     
-    if case.status != LegalCaseStatus.DRAFT:
+    if case.status != "draft":
         raise HTTPException(status_code=400, detail="La pratica non è in stato bozza")
     
-    case.status = LegalCaseStatus.SUBMITTED
+    case.status = "submitted"
     
     timeline_event = TimelineEvent(
         event_type="legal_case_submitted",
@@ -211,7 +211,7 @@ async def submit_legal_case(
 
 @router.get("/hearings", response_model=List[CourtHearingResponse])
 async def get_hearings(
-    status: Optional[HearingStatus] = None,
+    status: Optional[str] = None,
     upcoming_only: bool = True,
     limit: int = Query(50, le=100),
     current_user: User = Depends(require_roles(UserRole.JUDGE, UserRole.LAWYER, UserRole.PROSECUTOR, UserRole.GOVERNMENT, UserRole.ADMIN)),
@@ -267,7 +267,7 @@ async def get_hearings_calendar(
             "title": h.title,
             "time": h.scheduled_date.strftime("%H:%M"),
             "courtroom": h.courtroom,
-            "status": h.status.value
+            "status": h.status
         })
     
     return {"month": month, "year": year, "calendar": calendar_data}
@@ -299,7 +299,7 @@ async def create_hearing(
     hearing = CourtHearing(
         hearing_number=generate_hearing_number(),
         **request.model_dump(),
-        status=HearingStatus.SCHEDULED
+        status="scheduled"
     )
     
     if current_user.role == UserRole.JUDGE:
@@ -352,7 +352,7 @@ async def update_hearing(
     
     if "verdict" in update_data and update_data["verdict"]:
         hearing.verdict_date = datetime.now(timezone.utc)
-        hearing.status = HearingStatus.COMPLETED
+        hearing.status = "completed"
         
         timeline_event = TimelineEvent(
             event_type="verdict_issued",
@@ -394,18 +394,18 @@ async def get_justice_stats(
     
     pending_cases = await db.execute(
         select(func.count(LegalCase.id))
-        .where(LegalCase.status.in_([LegalCaseStatus.SUBMITTED, LegalCaseStatus.REVIEW]))
+        .where(LegalCase.status.in_(["submitted", "review"]))
     )
     
     scheduled_hearings = await db.execute(
         select(func.count(CourtHearing.id))
-        .where(CourtHearing.status == HearingStatus.SCHEDULED)
+        .where(CourtHearing.status == "scheduled")
     )
     
     completed_today = await db.execute(
         select(func.count(CourtHearing.id))
         .where(
-            CourtHearing.status == HearingStatus.COMPLETED,
+            CourtHearing.status == "completed",
             func.date(CourtHearing.verdict_date) == func.current_date()
         )
     )
