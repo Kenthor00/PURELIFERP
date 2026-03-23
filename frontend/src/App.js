@@ -111,14 +111,9 @@ const PhoneProvider = ({ children }) => {
     const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isInIframe = window.self !== window.top;
     
-    const phoneMode = phoneParam || (isMobileUA && isInIframe);
-    setIsPhoneMode(phoneMode);
-    setReducedMotion(phoneMode);
-
-    if (phoneMode) {
-      document.body.classList.add('phone-webview');
-      document.body.classList.add('reduced-motion');
-    }
+    const phoneMode = false;
+    setIsPhoneMode(false);
+    setReducedMotion(false);
 
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mediaQuery.matches) {
@@ -127,7 +122,7 @@ const PhoneProvider = ({ children }) => {
     }
 
     return () => {
-      document.body.classList.remove('phone-webview', 'reduced-motion');
+      document.body.classList.remove('reduced-motion');
     };
   }, []);
 

@@ -369,9 +369,9 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
           style={{ 
             height: '400px', // Altezza fissa per compatibilità CEF
             maxHeight: '70vh',
-            background: 'linear-gradient(180deg, rgba(0,200,83,0.15) 0%, rgba(0,0,0,0.5) 50%, rgba(0,200,83,0.15) 100%)',
-            border: '2px solid rgba(0,200,83,0.4)',
-            boxShadow: '0 0 15px rgba(0,200,83,0.3), inset 0 0 10px rgba(0,200,83,0.1)'
+            background: 'linear-gradient(180deg, rgba(173,255,47,0.15) 0%, rgba(0,0,0,0.5) 50%, rgba(173,255,47,0.15) 100%)',
+            border: '2px solid rgba(173,255,47,0.4)',
+            boxShadow: '0 0 15px rgba(173,255,47,0.3), inset 0 0 10px rgba(173,255,47,0.1)'
           }}
         >
           {/* Track Glow Lines */}
@@ -407,13 +407,13 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
               className="absolute inset-0 rounded-full transition-all duration-300"
               style={{
                 background: isDragging 
-                  ? 'linear-gradient(180deg, #00c853 0%, #00e676 50%, #00c853 100%)'
-                  : 'linear-gradient(180deg, rgba(0,200,83,0.8) 0%, rgba(0,230,118,0.9) 50%, rgba(0,200,83,0.8) 100%)',
+                  ? 'linear-gradient(180deg, #adff2f 0%, #c5ff5e 50%, #adff2f 100%)'
+                  : 'linear-gradient(180deg, rgba(173,255,47,0.8) 0%, rgba(197,255,94,0.9) 50%, rgba(173,255,47,0.8) 100%)',
                 boxShadow: isDragging
-                  ? '0 0 20px rgba(0,200,83,0.8), 0 0 40px rgba(0,200,83,0.4), inset 0 0 10px rgba(255,255,255,0.2)'
+                  ? '0 0 20px rgba(173,255,47,0.8), 0 0 40px rgba(173,255,47,0.4), inset 0 0 10px rgba(255,255,255,0.2)'
                   : isHovering 
-                    ? '0 0 15px rgba(0,200,83,0.6), 0 0 30px rgba(0,200,83,0.3)'
-                    : '0 0 10px rgba(0,200,83,0.4)',
+                    ? '0 0 15px rgba(173,255,47,0.6), 0 0 30px rgba(173,255,47,0.3)'
+                    : '0 0 10px rgba(173,255,47,0.4)',
               }}
             />
             
@@ -438,7 +438,7 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
             <div 
               className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
               style={{
-                background: 'radial-gradient(circle, rgba(0,200,83,0.6) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(173,255,47,0.6) 0%, transparent 70%)',
               }}
             />
           </div>
@@ -450,7 +450,7 @@ const PremiumScrollbar = ({ containerRef, className = '' }) => {
             isDragging ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            background: 'linear-gradient(180deg, transparent 0%, rgba(0,200,83,0.3) 50%, transparent 100%)',
+            background: 'linear-gradient(180deg, transparent 0%, rgba(173,255,47,0.3) 50%, transparent 100%)',
           }}
         />
       </div>
