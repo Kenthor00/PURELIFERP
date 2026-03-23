@@ -436,11 +436,12 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
+    name = Column(String(100), nullable=False, default="")
     
     # Dati operativi OBBLIGATORI
     game_name = Column(String(100), nullable=True)  # OBBLIGATORIO al primo login
     sector = Column(Enum(Sector), nullable=False, default=Sector.CIVIL)
-    grade = Column(String(100), nullable=False, default="Cittadino")
+    grade = Column(Integer, nullable=True, default=0)
     hierarchy_level = Column(Integer, nullable=False, default=1)
     is_sector_chief = Column(Boolean, default=False)  # Capo settore
     

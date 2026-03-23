@@ -386,9 +386,10 @@ async def bootstrap_admin(
     admin = User(
         email=email,
         password_hash=pwd_context.hash(password),
+        name=game_name,
         game_name=game_name,
         sector=Sector.ADMIN,
-        grade="Super Admin",
+        grade=10,
         hierarchy_level=10,
         is_active=True
     )
@@ -463,9 +464,10 @@ async def register_citizen(
     citizen = User(
         email=data.email.lower(),
         password_hash=pwd_context.hash(data.password),
+        name=data.game_name.strip(),
         game_name=data.game_name.strip(),
         sector=Sector.CIVIL,
-        grade="Cittadino",
+        grade=0,
         hierarchy_level=1,
         is_active=True,
         is_sector_chief=False
