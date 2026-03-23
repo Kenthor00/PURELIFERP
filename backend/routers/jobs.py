@@ -98,6 +98,18 @@ async def ensure_tables(db: AsyncSession):
         )
     """))
     await db.execute(text("""
+        CREATE TABLE IF NOT EXISTS job_dept_managers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            dept_id INT NOT NULL,
+            dept_code VARCHAR(30) NOT NULL,
+            user_id INT NOT NULL,
+            assigned_by INT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_dept_user (dept_id, user_id),
+            FOREIGN KEY (dept_id) REFERENCES job_departments(id) ON DELETE CASCADE
+        )
+    """))
+    await db.execute(text("""
         CREATE TABLE IF NOT EXISTS job_postings (
             id INT AUTO_INCREMENT PRIMARY KEY,
             dept_id INT NOT NULL,
@@ -142,6 +154,9 @@ async def ensure_tables(db: AsyncSession):
     """))
     await db.commit()
 
+# Soglia grado per essere direttore automatico
+DIRECTOR_GRADE_THRESHOLD = 8
+
 
 def _is_admin(user: User) -> bool:
     sector = user.sector.value if hasattr(user.sector, 'value') else str(user.sector)
@@ -152,12 +167,46 @@ def _get_sector(user: User) -> str:
     return user.sector.value if hasattr(user.sector, 'value') else str(user.sector)
 
 
-async def _can_manage_dept(user: User, dept_code: str, db: AsyncSession) -> bool:
-    """Controlla se l'utente puo' gestire questo dipartimento"""
+def user_grade_int(user: User) -> int:
+    grade = getattr(user, 'hierarchy_level', None) or getattr(user, 'grade', None) or 0
+    if isinstance(grade, str):
+        try:
+            grade = int(grade)
+        except (ValueError, TypeError):
+            grade = 0
+    return grade
+
+
+async def _is_dept_director(user: User, dept_code: str, db: AsyncSession) -> bool:
+    """
+    Controlla se l'utente e' un direttore di questo dipartimento.
+    Un direttore e':
+    1. Admin/GOV -> puo' gestire tutto
+    2. Assegnato manualmente come manager nella tabella job_dept_managers
+    3. Stesso settore + grado >= DIRECTOR_GRADE_THRESHOLD
+    4. Stesso settore + is_sector_chief = True
+    """
     if _is_admin(user):
         return True
+
     sector = _get_sector(user)
-    return sector.upper() == dept_code.upper()
+
+    # Check manual assignment
+    manual = await db.execute(text(
+        "SELECT id FROM job_dept_managers WHERE dept_code = :code AND user_id = :uid"
+    ), {"code": dept_code.upper(), "uid": user.id})
+    if manual.mappings().first():
+        return True
+
+    # Check same sector + high grade or sector chief
+    if sector.upper() == dept_code.upper():
+        grade = user_grade_int(user)
+        if grade >= DIRECTOR_GRADE_THRESHOLD:
+            return True
+        if getattr(user, 'is_sector_chief', False):
+            return True
+
+    return False
 
 
 # ==========================================
@@ -213,6 +262,9 @@ async def list_departments(
         app_count = await db.execute(text(
             "SELECT COUNT(*) FROM job_applications WHERE dept_id = :did AND status = 'pending'"
         ), {"did": row["id"]})
+        mgr_count = await db.execute(text(
+            "SELECT COUNT(*) FROM job_dept_managers WHERE dept_id = :did"
+        ), {"did": row["id"]})
         depts.append({
             "id": row["id"], "name": row["name"], "code": row["code"],
             "description": row["description"], "icon": row["icon"],
@@ -220,6 +272,7 @@ async def list_departments(
             "active": bool(row["active"]),
             "open_postings": posting_count.scalar(),
             "pending_applications": app_count.scalar(),
+            "managers_count": mgr_count.scalar(),
         })
     return depts
 
@@ -230,10 +283,18 @@ async def update_department(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Admin modifica un dipartimento"""
-    if not _is_admin(current_user):
-        raise HTTPException(status_code=403, detail="Solo admin")
+    """Admin o Capo dipartimento modifica un dipartimento"""
     await ensure_tables(db)
+    # Trova il dipartimento per prendere il codice
+    dept = await db.execute(text("SELECT code FROM job_departments WHERE id = :did"), {"did": dept_id})
+    dept_row = dept.mappings().first()
+    if not dept_row:
+        raise HTTPException(status_code=404, detail="Dipartimento non trovato")
+
+    # Admin puo' tutto, il capo/direttore puo' modificare il proprio
+    if not _is_admin(current_user) and not await _is_dept_director(current_user, dept_row["code"], db):
+        raise HTTPException(status_code=403, detail="Non hai i permessi per modificare questo dipartimento")
+
     updates, params = [], {"did": dept_id}
     for field in ["name", "description", "icon", "color", "form_fields"]:
         v = getattr(data, field, None)
@@ -241,6 +302,9 @@ async def update_department(
             updates.append(f"{field} = :{field}")
             params[field] = v
     if data.active is not None:
+        # Solo admin puo' attivare/disattivare
+        if not _is_admin(current_user):
+            raise HTTPException(status_code=403, detail="Solo admin puo' attivare/disattivare dipartimenti")
         updates.append("active = :active")
         params["active"] = data.active
     if updates:
@@ -265,6 +329,99 @@ async def delete_department(
 
 
 # ==========================================
+# GESTIONE MANAGER/DIRETTORI
+# ==========================================
+
+@router.post("/departments/{dept_id}/managers")
+async def add_dept_manager(
+    dept_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    user_id: int = Query(..., description="ID utente da assegnare"),
+):
+    """Admin assegna un manager a un dipartimento"""
+    if not _is_admin(current_user):
+        raise HTTPException(status_code=403, detail="Solo admin puo' assegnare manager")
+    await ensure_tables(db)
+
+    dept = await db.execute(text("SELECT id, code FROM job_departments WHERE id = :did"), {"did": dept_id})
+    dept_row = dept.mappings().first()
+    if not dept_row:
+        raise HTTPException(status_code=404, detail="Dipartimento non trovato")
+
+    try:
+        await db.execute(text("""
+            INSERT INTO job_dept_managers (dept_id, dept_code, user_id, assigned_by)
+            VALUES (:did, :code, :uid, :by)
+        """), {"did": dept_id, "code": dept_row["code"], "uid": user_id, "by": current_user.id})
+        await db.commit()
+    except Exception:
+        raise HTTPException(status_code=409, detail="Manager gia' assegnato")
+
+    return {"message": "Manager assegnato"}
+
+
+@router.delete("/departments/{dept_id}/managers/{user_id}")
+async def remove_dept_manager(
+    dept_id: int, user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin rimuove un manager da un dipartimento"""
+    if not _is_admin(current_user):
+        raise HTTPException(status_code=403, detail="Solo admin")
+    await ensure_tables(db)
+    await db.execute(text(
+        "DELETE FROM job_dept_managers WHERE dept_id = :did AND user_id = :uid"
+    ), {"did": dept_id, "uid": user_id})
+    await db.commit()
+    return {"message": "Manager rimosso"}
+
+
+@router.get("/departments/{dept_id}/managers")
+async def get_dept_managers(
+    dept_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Vedi i manager assegnati a un dipartimento"""
+    await ensure_tables(db)
+    result = await db.execute(text("""
+        SELECT jdm.id, jdm.user_id, jdm.created_at, u.game_name, u.email, u.sector
+        FROM job_dept_managers jdm
+        JOIN users u ON jdm.user_id = u.id
+        WHERE jdm.dept_id = :did
+        ORDER BY jdm.created_at ASC
+    """), {"did": dept_id})
+    return [{
+        "id": r["id"], "user_id": r["user_id"],
+        "game_name": r["game_name"], "email": r["email"],
+        "sector": r["sector"].value if hasattr(r["sector"], 'value') else str(r["sector"]),
+        "assigned_at": str(r["created_at"]) if r["created_at"] else None
+    } for r in result.mappings().all()]
+
+
+@router.get("/users/search")
+async def search_users_for_manager(
+    q: str = Query("", min_length=1),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin cerca utenti per assegnarli come manager"""
+    if not _is_admin(current_user):
+        raise HTTPException(status_code=403, detail="Solo admin")
+    result = await db.execute(text("""
+        SELECT id, game_name, email, sector FROM users
+        WHERE (game_name LIKE :q OR email LIKE :q) AND sector != 'CIVIL'
+        LIMIT 10
+    """), {"q": f"%{q}%"})
+    return [{
+        "id": r["id"], "game_name": r["game_name"], "email": r["email"],
+        "sector": r["sector"].value if hasattr(r["sector"], 'value') else str(r["sector"]),
+    } for r in result.mappings().all()]
+
+
+# ==========================================
 # STAFF DIPARTIMENTO - GESTIONE BANDI
 # ==========================================
 
@@ -277,8 +434,8 @@ async def create_posting(
 ):
     """Staff del dipartimento crea un bando"""
     await ensure_tables(db)
-    if not await _can_manage_dept(current_user, dept_code, db):
-        raise HTTPException(status_code=403, detail="Non hai accesso a questo dipartimento")
+    if not await _is_dept_director(current_user, dept_code, db):
+        raise HTTPException(status_code=403, detail="Solo i direttori del dipartimento possono creare bandi")
 
     dept = await db.execute(text(
         "SELECT * FROM job_departments WHERE code = :code AND active = TRUE"
@@ -307,7 +464,7 @@ async def get_my_dept_postings(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Staff vede i bandi del proprio dipartimento"""
+    """Direttore vede i bandi dei dipartimenti che gestisce"""
     await ensure_tables(db)
     sector = _get_sector(current_user)
 
@@ -315,11 +472,29 @@ async def get_my_dept_postings(
         query = "SELECT jp.*, jd.name as dept_name, jd.color as dept_color FROM job_postings jp JOIN job_departments jd ON jp.dept_id = jd.id ORDER BY jp.created_at DESC"
         result = await db.execute(text(query))
     else:
-        result = await db.execute(text("""
+        # Trova i codici dipartimento che questo utente puo' gestire
+        # 1. Stesso settore con grado alto o sector chief
+        managed_codes = set()
+        grade = user_grade_int(current_user)
+        if grade >= DIRECTOR_GRADE_THRESHOLD or getattr(current_user, 'is_sector_chief', False):
+            managed_codes.add(sector.upper())
+
+        # 2. Assegnazioni manuali
+        manual = await db.execute(text(
+            "SELECT dept_code FROM job_dept_managers WHERE user_id = :uid"
+        ), {"uid": current_user.id})
+        for row in manual.mappings().all():
+            managed_codes.add(row["dept_code"])
+
+        if not managed_codes:
+            return []
+
+        codes_str = ", ".join([f"'{c}'" for c in managed_codes])
+        result = await db.execute(text(f"""
             SELECT jp.*, jd.name as dept_name, jd.color as dept_color
             FROM job_postings jp JOIN job_departments jd ON jp.dept_id = jd.id
-            WHERE jp.dept_code = :sector ORDER BY jp.created_at DESC
-        """), {"sector": sector.upper()})
+            WHERE jp.dept_code IN ({codes_str}) ORDER BY jp.created_at DESC
+        """))
 
     postings = []
     for row in result.mappings().all():
@@ -356,7 +531,7 @@ async def update_posting(
     p = posting.mappings().first()
     if not p:
         raise HTTPException(status_code=404, detail="Bando non trovato")
-    if not await _can_manage_dept(current_user, p["dept_code"], db):
+    if not await _is_dept_director(current_user, p["dept_code"], db):
         raise HTTPException(status_code=403, detail="Non puoi modificare bandi di altri dipartimenti")
 
     updates, params = [], {"pid": posting_id}
@@ -383,7 +558,7 @@ async def delete_posting(
     p = posting.mappings().first()
     if not p:
         raise HTTPException(status_code=404, detail="Bando non trovato")
-    if not await _can_manage_dept(current_user, p["dept_code"], db):
+    if not await _is_dept_director(current_user, p["dept_code"], db):
         raise HTTPException(status_code=403, detail="Non puoi eliminare bandi di altri dipartimenti")
     await db.execute(text("DELETE FROM job_postings WHERE id = :pid"), {"pid": posting_id})
     await db.commit()
@@ -406,7 +581,7 @@ async def get_posting_applications(
     p = posting.mappings().first()
     if not p:
         raise HTTPException(status_code=404, detail="Bando non trovato")
-    if not await _can_manage_dept(current_user, p["dept_code"], db):
+    if not await _is_dept_director(current_user, p["dept_code"], db):
         raise HTTPException(status_code=403, detail="Non hai accesso")
 
     result = await db.execute(text("""
@@ -434,7 +609,7 @@ async def review_application(
     app = app_row.mappings().first()
     if not app:
         raise HTTPException(status_code=404, detail="Candidatura non trovata")
-    if not await _can_manage_dept(current_user, app["dept_code"], db):
+    if not await _is_dept_director(current_user, app["dept_code"], db):
         raise HTTPException(status_code=403, detail="Non puoi gestire candidature di altri dipartimenti")
 
     valid = ["reviewing", "interview", "accepted", "rejected"]
