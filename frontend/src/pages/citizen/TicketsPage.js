@@ -37,7 +37,7 @@ const TicketsPage = ({ isStaff = false }) => {
   const [newTicket, setNewTicket] = useState({ subject: '', message: '', category: 'generale', priority: 'normal' });
 
   const sector = user?.sector?.toUpperCase?.() || user?.sector || '';
-  const effectiveStaff = isStaff || ['ADMIN', 'GOV', 'LSPD', 'EMS', 'DISPATCH'].includes(sector);
+  const effectiveStaff = isStaff || ['ADMIN', 'GOV'].includes(sector);
 
   const fetchTickets = async () => {
     try {

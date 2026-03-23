@@ -713,11 +713,11 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Staff Ticket Management */}
+        {/* Staff Ticket Management - GOV/ADMIN only */}
         <Route
           path="/staff/tickets"
           element={
-            <ProtectedRoute allowedSectors={['ADMIN', 'GOV', 'LSPD', 'EMS', 'DISPATCH']}>
+            <ProtectedRoute allowedSectors={['ADMIN', 'GOV']}>
               <TicketsPage isStaff={true} />
             </ProtectedRoute>
           }

@@ -30,15 +30,25 @@ import {
   Receipt,
   Ticket,
   BookOpen,
+  Briefcase,
+  CalendarDays,
 } from 'lucide-react';
 
 // Navigation modules
 const getNavModules = (role) => {
   const modules = [];
   
-  // Citizen Dashboard - always first for citizens
-  const isCitizen = !['police', 'dispatch', 'admin', 'ems', 'government', 'judge', 'lawyer', 'prosecutor', 'weazel', 'news'].includes(role);
+  // Normalize role - sector values can be 'lspd', 'ems', etc.
+  const normalizedRole = role?.toLowerCase();
   
+  // Map to check if user is staff (not a citizen)
+  const staffRoles = ['police', 'dispatch', 'admin', 'ems', 'government', 'judge', 'lawyer', 'prosecutor', 'weazel', 'news', 'lspd', 'gov'];
+  const isCitizen = !staffRoles.includes(normalizedRole);
+  
+  // Helper: check if role matches any of the allowed values
+  const hasRole = (...roles) => roles.includes(normalizedRole);
+  
+  // Citizen Dashboard - always first for citizens
   if (isCitizen) {
     modules.push({
       id: 'citizen-home',
@@ -51,7 +61,7 @@ const getNavModules = (role) => {
   }
   
   // City Pulse - Centro Controllo (admin, dispatch, gov)
-  if (['admin', 'dispatch', 'government'].includes(role)) {
+  if (hasRole('admin', 'dispatch', 'government', 'gov')) {
     modules.push({
       id: 'pulse',
       path: '/pulse',
@@ -63,7 +73,7 @@ const getNavModules = (role) => {
   }
   
   // LSPD
-  if (['police', 'dispatch', 'admin'].includes(role)) {
+  if (hasRole('police', 'lspd', 'dispatch', 'admin')) {
     modules.push({
       id: 'lspd',
       path: '/lspd',
@@ -75,7 +85,7 @@ const getNavModules = (role) => {
   }
   
   // EMS
-  if (['ems', 'dispatch', 'admin'].includes(role)) {
+  if (hasRole('ems', 'dispatch', 'admin')) {
     modules.push({
       id: 'ems',
       path: '/ems',
@@ -87,7 +97,7 @@ const getNavModules = (role) => {
   }
   
   // Dispatch
-  if (['police', 'ems', 'dispatch', 'admin'].includes(role)) {
+  if (hasRole('police', 'lspd', 'ems', 'dispatch', 'admin')) {
     modules.push({
       id: 'dispatch',
       path: '/dispatch',
@@ -99,7 +109,7 @@ const getNavModules = (role) => {
   }
   
   // Justice
-  if (['government', 'judge', 'lawyer', 'prosecutor', 'admin'].includes(role)) {
+  if (hasRole('government', 'gov', 'judge', 'lawyer', 'prosecutor', 'admin')) {
     modules.push({
       id: 'justice',
       path: '/justice',
@@ -111,7 +121,7 @@ const getNavModules = (role) => {
   }
   
   // News
-  if (['weazel', 'news', 'admin'].includes(role)) {
+  if (hasRole('weazel', 'news', 'admin')) {
     modules.push({
       id: 'news',
       path: '/news/editor',
@@ -122,8 +132,8 @@ const getNavModules = (role) => {
     });
   }
   
-  // Staff Ticket Management - for staff roles
-  if (['admin', 'government', 'police', 'ems', 'dispatch'].includes(role)) {
+  // Staff Ticket Management - only GOV and ADMIN
+  if (hasRole('admin', 'government', 'gov')) {
     modules.push({
       id: 'staff-tickets',
       path: '/staff/tickets',
@@ -179,6 +189,30 @@ const getNavModules = (role) => {
       label: 'NEWS',
       sublabel: 'Weazel News',
       color: '#eab308',
+    });
+  }
+  
+  // Citizen: Lavoro (Candidature)
+  if (isCitizen) {
+    modules.push({
+      id: 'citizen-recruitment',
+      path: '/city/recruitment',
+      icon: Briefcase,
+      label: 'LAVORO',
+      sublabel: 'Candidature & Bandi',
+      color: '#22d3ee',
+    });
+  }
+  
+  // Citizen: Appuntamenti
+  if (isCitizen) {
+    modules.push({
+      id: 'citizen-appointments',
+      path: '/city/appointments',
+      icon: CalendarDays,
+      label: 'APPUNTAMENTI',
+      sublabel: 'Prenotazioni',
+      color: '#10b981',
     });
   }
   

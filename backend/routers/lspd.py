@@ -19,6 +19,7 @@ from auth import get_current_user, require_roles, UserRole, log_audit
 from utils import generate_case_number, generate_warrant_number, generate_fine_number
 from sse_manager import sse_manager
 from cache import cache, ModuleCache
+from services.lbphone_service import queue_notification_for_sector
 
 router = APIRouter(prefix="/lspd", tags=["LSPD"])
 
@@ -273,6 +274,25 @@ async def create_warrant(
         "subject_name": warrant.suspect_name
     }, roles={"police", "dispatch", "admin"})
     
+    # Notifica lb-phone al cittadino con mandato
+    try:
+        from sqlalchemy import text as sql_text
+        citizen_result = await db.execute(sql_text(
+            "SELECT id FROM users WHERE game_name = :name LIMIT 1"
+        ), {"name": warrant.suspect_name})
+        citizen_row = citizen_result.mappings().first()
+        if citizen_row:
+            from services.lbphone_service import queue_notification_for_user
+            await queue_notification_for_user(
+                db, citizen_row["id"],
+                title="Mandato Emesso",
+                message=f"Mandato {warrant.warrant_number}: {warrant.reason}",
+                icon="fa-solid fa-gavel",
+                color="#ef4444"
+            )
+    except Exception:
+        pass
+    
     return warrant
 
 
@@ -492,6 +512,25 @@ async def create_fine(
         "fine_number": fine.fine_number,
         "amount": fine.amount
     }, roles={"police", "dispatch", "admin"})
+    
+    # Notifica lb-phone al cittadino multato
+    try:
+        from sqlalchemy import text as sql_text
+        citizen_result = await db.execute(sql_text(
+            "SELECT id FROM users WHERE game_name = :name LIMIT 1"
+        ), {"name": fine.citizen_name})
+        citizen_row = citizen_result.mappings().first()
+        if citizen_row:
+            from services.lbphone_service import queue_notification_for_user
+            await queue_notification_for_user(
+                db, citizen_row["id"],
+                title="Nuova Multa Ricevuta",
+                message=f"Multa {fine.fine_number}: ${fine.amount} - {fine.reason}",
+                icon="fa-solid fa-file-invoice-dollar",
+                color="#f59e0b"
+            )
+    except Exception:
+        pass
     
     return fine
 

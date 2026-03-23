@@ -335,7 +335,7 @@ async def get_all_tickets_staff(
     await ensure_tables(db)
     
     sector = current_user.sector.value if hasattr(current_user.sector, 'value') else str(current_user.sector)
-    if sector not in ["ADMIN", "GOV", "LSPD", "EMS", "DISPATCH"]:
+    if sector not in ["ADMIN", "GOV"]:
         raise HTTPException(status_code=403, detail="Solo lo staff può vedere tutti i ticket")
     
     query = """
@@ -446,7 +446,7 @@ async def get_ticket_stats(
     await ensure_tables(db)
     
     sector = current_user.sector.value if hasattr(current_user.sector, 'value') else str(current_user.sector)
-    if sector not in ["ADMIN", "GOV", "LSPD", "EMS", "DISPATCH"]:
+    if sector not in ["ADMIN", "GOV"]:
         raise HTTPException(status_code=403, detail="Solo staff")
     
     open_count = await db.execute(text("SELECT COUNT(*) FROM tickets WHERE status = 'open'"))
