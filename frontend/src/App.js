@@ -88,6 +88,10 @@ import MyFinesPage from './pages/citizen/MyFinesPage';
 import MyWarrantsPage from './pages/citizen/MyWarrantsPage';
 import TicketsPage from './pages/citizen/TicketsPage';
 import CitizenNewsPage from './pages/citizen/CitizenNewsPage';
+import CitizenJobsPage from './pages/citizen/CitizenJobsPage';
+
+// Admin Jobs
+import AdminJobsPage from './pages/admin/AdminJobsPage';
 
 import './App.css';
 import './styles/os-system.css';
@@ -714,6 +718,26 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedSectors={['ADMIN', 'GOV']}>
               <TicketsPage isStaff={true} />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Job Management */}
+        <Route
+          path="/admin/jobs"
+          element={
+            <ProtectedRoute allowedSectors={['ADMIN', 'GOV']}>
+              <AdminJobsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Citizen Job Board */}
+        <Route
+          path="/citizen/jobs"
+          element={
+            <ProtectedRoute>
+              <CitizenJobsPage />
             </ProtectedRoute>
           }
         />

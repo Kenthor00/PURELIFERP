@@ -82,8 +82,13 @@ async def create_ticket(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Citizen creates a new ticket"""
+    """Solo i cittadini possono creare ticket di assistenza"""
     await ensure_tables(db)
+    
+    # Solo cittadini possono creare ticket
+    sector = current_user.sector.value if hasattr(current_user.sector, 'value') else str(current_user.sector)
+    if sector in ["ADMIN", "GOV"]:
+        raise HTTPException(status_code=403, detail="Lo staff non può creare ticket. Usa la gestione ticket per rispondere.")
     
     # Generate ticket number
     count = await db.execute(text("SELECT COUNT(*) FROM tickets"))

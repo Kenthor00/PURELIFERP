@@ -466,6 +466,10 @@ api_router.include_router(citizen.router)
 from routers import lbphone
 api_router.include_router(lbphone.router)
 
+# Job Board
+from routers import jobs
+api_router.include_router(jobs.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 

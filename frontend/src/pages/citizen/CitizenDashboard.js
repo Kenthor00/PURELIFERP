@@ -154,7 +154,7 @@ const CitizenDashboard = () => {
           <QuickLink icon={Scale} label="Mandati" path="/citizen/warrants" color="#ef4444" />
           <QuickLink icon={Ticket} label="Assistenza" path="/citizen/tickets" color="#8b5cf6" />
           <QuickLink icon={Newspaper} label="News" path="/citizen/news" color="#eab308" />
-          <QuickLink icon={Briefcase} label="Lavoro" path="/city/recruitment" color="#22d3ee" />
+          <QuickLink icon={Briefcase} label="Lavoro" path="/citizen/jobs" color="#22d3ee" />
           <QuickLink icon={Calendar} label="Appuntamenti" path="/city/appointments" color="#10b981" />
           <QuickLink icon={Megaphone} label="Annunci" path="/city/announcements" color="#06b6d4" />
           <QuickLink icon={MessageSquare} label="Chat" path="/chat" color="#06b6d4" />

@@ -192,14 +192,14 @@ const getNavModules = (role) => {
     });
   }
   
-  // Citizen: Lavoro (Candidature)
+  // Citizen: Lavoro (Job Board)
   if (isCitizen) {
     modules.push({
-      id: 'citizen-recruitment',
-      path: '/city/recruitment',
+      id: 'citizen-jobs',
+      path: '/citizen/jobs',
       icon: Briefcase,
       label: 'LAVORO',
-      sublabel: 'Candidature & Bandi',
+      sublabel: 'Bandi & Candidature',
       color: '#22d3ee',
     });
   }
@@ -257,6 +257,17 @@ const getNavModules = (role) => {
   });
   
   // Admin
+  if (hasRole('admin', 'government', 'gov')) {
+    modules.push({
+      id: 'admin-jobs',
+      path: '/admin/jobs',
+      icon: Briefcase,
+      label: 'BANDI',
+      sublabel: 'Gestione Lavori',
+      color: '#22d3ee',
+    });
+  }
+  
   if (role === 'admin') {
     modules.push({
       id: 'admin',
