@@ -15,7 +15,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://fivem-manager-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dispatch-center-27.preview.emergentagent.com')
 
 # Test credentials
 CITIZEN_EMAIL = "testflow@purelife.rp"
