@@ -722,11 +722,11 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Admin Job Management */}
+        {/* Staff/Admin Job Management */}
         <Route
           path="/admin/jobs"
           element={
-            <ProtectedRoute allowedSectors={['ADMIN', 'GOV']}>
+            <ProtectedRoute allowedSectors={['ADMIN', 'GOV', 'LSPD', 'EMS', 'DISPATCH', 'NEWS']}>
               <AdminJobsPage />
             </ProtectedRoute>
           }

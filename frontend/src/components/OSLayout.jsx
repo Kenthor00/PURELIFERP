@@ -256,8 +256,8 @@ const getNavModules = (role) => {
     color: '#22d3ee',
   });
   
-  // Admin
-  if (hasRole('admin', 'government', 'gov')) {
+  // Gestione Bandi - Admin vede tutto, ogni staff vede il proprio dipartimento
+  if (hasRole('admin', 'government', 'gov', 'lspd', 'police', 'ems', 'dispatch', 'news', 'weazel')) {
     modules.push({
       id: 'admin-jobs',
       path: '/admin/jobs',
