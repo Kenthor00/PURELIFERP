@@ -70,7 +70,7 @@ class UserProfileResponse(BaseModel):
     name: str
     game_name: Optional[str]
     sector: str
-    grade: str
+    grade: int
     hierarchy_level: int
     is_sector_chief: bool
     badge_number: Optional[str]
