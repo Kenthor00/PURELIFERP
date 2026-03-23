@@ -82,6 +82,13 @@ import AgendaPage from './pages/AgendaPage';
 import NewsEditorPage from './pages/news/NewsEditorPage';
 import ServiceChatPage from './pages/ServiceChatPage';
 
+// Citizen Pages
+import CitizenDashboard from './pages/citizen/CitizenDashboard';
+import MyFinesPage from './pages/citizen/MyFinesPage';
+import MyWarrantsPage from './pages/citizen/MyWarrantsPage';
+import TicketsPage from './pages/citizen/TicketsPage';
+import CitizenNewsPage from './pages/citizen/CitizenNewsPage';
+
 import './App.css';
 import './styles/os-system.css';
 
@@ -309,8 +316,11 @@ const ProtectedRoute = ({ children, allowedSectors }) => {
         return <Navigate to="/justice" replace />;
       case 'NEWS':
         return <Navigate to="/city/news" replace />;
+      case 'CITIZEN':
+      case 'CIVIL':
+        return <Navigate to="/citizen/dashboard" replace />;
       default:
-        return <Navigate to="/city" replace />;
+        return <Navigate to="/citizen/dashboard" replace />;
     }
   }
 
@@ -341,8 +351,11 @@ const AppRoutes = () => {
         return '/city/news';
       case 'ADMIN':
         return '/admin';
+      case 'CITIZEN':
+      case 'CIVIL':
+        return '/citizen/dashboard';
       default:
-        return '/city';
+        return '/citizen/dashboard';
     }
   };
 
@@ -654,6 +667,58 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <AgendaPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Citizen Routes */}
+        <Route
+          path="/citizen/dashboard"
+          element={
+            <ProtectedRoute>
+              <CitizenDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/citizen/fines"
+          element={
+            <ProtectedRoute>
+              <MyFinesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/citizen/warrants"
+          element={
+            <ProtectedRoute>
+              <MyWarrantsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/citizen/tickets"
+          element={
+            <ProtectedRoute>
+              <TicketsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/citizen/news"
+          element={
+            <ProtectedRoute>
+              <CitizenNewsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Staff Ticket Management */}
+        <Route
+          path="/staff/tickets"
+          element={
+            <ProtectedRoute allowedSectors={['ADMIN', 'GOV', 'LSPD', 'EMS', 'DISPATCH']}>
+              <TicketsPage isStaff={true} />
             </ProtectedRoute>
           }
         />

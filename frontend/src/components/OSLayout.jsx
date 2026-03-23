@@ -26,11 +26,29 @@ import {
   ChevronRight,
   Home,
   ShoppingBag,
+  LayoutDashboard,
+  Receipt,
+  Ticket,
+  BookOpen,
 } from 'lucide-react';
 
 // Navigation modules
 const getNavModules = (role) => {
   const modules = [];
+  
+  // Citizen Dashboard - always first for citizens
+  const isCitizen = !['police', 'dispatch', 'admin', 'ems', 'government', 'judge', 'lawyer', 'prosecutor', 'weazel', 'news'].includes(role);
+  
+  if (isCitizen) {
+    modules.push({
+      id: 'citizen-home',
+      path: '/citizen/dashboard',
+      icon: LayoutDashboard,
+      label: 'PANNELLO',
+      sublabel: 'La Tua Dashboard',
+      color: '#00ff9c',
+    });
+  }
   
   // City Pulse - Centro Controllo (admin, dispatch, gov)
   if (['admin', 'dispatch', 'government'].includes(role)) {
@@ -100,6 +118,66 @@ const getNavModules = (role) => {
       icon: Newspaper,
       label: 'WEAZEL',
       sublabel: 'News Network',
+      color: '#eab308',
+    });
+  }
+  
+  // Staff Ticket Management - for staff roles
+  if (['admin', 'government', 'police', 'ems', 'dispatch'].includes(role)) {
+    modules.push({
+      id: 'staff-tickets',
+      path: '/staff/tickets',
+      icon: Ticket,
+      label: 'TICKET',
+      sublabel: 'Gestione Assistenza',
+      color: '#c084fc',
+    });
+  }
+
+  // Citizen: Multe
+  if (isCitizen) {
+    modules.push({
+      id: 'citizen-fines',
+      path: '/citizen/fines',
+      icon: Receipt,
+      label: 'MULTE',
+      sublabel: 'Le Tue Sanzioni',
+      color: '#f59e0b',
+    });
+  }
+  
+  // Citizen: Mandati
+  if (isCitizen) {
+    modules.push({
+      id: 'citizen-warrants',
+      path: '/citizen/warrants',
+      icon: Scale,
+      label: 'MANDATI',
+      sublabel: 'Situazione Legale',
+      color: '#ef4444',
+    });
+  }
+  
+  // Citizen: Ticket Assistenza
+  if (isCitizen) {
+    modules.push({
+      id: 'citizen-tickets',
+      path: '/citizen/tickets',
+      icon: Ticket,
+      label: 'ASSISTENZA',
+      sublabel: 'Richieste & Ticket',
+      color: '#8b5cf6',
+    });
+  }
+  
+  // Citizen: News
+  if (isCitizen) {
+    modules.push({
+      id: 'citizen-news',
+      path: '/citizen/news',
+      icon: BookOpen,
+      label: 'NEWS',
+      sublabel: 'Weazel News',
       color: '#eab308',
     });
   }

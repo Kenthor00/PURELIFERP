@@ -643,7 +643,9 @@ export const CityHubPage = () => {
                         case 'DISPATCH': navigate('/dispatch'); break;
                         case 'GOV': navigate('/justice'); break;
                         case 'NEWS': navigate('/city/news'); break;
-                        default: navigate('/marketplace'); break;
+                        case 'CITIZEN':
+                        case 'CIVIL':
+                        default: navigate('/citizen/dashboard'); break;
                       }
                     }}
                     className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading bg-plos-primary/10 text-plos-primary border border-plos-primary/50 hover:bg-plos-primary/20 rounded transition-all"

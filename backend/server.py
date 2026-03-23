@@ -462,6 +462,10 @@ api_router.include_router(tickets.router)
 from routers import citizen
 api_router.include_router(citizen.router)
 
+# lb-phone Notifications Bridge
+from routers import lbphone
+api_router.include_router(lbphone.router)
+
 # Add embedding middleware
 app.add_middleware(EmbeddingMiddleware)
 

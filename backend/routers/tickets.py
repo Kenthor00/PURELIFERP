@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from database import get_db
 from auth import get_current_user
 from models import User
+from services.lbphone_service import queue_notification_for_user, queue_notification_for_sector
 
 router = APIRouter(prefix="/tickets", tags=["Tickets"])
 
@@ -111,6 +112,25 @@ async def create_ticket(
     })
     
     await db.commit()
+    
+    # Notifica lb-phone: avvisa staff GOV/ADMIN del nuovo ticket
+    try:
+        await queue_notification_for_sector(
+            db, "GOV",
+            title="Nuovo Ticket di Assistenza",
+            message=f"{current_user.game_name or 'Cittadino'}: {data.subject}",
+            icon="fa-solid fa-ticket",
+            color="#8b5cf6"
+        )
+        await queue_notification_for_sector(
+            db, "ADMIN",
+            title="Nuovo Ticket di Assistenza",
+            message=f"{current_user.game_name or 'Cittadino'}: {data.subject}",
+            icon="fa-solid fa-ticket",
+            color="#8b5cf6"
+        )
+    except Exception:
+        pass  # Non bloccare la creazione del ticket se la notifica fallisce
     
     return {
         "id": ticket_id,
@@ -272,6 +292,30 @@ async def reply_to_ticket(
     await db.execute(text("UPDATE tickets SET updated_at = NOW() WHERE id = :tid"), {"tid": ticket_id})
     
     await db.commit()
+    
+    # Notifica lb-phone
+    try:
+        if is_staff:
+            # Staff ha risposto -> notifica al cittadino che ha aperto il ticket
+            await queue_notification_for_user(
+                db, ticket["created_by"],
+                title="Risposta al tuo Ticket",
+                message=f"Lo staff ha risposto al ticket: {ticket['subject'] if 'subject' in ticket.keys() else 'Assistenza'}",
+                icon="fa-solid fa-reply",
+                color="#00ff9c"
+            )
+        else:
+            # Cittadino ha risposto -> notifica allo staff assegnato
+            if ticket["assigned_to"]:
+                await queue_notification_for_user(
+                    db, ticket["assigned_to"],
+                    title="Nuova risposta su Ticket",
+                    message=f"{current_user.game_name or 'Cittadino'} ha risposto al ticket",
+                    icon="fa-solid fa-comment",
+                    color="#f59e0b"
+                )
+    except Exception:
+        pass
     
     return {"message": "Risposta inviata", "is_staff_reply": is_staff}
 

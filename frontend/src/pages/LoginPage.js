@@ -61,10 +61,13 @@ export const LoginPage = () => {
             redirectPath = '/justice';
             break;
           case 'NEWS':
+          case 'WEAZEL':
             redirectPath = '/city/news';
             break;
+          case 'CITIZEN':
+          case 'CIVIL':
           default:
-            redirectPath = '/city';
+            redirectPath = '/citizen/dashboard';
         }
       }
       
