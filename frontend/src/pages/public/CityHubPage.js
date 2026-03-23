@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import {
   Building2,
@@ -489,6 +490,16 @@ export const CityHubPage = () => {
   const [searchParams] = useSearchParams();
   const scrollContainerRef = useRef(null);
   
+  // Auth state
+  let authState = { isAuthenticated: false, user: null, logout: () => {} };
+  try {
+    const auth = useAuth();
+    authState = auth;
+  } catch (e) {
+    // AuthProvider not available - guest mode
+  }
+  const { isAuthenticated, user, logout } = authState;
+  
   // Rileva se siamo su FiveM CEF
   const isFiveM = useFiveMDetection();
   const [scrollbarWorking, setScrollbarWorking] = useState(true);
@@ -620,19 +631,55 @@ export const CityHubPage = () => {
             <CityLogo />
             
             <nav className="flex items-center gap-1.5 sm:gap-2">
-              <button
-                onClick={() => navigate('/login')}
-                className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading text-plos-text-secondary hover:text-white border border-plos-border hover:border-plos-text-muted rounded transition-all"
-              >
-                ACCEDI
-              </button>
-              <button
-                onClick={() => navigate('/register')}
-                className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading bg-plos-primary/10 text-plos-primary border border-plos-primary/50 hover:bg-plos-primary/20 rounded transition-all"
-                data-testid="cityhub-register-btn"
-              >
-                REGISTRATI
-              </button>
+              {isAuthenticated && user ? (
+                <>
+                  <button
+                    onClick={() => {
+                      const sector = user.sector?.toUpperCase();
+                      switch (sector) {
+                        case 'ADMIN': navigate('/admin'); break;
+                        case 'LSPD': navigate('/lspd'); break;
+                        case 'EMS': navigate('/ems'); break;
+                        case 'DISPATCH': navigate('/dispatch'); break;
+                        case 'GOV': navigate('/justice'); break;
+                        case 'NEWS': navigate('/city/news'); break;
+                        default: navigate('/marketplace'); break;
+                      }
+                    }}
+                    className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading bg-plos-primary/10 text-plos-primary border border-plos-primary/50 hover:bg-plos-primary/20 rounded transition-all"
+                    data-testid="cityhub-dashboard-btn"
+                  >
+                    PANNELLO
+                  </button>
+                  <span className="text-[10px] sm:text-xs text-plos-text-secondary font-heading hidden sm:inline">
+                    {user.game_name || user.name}
+                  </span>
+                  <button
+                    onClick={async () => { await logout(); navigate('/city'); }}
+                    className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading text-plos-text-secondary hover:text-red-400 border border-plos-border hover:border-red-400/50 rounded transition-all"
+                    data-testid="cityhub-logout-btn"
+                  >
+                    ESCI
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading text-plos-text-secondary hover:text-white border border-plos-border hover:border-plos-text-muted rounded transition-all"
+                    data-testid="cityhub-login-btn"
+                  >
+                    ACCEDI
+                  </button>
+                  <button
+                    onClick={() => navigate('/register')}
+                    className="px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-heading bg-plos-primary/10 text-plos-primary border border-plos-primary/50 hover:bg-plos-primary/20 rounded transition-all"
+                    data-testid="cityhub-register-btn"
+                  >
+                    REGISTRATI
+                  </button>
+                </>
+              )}
             </nav>
           </div>
         </div>
@@ -938,7 +985,11 @@ export const CityHubPage = () => {
                 <button onClick={() => navigate('/city/news')} className="hover:text-white transition-colors">News</button>
                 <button onClick={() => navigate('/city/events')} className="hover:text-white transition-colors">Eventi</button>
                 <button onClick={() => navigate('/city/announcements')} className="hover:text-white transition-colors">Annunci</button>
-                <button onClick={() => navigate('/login')} className="hover:text-plos-primary transition-colors">Accedi</button>
+                {isAuthenticated ? (
+                  <button onClick={async () => { await logout(); navigate('/city'); }} className="hover:text-red-400 transition-colors">Esci</button>
+                ) : (
+                  <button onClick={() => navigate('/login')} className="hover:text-plos-primary transition-colors">Accedi</button>
+                )}
               </div>
             </div>
           </div>
