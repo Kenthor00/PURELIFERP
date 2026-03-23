@@ -104,6 +104,16 @@ const getNavModules = (role) => {
     });
   }
   
+  // Documents (always)
+  modules.push({
+    id: 'documents',
+    path: '/documents',
+    icon: FileText,
+    label: 'DOCUMENTI',
+    sublabel: 'Archivio',
+    color: '#a78bfa',
+  });
+  
   // Chat (always)
   modules.push({
     id: 'chat',
@@ -122,6 +132,16 @@ const getNavModules = (role) => {
     label: 'MERCATO',
     sublabel: 'Annunci',
     color: '#f59e0b',
+  });
+
+  // City Hub (always) - Annunci, Bandi, Prenotazioni
+  modules.push({
+    id: 'cityhub',
+    path: '/city/announcements',
+    icon: Home,
+    label: 'SERVIZI',
+    sublabel: 'Bandi & Assistenza',
+    color: '#22d3ee',
   });
   
   // Admin
